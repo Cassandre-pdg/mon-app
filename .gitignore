@@ -1,0 +1,6 @@
+flutter_app/.dart_tool/
+flutter_app/build/
+flutter_app/*.g.dart
+backend/node_modules/
+backend/.env
+.DS_Store
