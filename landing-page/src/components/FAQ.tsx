@@ -44,33 +44,42 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="border-b border-[#22204A] last:border-0"
+      className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+        open
+          ? "bg-[#1A1836] border-[#6D28D9]/35"
+          : "bg-[#1A1836]/60 border-[#22204A] hover:border-[#6D28D9]/25"
+      }`}
     >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-5 text-left gap-4 group"
+        className="w-full flex items-center justify-between px-6 py-5 text-left gap-5 group cursor-pointer"
       >
-        <span className="text-base font-medium text-[#EDEDFF]/90 group-hover:text-white transition-colors">
+        <span
+          className={`text-[15px] font-medium leading-snug transition-colors ${
+            open ? "text-white" : "text-[#EDEDFF]/80 group-hover:text-white"
+          }`}
+        >
           {q}
         </span>
         <span
-          className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200"
+          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
           style={{
-            background: open ? "rgba(109,40,217,0.3)" : "rgba(109,40,217,0.12)",
-            border: "1px solid rgba(109,40,217,0.3)",
+            background: open ? "rgba(109,40,217,0.35)" : "rgba(109,40,217,0.1)",
+            border: `1px solid ${open ? "rgba(109,40,217,0.5)" : "rgba(109,40,217,0.2)"}`,
           }}
         >
           {open ? (
-            <Minus size={14} className="text-[#8B7FE8]" />
+            <Minus size={14} className="text-[#C4B5FD]" />
           ) : (
             <Plus size={14} className="text-[#8B7FE8]" />
           )}
         </span>
       </button>
-      <AnimatePresence>
+
+      <AnimatePresence initial={false}>
         {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
@@ -79,7 +88,9 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <p className="text-sm text-[#EDEDFF]/55 leading-relaxed pb-5">{a}</p>
+            <p className="px-6 pb-6 text-sm text-[#EDEDFF]/58 leading-relaxed">
+              {a}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -92,25 +103,20 @@ export default function FAQ() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} id="faq" className="py-32 px-8 relative">
-      <div className="max-w-3xl mx-auto">
+    <section ref={ref} id="faq" className="section">
+      <div className="wrap-md">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="section-header"
         >
-          <p className="text-xs font-semibold text-[#8B7FE8] uppercase tracking-[0.1em] mb-4">
-            FAQ
-          </p>
-          <h2
-            className="text-4xl md:text-5xl font-bold text-white mb-4"
-            style={{ letterSpacing: "-0.02em" }}
-          >
+          <p className="eyebrow">FAQ</p>
+          <h2 className="section-title">
             Tes questions,{" "}
             <span className="text-[#C4B5FD]">nos réponses</span>
           </h2>
-          <p className="text-lg text-[#EDEDFF]/60">
+          <p className="section-sub">
             Tu as une autre question ? Écris-nous directement en bas de page.
           </p>
         </motion.div>
@@ -119,7 +125,7 @@ export default function FAQ() {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="rounded-2xl bg-[#1A1836] border border-[#22204A] px-6 divide-y-0"
+          className="flex flex-col gap-3"
         >
           {faqs.map((faq, i) => (
             <FAQItem key={faq.q} q={faq.q} a={faq.a} index={i} />

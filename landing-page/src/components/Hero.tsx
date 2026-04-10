@@ -45,7 +45,8 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-24 pb-16 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      style={{ paddingTop: "120px", paddingBottom: "80px" }}
     >
       {/* Background glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -63,16 +64,18 @@ export default function Hero() {
         }}
       />
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
+      <div className="wrap-sm relative z-10 text-center">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#6D28D9]/20 border border-[#6D28D9]/40 text-[#C4B5FD] text-sm font-medium mb-8"
+          className="flex justify-center mb-8"
         >
-          <Sparkles size={14} />
-          <span>Beta ouverte — places limitées</span>
+          <span className="badge badge-violet">
+            <Sparkles size={13} />
+            Beta ouverte — places limitées
+          </span>
         </motion.div>
 
         {/* Icon */}
@@ -82,7 +85,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="flex justify-center mb-10"
         >
-          <KolybIcon size={100} variant="violet" animate={true} />
+          <KolybIcon size={96} variant="violet" animate={true} />
         </motion.div>
 
         {/* Headline */}
@@ -90,7 +93,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
+          className="text-5xl md:text-7xl font-bold text-white leading-tight mb-6"
           style={{ letterSpacing: "-0.03em" }}
         >
           Ton élan,{" "}
@@ -102,7 +105,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-xl md:text-2xl text-[#EDEDFF]/70 mb-4 max-w-2xl mx-auto leading-relaxed"
+          className="text-lg md:text-xl text-[#EDEDFF]/65 leading-relaxed mb-8"
         >
           kolyb réunit tout ce dont tu as besoin pour avancer — à ton rythme,{" "}
           <span className="text-[#C4B5FD] font-medium">jamais seul·e.</span>
@@ -113,12 +116,12 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap justify-center gap-3 mb-12"
+          className="flex flex-wrap justify-center gap-2.5 mb-12"
         >
           {features.map((f) => (
             <span
               key={f}
-              className="flex items-center gap-1.5 text-sm text-[#8B7FE8] px-3 py-1 rounded-full"
+              className="flex items-center gap-2 text-sm text-[#8B7FE8] px-4 py-2 rounded-full font-medium"
               style={{ background: "rgba(109,40,217,0.12)", border: "1px solid rgba(109,40,217,0.25)" }}
             >
               <CheckCircle2 size={13} className="text-[#00D4C8]" />
@@ -133,35 +136,30 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="max-w-md mx-auto"
         >
           {status === "success" ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="p-6 rounded-2xl bg-[#00D4C8]/10 border border-[#00D4C8]/30 text-center"
+              className="p-8 rounded-2xl bg-[#00D4C8]/10 border border-[#00D4C8]/30 text-center"
             >
-              <div className="text-3xl mb-3">🚀</div>
-              <p className="text-[#00D4C8] font-semibold text-lg">{message}</p>
-              <p className="text-[#EDEDFF]/60 text-sm mt-2">
+              <div className="text-4xl mb-4">🚀</div>
+              <p className="text-[#00D4C8] font-semibold text-lg mb-2">{message}</p>
+              <p className="text-[#EDEDFF]/55 text-sm">
                 On te tient au courant dès l&apos;ouverture de la beta.
               </p>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col items-center sm:flex-row sm:items-stretch gap-3">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ton@email.com"
                 required
-                className="w-full sm:flex-1 px-5 py-4 rounded-xl bg-[#1A1836] border border-[#22204A] text-white placeholder-[#EDEDFF]/45 text-sm font-medium focus:outline-none focus:border-[#6D28D9] focus:ring-1 focus:ring-[#6D28D9] transition-all"
+                className="input flex-1"
               />
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-[#6D28D9] hover:bg-[#5B21B6] disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-purple-900/40 whitespace-nowrap"
-              >
+              <button type="submit" disabled={status === "loading"} className="btn btn-primary">
                 {status === "loading" ? (
                   <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
@@ -173,10 +171,12 @@ export default function Hero() {
               </button>
             </form>
           )}
+
           {status === "error" && (
             <p className="text-[#FF4D6A] text-sm text-center mt-3">{message}</p>
           )}
-          <p className="text-[#EDEDFF]/30 text-xs text-center mt-4">
+
+          <p className="text-[#EDEDFF]/28 text-xs text-center mt-4">
             Gratuit, sans CB. Tu te désinscrits quand tu veux. RGPD respecté.
           </p>
         </motion.div>
@@ -186,18 +186,18 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.8 }}
-          className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 text-center"
+          className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-10"
         >
           {[
             { value: "500+", label: "entrepreneurs inscrits" },
             { value: "100%", label: "gratuit en V1" },
             { value: "0", label: "spam promis" },
           ].map((stat) => (
-            <div key={stat.label} className="flex flex-col gap-1">
+            <div key={stat.label} className="flex flex-col items-center gap-1.5">
               <span className="text-2xl font-bold text-white" style={{ letterSpacing: "-0.02em" }}>
                 {stat.value}
               </span>
-              <span className="text-xs text-[#EDEDFF]/40 font-medium uppercase tracking-wider">
+              <span className="text-xs text-[#EDEDFF]/38 font-medium uppercase tracking-widest">
                 {stat.label}
               </span>
             </div>

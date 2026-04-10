@@ -31,36 +31,30 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative pt-16 pb-10 px-6">
+    <footer className="relative pt-16 pb-10">
       {/* Gradient top border */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#6D28D9]/50 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#6D28D9]/40 to-transparent" />
 
-      <div className="max-w-6xl mx-auto">
+      <div className="wrap">
         {/* Main grid */}
         <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-10 pb-14">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2.5 mb-3">
-              <KolybIcon size={32} variant="violet" animate={false} />
-              <span
-                className="text-lg font-bold text-white"
-                style={{ letterSpacing: "-0.02em" }}
-              >
+            <div className="flex items-center gap-2.5 mb-4">
+              <KolybIcon size={30} variant="violet" animate={false} />
+              <span className="text-lg font-bold text-white" style={{ letterSpacing: "-0.02em" }}>
                 kolyb
               </span>
             </div>
-            <p
-              className="text-sm text-[#8B7FE8] mb-4"
-              style={{ letterSpacing: "0.03em" }}
-            >
+            <p className="text-sm text-[#8B7FE8] mb-3" style={{ letterSpacing: "0.03em" }}>
               Ton élan, au quotidien.
             </p>
-            <p className="text-sm text-[#EDEDFF]/35 leading-relaxed max-w-[200px]">
+            <p className="text-sm text-[#EDEDFF]/32 leading-relaxed max-w-[200px]">
               Le compagnon des entrepreneurs indépendants.
             </p>
 
             {/* Social icons */}
-            <div className="flex items-center gap-2 mt-6">
+            <div className="flex items-center gap-2 mt-7">
               {socials.map((s) => {
                 const Icon = s.icon;
                 return (
@@ -68,7 +62,7 @@ export default function Footer() {
                     key={s.label}
                     href={s.href}
                     aria-label={s.label}
-                    className="w-8 h-8 rounded-lg bg-[#1A1836] flex items-center justify-center text-[#EDEDFF]/35 hover:text-white hover:bg-[#6D28D9]/25 transition-all duration-200"
+                    className="w-8 h-8 rounded-lg bg-[#1A1836] border border-[#22204A] flex items-center justify-center text-[#EDEDFF]/32 hover:text-white hover:bg-[#6D28D9]/25 hover:border-[#6D28D9]/35 transition-all duration-200"
                   >
                     <Icon size={14} />
                   </a>
@@ -80,15 +74,15 @@ export default function Footer() {
           {/* Link columns */}
           {Object.entries(links).map(([category, items]) => (
             <div key={category}>
-              <p className="text-[10px] font-semibold text-[#EDEDFF]/30 uppercase tracking-[0.1em] mb-5">
+              <p className="text-[10px] font-semibold text-[#EDEDFF]/28 uppercase tracking-[0.12em] mb-5">
                 {category}
               </p>
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-3.5">
                 {items.map((link) => (
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-sm text-[#EDEDFF]/45 hover:text-[#EDEDFF] transition-colors duration-200"
+                      className="text-sm text-[#EDEDFF]/42 hover:text-[#EDEDFF]/90 transition-colors duration-200"
                     >
                       {link.label}
                     </a>
@@ -111,12 +105,12 @@ export default function Footer() {
             <span className="text-[#22204A]">·</span>
             <span>🇪🇺 Hébergé EU</span>
             <span className="text-[#22204A]">·</span>
-            <span className="text-[#00D4C8]/70">RGPD ✓</span>
+            <span className="text-[#00D4C8]/60">RGPD ✓</span>
           </div>
         </div>
 
-        {/* Disclaimer — minimal inline */}
-        <p className="text-[10px] text-[#EDEDFF]/15 text-center mt-5 max-w-2xl mx-auto leading-relaxed">
+        {/* Disclaimer */}
+        <p className="text-[10px] text-[#EDEDFF]/14 text-center mt-5 max-w-2xl mx-auto leading-relaxed">
           kolyb est un outil de bien-être — pas un dispositif médical. Si tu traverses une période difficile, n&apos;hésite pas à consulter un professionnel de santé.
         </p>
       </div>

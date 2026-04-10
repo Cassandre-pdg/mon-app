@@ -1,7 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Heart, Shield, Zap, Clock, Globe, Lock } from "lucide-react";
 
@@ -55,34 +54,29 @@ export default function Benefits() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} id="benefits" className="py-32 px-8 relative">
-      <div className="absolute inset-0 pointer-events-none">
+    <section ref={ref} id="benefits" className="section">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[#6D28D9]/10 rounded-full blur-[100px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="wrap relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="section-header"
         >
-          <p className="text-xs font-semibold text-[#8B7FE8] uppercase tracking-[0.1em] mb-4">
-            Pourquoi kolyb
-          </p>
-          <h2
-            className="text-4xl md:text-5xl font-bold text-white mb-4"
-            style={{ letterSpacing: "-0.02em" }}
-          >
+          <p className="eyebrow">Pourquoi kolyb</p>
+          <h2 className="section-title">
             Conçu avec les{" "}
             <span className="text-[#00D4C8]">valeurs qui comptent</span>
           </h2>
-          <p className="text-lg text-[#EDEDFF]/60 max-w-xl mx-auto">
+          <p className="section-sub">
             Pas une app de plus dans ton téléphone. Une app qui mérite sa place.
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {benefits.map((benefit, i) => {
             const Icon = benefit.icon;
             return (
@@ -91,18 +85,18 @@ export default function Benefits() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="card-hover p-8 rounded-2xl bg-[#1A1836] border border-[#22204A] group"
+                className="card group"
               >
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110"
+                  className="icon-box mb-6 group-hover:scale-110"
                   style={{
                     background: `${benefit.color}15`,
-                    border: `1px solid ${benefit.color}20`,
+                    border: `1px solid ${benefit.color}22`,
                   }}
                 >
                   <Icon size={18} style={{ color: benefit.color }} />
                 </div>
-                <h3 className="text-base font-semibold text-white mb-2">
+                <h3 className="text-[15px] font-semibold text-white mb-2.5 leading-snug">
                   {benefit.title}
                 </h3>
                 <p className="text-sm text-[#EDEDFF]/50 leading-relaxed">

@@ -34,14 +34,11 @@ export default function Navbar() {
             : "bg-transparent"
         }`}
       >
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="wrap flex items-center justify-between h-16">
           {/* Logo */}
           <a href="#" className="flex items-center gap-3 group">
-            <KolybIcon size={36} variant="violet" animate={false} />
-            <span
-              className="text-2xl font-bold text-white tracking-tight"
-              style={{ letterSpacing: "-0.02em" }}
-            >
+            <KolybIcon size={34} variant="violet" animate={false} />
+            <span className="text-xl font-bold text-white" style={{ letterSpacing: "-0.02em" }}>
               kolyb
             </span>
           </a>
@@ -52,7 +49,7 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-[#EDEDFF]/70 hover:text-white transition-colors duration-200"
+                className="text-sm font-medium text-[#EDEDFF]/65 hover:text-white transition-colors duration-200"
               >
                 {link.label}
               </a>
@@ -60,11 +57,8 @@ export default function Navbar() {
           </nav>
 
           {/* CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <a
-              href="#hero-form"
-              className="px-6 py-3 bg-[#6D28D9] hover:bg-[#5B21B6] text-white text-sm font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-900/30"
-            >
+          <div className="hidden md:flex items-center">
+            <a href="#hero-form" className="btn btn-primary" style={{ padding: "10px 22px", fontSize: "13px" }}>
               Rejoindre la beta
             </a>
           </div>
@@ -88,15 +82,15 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-16 z-40 bg-[#1A1836]/95 backdrop-blur-xl border-b border-[#22204A] md:hidden"
+            className="fixed inset-x-0 top-16 z-40 bg-[#1A1836]/96 backdrop-blur-xl border-b border-[#22204A] md:hidden"
           >
-            <nav className="max-w-6xl mx-auto px-6 py-6 flex flex-col gap-4">
+            <nav className="wrap py-6 flex flex-col gap-1">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-base font-medium text-[#EDEDFF]/80 hover:text-white py-2 border-b border-[#22204A] last:border-0 transition-colors"
+                  className="text-base font-medium text-[#EDEDFF]/75 hover:text-white py-3 border-b border-[#22204A] last:border-0 transition-colors"
                 >
                   {link.label}
                 </a>
@@ -104,7 +98,7 @@ export default function Navbar() {
               <a
                 href="#hero-form"
                 onClick={() => setMobileOpen(false)}
-                className="mt-2 px-5 py-3 bg-[#6D28D9] text-white text-sm font-semibold rounded-xl text-center transition-all hover:bg-[#5B21B6]"
+                className="btn btn-primary mt-4 w-full"
               >
                 Rejoindre la beta
               </a>

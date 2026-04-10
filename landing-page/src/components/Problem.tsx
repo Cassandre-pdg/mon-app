@@ -1,7 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Layers, Users, TrendingDown } from "lucide-react";
 
@@ -37,31 +36,26 @@ export default function Problem() {
   const inView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} id="problem" className="py-32 px-8 relative">
-      <div className="max-w-5xl mx-auto">
+    <section ref={ref} id="problem" className="section">
+      <div className="wrap">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="section-header"
         >
-          <p className="text-xs font-semibold text-[#8B7FE8] uppercase tracking-[0.1em] mb-4">
-            Le vrai problème
-          </p>
-          <h2
-            className="text-4xl md:text-5xl font-bold text-white mb-6"
-            style={{ letterSpacing: "-0.02em" }}
-          >
+          <p className="eyebrow">Le vrai problème</p>
+          <h2 className="section-title">
             Indépendant ne veut pas dire{" "}
             <span className="text-[#FF4D6A]">seul·e.</span>
           </h2>
-          <p className="text-lg text-[#EDEDFF]/60 max-w-2xl mx-auto">
+          <p className="section-sub">
             Les entrepreneurs indépendants ont les mêmes besoins que tout le monde —
             organisation, connexion, progression — sans les outils adaptés à leur réalité.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           {problems.map((problem, i) => {
             const Icon = problem.icon;
             return (
@@ -70,15 +64,15 @@ export default function Problem() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: i * 0.15 }}
-                className="card-hover p-8 rounded-2xl bg-[#1A1836] border border-[#22204A]"
+                className="card"
               >
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6"
+                  className="icon-box icon-box-lg mb-6"
                   style={{ background: problem.bgColor }}
                 >
                   <Icon size={22} style={{ color: problem.color }} />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-4">
+                <h3 className="text-lg font-semibold text-white mb-3 leading-snug">
                   {problem.title}
                 </h3>
                 <p className="text-sm text-[#EDEDFF]/55 leading-relaxed">
@@ -94,11 +88,11 @@ export default function Problem() {
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-16 text-center"
+          className="mt-14 text-center"
         >
-          <div className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-[#6D28D9]/15 border border-[#6D28D9]/30">
+          <div className="inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-[#6D28D9]/15 border border-[#6D28D9]/30">
             <span className="text-2xl">💡</span>
-            <p className="text-[#C4B5FD] font-medium">
+            <p className="text-[#C4B5FD] font-medium text-sm sm:text-base">
               kolyb réunit tout en un — conçu pour ton quotidien d&apos;indépendant·e.
             </p>
           </div>
