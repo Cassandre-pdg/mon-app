@@ -37,7 +37,7 @@ export default function HowItWorks() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} id="how-it-works" className="py-24 px-6 relative">
+    <section ref={ref} id="how-it-works" className="py-32 px-8 relative">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#00D4C8]/6 rounded-full blur-[100px]" />
       </div>

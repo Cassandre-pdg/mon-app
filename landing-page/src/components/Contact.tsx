@@ -65,7 +65,7 @@ export default function Contact() {
   };
 
   return (
-    <section ref={ref} id="contact" className="py-24 px-6 relative overflow-hidden">
+    <section ref={ref} id="contact" className="py-32 px-8 relative overflow-hidden">
       {/* BG */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#6D28D9]/12 rounded-full blur-[100px]" />

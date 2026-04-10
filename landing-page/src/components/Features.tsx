@@ -71,7 +71,7 @@ export default function Features() {
   const [active, setActive] = useState(0);
 
   return (
-    <section ref={ref} id="features" className="py-24 px-6 relative">
+    <section ref={ref} id="features" className="py-32 px-8 relative">
       {/* BG */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-[#6D28D9]/8 rounded-full blur-[120px]" />
@@ -82,7 +82,7 @@ export default function Features() {
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
           <p className="text-xs font-semibold text-[#8B7FE8] uppercase tracking-[0.1em] mb-4">
             Fonctionnalités

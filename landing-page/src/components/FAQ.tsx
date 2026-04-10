@@ -92,13 +92,13 @@ export default function FAQ() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} id="faq" className="py-24 px-6 relative">
+    <section ref={ref} id="faq" className="py-32 px-8 relative">
       <div className="max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
           <p className="text-xs font-semibold text-[#8B7FE8] uppercase tracking-[0.1em] mb-4">
             FAQ
