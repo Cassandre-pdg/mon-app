@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { supabaseServer } from "@/lib/supabase";
+import { getSupabaseServer } from "@/lib/supabase";
 
 // ─── Schéma de validation ─────────────────────────────────────────────────────
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const { email, firstName, source } = parsed.data;
 
     // Tentative d'insertion dans Supabase
-    const { error } = await supabaseServer
+    const { error } = await getSupabaseServer()
       .from("waitlist")
       .insert({
         email: email.toLowerCase().trim(),
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Récupérer le nombre total d'inscrits (pour affichage éventuel)
-    const { count } = await supabaseServer
+    const { count } = await getSupabaseServer()
       .from("waitlist")
       .select("*", { count: "exact", head: true });
 
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const { count, error } = await supabaseServer
+    const { count, error } = await getSupabaseServer()
       .from("waitlist")
       .select("*", { count: "exact", head: true });
 

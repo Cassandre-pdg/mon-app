@@ -33,4 +33,12 @@ function createSupabaseServerClient() {
   });
 }
 
-export const supabaseServer = createSupabaseServerClient();
+// Client instancié de façon lazy pour éviter un crash au build si les vars d'env sont absentes
+let _supabaseServer: ReturnType<typeof createSupabaseServerClient> | null = null;
+
+export function getSupabaseServer() {
+  if (!_supabaseServer) {
+    _supabaseServer = createSupabaseServerClient();
+  }
+  return _supabaseServer;
+}
