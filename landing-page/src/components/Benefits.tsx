@@ -82,7 +82,7 @@ export default function Benefits() {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
           {benefits.map((benefit, i) => {
             const Icon = benefit.icon;
             return (
@@ -91,10 +91,10 @@ export default function Benefits() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="card-hover p-6 rounded-2xl bg-[#1A1836] border border-[#22204A] group"
+                className="card-hover p-8 rounded-2xl bg-[#1A1836] border border-[#22204A] group"
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
+                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110"
                   style={{
                     background: `${benefit.color}15`,
                     border: `1px solid ${benefit.color}20`,
