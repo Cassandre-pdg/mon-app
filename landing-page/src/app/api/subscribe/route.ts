@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { supabaseServer } from "@/lib/supabase";
+
+// ─── Schéma de validation ─────────────────────────────────────────────────────
 
 const subscribeSchema = z.object({
   email: z.string().email("Email invalide"),
-  firstName: z.string().min(1, "Prénom requis").max(50).optional(),
-  source: z.string().optional(),
+  firstName: z.string().min(1).max(50).optional(),
+  source: z.string().max(100).optional(),
 });
 
-// In-memory store (replace with DB/Supabase in production)
-const subscribers: Array<{ email: string; firstName?: string; createdAt: string; source?: string }> = [];
+// ─── POST /api/subscribe ───────────────────────────────────────────────────────
+// Inscrit un email dans la table waitlist Supabase.
+// Gère les doublons sans exposer si l'email existait déjà (privacy).
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,39 +28,69 @@ export async function POST(req: NextRequest) {
 
     const { email, firstName, source } = parsed.data;
 
-    // Check for duplicate
-    if (subscribers.find((s) => s.email === email)) {
+    // Tentative d'insertion dans Supabase
+    const { error } = await supabaseServer
+      .from("waitlist")
+      .insert({
+        email: email.toLowerCase().trim(),
+        first_name: firstName?.trim() ?? null,
+        source: source ?? "landing",
+      });
+
+    if (error) {
+      // Code 23505 = violation d'unicité (email déjà existant)
+      if (error.code === "23505") {
+        return NextResponse.json(
+          { message: "Tu es déjà inscrit·e ! On te tient au courant 🚀" },
+          { status: 200 }
+        );
+      }
+
+      console.error("[subscribe] Erreur Supabase:", error.message);
       return NextResponse.json(
-        { message: "Tu es déjà inscrit·e ! On te tient au courant 🚀" },
-        { status: 200 }
+        { error: "Une erreur est survenue. Réessaie dans quelques instants." },
+        { status: 500 }
       );
     }
 
-    // Store subscriber
-    subscribers.push({
-      email,
-      firstName,
-      source: source || "landing",
-      createdAt: new Date().toISOString(),
-    });
+    // Récupérer le nombre total d'inscrits (pour affichage éventuel)
+    const { count } = await supabaseServer
+      .from("waitlist")
+      .select("*", { count: "exact", head: true });
 
-    console.log(`New subscriber: ${email} (total: ${subscribers.length})`);
+    console.log(`[subscribe] Nouvel inscrit: ${email} (total: ${count})`);
 
     return NextResponse.json(
       {
         message: "Bienvenue dans l'aventure kolyb ! 🚀",
-        count: subscribers.length,
+        count: count ?? 0,
       },
       { status: 201 }
     );
-  } catch {
+  } catch (err) {
+    console.error("[subscribe] Erreur inattendue:", err);
     return NextResponse.json(
-      { error: "Une erreur est survenue. Réessaie dans quelques instants." },
+      { error: "Erreur serveur. Réessaie dans quelques instants." },
       { status: 500 }
     );
   }
 }
 
+// ─── GET /api/subscribe ────────────────────────────────────────────────────────
+// Retourne le nombre d'inscrits (utile pour le compteur hero).
+
 export async function GET() {
-  return NextResponse.json({ count: subscribers.length });
+  try {
+    const { count, error } = await supabaseServer
+      .from("waitlist")
+      .select("*", { count: "exact", head: true });
+
+    if (error) {
+      return NextResponse.json({ count: 0 });
+    }
+
+    return NextResponse.json({ count: count ?? 0 });
+  } catch {
+    return NextResponse.json({ count: 0 });
+  }
 }
