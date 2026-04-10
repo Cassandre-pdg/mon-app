@@ -63,7 +63,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <a
               href="#hero-form"
-              className="px-5 py-2.5 bg-[#6D28D9] hover:bg-[#5B21B6] text-white text-sm font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-900/30"
+              className="px-6 py-3 bg-[#6D28D9] hover:bg-[#5B21B6] text-white text-sm font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-900/30"
             >
               Rejoindre la beta
             </a>

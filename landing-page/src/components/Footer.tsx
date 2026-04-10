@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Instagram, Twitter, Linkedin, Heart } from "lucide-react";
 import KolybIcon from "./KolybIcon";
 
@@ -17,7 +16,7 @@ const links = {
   ],
   Légal: [
     { label: "Mentions légales", href: "#" },
-    { label: "Politique de confidentialité", href: "#" },
+    { label: "Confidentialité", href: "#" },
     { label: "CGU", href: "#" },
   ],
 };
@@ -32,32 +31,36 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative pt-16 pb-8 px-6 border-t border-[#22204A]">
+    <footer className="relative pt-16 pb-10 px-6">
+      {/* Gradient top border */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#6D28D9]/50 to-transparent" />
+
       <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-5 gap-12 mb-12">
+        {/* Main grid */}
+        <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-10 pb-14">
           {/* Brand */}
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-5">
-              <KolybIcon size={40} variant="violet" animate={false} />
-              <div>
-                <p
-                  className="text-xl font-bold text-white"
-                  style={{ letterSpacing: "-0.02em" }}
-                >
-                  kolyb
-                </p>
-                <p className="text-xs text-[#8B7FE8]" style={{ letterSpacing: "0.03em" }}>
-                  Ton élan, au quotidien.
-                </p>
-              </div>
+          <div className="col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2.5 mb-3">
+              <KolybIcon size={32} variant="violet" animate={false} />
+              <span
+                className="text-lg font-bold text-white"
+                style={{ letterSpacing: "-0.02em" }}
+              >
+                kolyb
+              </span>
             </div>
-            <p className="text-sm text-[#EDEDFF]/45 leading-relaxed mb-6 max-w-xs">
-              Le compagnon des entrepreneurs indépendants. Avance à ton rythme,
-              progresser ensemble, prendre soin de toi.
+            <p
+              className="text-sm text-[#8B7FE8] mb-4"
+              style={{ letterSpacing: "0.03em" }}
+            >
+              Ton élan, au quotidien.
+            </p>
+            <p className="text-sm text-[#EDEDFF]/35 leading-relaxed max-w-[200px]">
+              Le compagnon des entrepreneurs indépendants.
             </p>
 
-            {/* Socials */}
-            <div className="flex items-center gap-3">
+            {/* Social icons */}
+            <div className="flex items-center gap-2 mt-6">
               {socials.map((s) => {
                 const Icon = s.icon;
                 return (
@@ -65,19 +68,19 @@ export default function Footer() {
                     key={s.label}
                     href={s.href}
                     aria-label={s.label}
-                    className="w-9 h-9 rounded-xl bg-[#1A1836] border border-[#22204A] flex items-center justify-center text-[#EDEDFF]/40 hover:text-white hover:border-[#6D28D9]/40 transition-all duration-200"
+                    className="w-8 h-8 rounded-lg bg-[#1A1836] flex items-center justify-center text-[#EDEDFF]/35 hover:text-white hover:bg-[#6D28D9]/25 transition-all duration-200"
                   >
-                    <Icon size={16} />
+                    <Icon size={14} />
                   </a>
                 );
               })}
             </div>
           </div>
 
-          {/* Links */}
+          {/* Link columns */}
           {Object.entries(links).map(([category, items]) => (
             <div key={category}>
-              <p className="text-xs font-semibold text-[#EDEDFF]/40 uppercase tracking-[0.08em] mb-4">
+              <p className="text-[10px] font-semibold text-[#EDEDFF]/30 uppercase tracking-[0.1em] mb-5">
                 {category}
               </p>
               <ul className="flex flex-col gap-3">
@@ -85,7 +88,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-sm text-[#EDEDFF]/55 hover:text-white transition-colors duration-200"
+                      className="text-sm text-[#EDEDFF]/45 hover:text-[#EDEDFF] transition-colors duration-200"
                     >
                       {link.label}
                     </a>
@@ -96,27 +99,26 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Disclaimer */}
-        <div className="mb-8 p-4 rounded-xl bg-[#1A1836] border border-[#22204A]">
-          <p className="text-xs text-[#EDEDFF]/30 text-center leading-relaxed">
-            ⚠️ kolyb est un outil de bien-être et de productivité — pas un dispositif médical.
-            Si tu traverses une période difficile, n&apos;hésite pas à consulter un professionnel de santé.
-          </p>
-        </div>
-
-        {/* Bottom */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#22204A]">
-          <p className="text-xs text-[#EDEDFF]/25">
+        {/* Bottom bar */}
+        <div className="pt-6 border-t border-[#1A1836] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-[#EDEDFF]/20">
             © {year} kolyb — Tous droits réservés
           </p>
-          <p className="text-xs text-[#EDEDFF]/25 flex items-center gap-1.5">
-            Fait avec <Heart size={11} className="text-[#FF4D6A]" fill="#FF4D6A" /> en France
-            <span className="mx-2 text-[#22204A]">·</span>
-            Hébergé en EU
-            <span className="mx-2 text-[#22204A]">·</span>
-            RGPD ✓
-          </p>
+          <div className="flex items-center gap-5 text-xs text-[#EDEDFF]/20">
+            <span className="flex items-center gap-1.5">
+              Fait avec <Heart size={10} className="text-[#FF4D6A]" fill="#FF4D6A" /> en France
+            </span>
+            <span className="text-[#22204A]">·</span>
+            <span>🇪🇺 Hébergé EU</span>
+            <span className="text-[#22204A]">·</span>
+            <span className="text-[#00D4C8]/70">RGPD ✓</span>
+          </div>
         </div>
+
+        {/* Disclaimer — minimal inline */}
+        <p className="text-[10px] text-[#EDEDFF]/15 text-center mt-5 max-w-2xl mx-auto leading-relaxed">
+          kolyb est un outil de bien-être — pas un dispositif médical. Si tu traverses une période difficile, n&apos;hésite pas à consulter un professionnel de santé.
+        </p>
       </div>
     </footer>
   );

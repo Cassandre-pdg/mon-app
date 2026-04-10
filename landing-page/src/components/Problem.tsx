@@ -61,7 +61,7 @@ export default function Problem() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-8">
           {problems.map((problem, i) => {
             const Icon = problem.icon;
             return (
@@ -70,15 +70,15 @@ export default function Problem() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: i * 0.15 }}
-                className="card-hover p-6 rounded-2xl bg-[#1A1836] border border-[#22204A]"
+                className="card-hover p-8 rounded-2xl bg-[#1A1836] border border-[#22204A]"
               >
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6"
                   style={{ background: problem.bgColor }}
                 >
                   <Icon size={22} style={{ color: problem.color }} />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-lg font-semibold text-white mb-4">
                   {problem.title}
                 </h3>
                 <p className="text-sm text-[#EDEDFF]/55 leading-relaxed">

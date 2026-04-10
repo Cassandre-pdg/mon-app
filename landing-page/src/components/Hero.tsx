@@ -148,19 +148,19 @@ export default function Hero() {
               </p>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+            <form onSubmit={handleSubmit} className="flex flex-col items-center sm:flex-row sm:items-stretch gap-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ton@email.com"
                 required
-                className="flex-1 px-5 py-4 rounded-xl bg-[#1A1836] border border-[#22204A] text-white placeholder-[#EDEDFF]/30 text-sm font-medium focus:outline-none focus:border-[#6D28D9] focus:ring-1 focus:ring-[#6D28D9] transition-all"
+                className="w-full sm:flex-1 px-5 py-4 rounded-xl bg-[#1A1836] border border-[#22204A] text-white placeholder-[#EDEDFF]/45 text-sm font-medium focus:outline-none focus:border-[#6D28D9] focus:ring-1 focus:ring-[#6D28D9] transition-all"
               />
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="flex items-center justify-center gap-2 px-6 py-4 bg-[#6D28D9] hover:bg-[#5B21B6] disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-purple-900/40 whitespace-nowrap"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-[#6D28D9] hover:bg-[#5B21B6] disabled:opacity-60 text-white text-sm font-semibold rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-purple-900/40 whitespace-nowrap"
               >
                 {status === "loading" ? (
                   <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

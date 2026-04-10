@@ -100,7 +100,7 @@ export default function Features() {
         </motion.div>
 
         {/* Feature tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
+        <div className="flex flex-wrap justify-center gap-2.5 mb-14">
           {features.map((f, i) => {
             return (
               <motion.button
@@ -109,7 +109,7 @@ export default function Features() {
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: i * 0.08 }}
                 onClick={() => setActive(i)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   active === i
                     ? "bg-[#6D28D9] text-white shadow-lg shadow-purple-900/30"
                     : "bg-[#1A1836] text-[#EDEDFF]/60 hover:text-white border border-[#22204A] hover:border-[#6D28D9]/40"
