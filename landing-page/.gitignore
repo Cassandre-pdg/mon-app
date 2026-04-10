@@ -1,0 +1,25 @@
+# Next.js
+.next/
+out/
+build/
+
+# Dependencies
+node_modules/
+
+# Env — ne jamais commiter
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel/
+
+# Debug
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
