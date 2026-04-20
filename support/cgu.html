@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conditions Générales d'Utilisation — kolyb</title>
+  <meta name="description" content="Conditions Générales d'Utilisation de l'application kolyb." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:     #0D0B1E;
+      --bg-surface:  #1A1836;
+      --bg-card:     #1E1C3A;
+      --border:      #22204A;
+      --border-mid:  #2E2B5A;
+      --primary:     #6D28D9;
+      --accent:      #8B7FE8;
+      --light:       #C4B5FD;
+      --text-white:  #FFFFFF;
+      --text-soft:   #C4B5FD;
+      --text-muted:  #8B7FE8;
+      --text-dim:    #4A4278;
+      --radius-sm:   8px;
+      --radius-md:   12px;
+      --radius-lg:   18px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-white);
+      min-height: 100vh;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(196,181,253,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 9%,  rgba(196,181,253,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 62%, rgba(196,181,253,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 44%, rgba(139,127,232,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 67% 29%, rgba(196,181,253,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 94% 77%, rgba(196,181,253,0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* HEADER */
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 24px;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 60px;
+    }
+    .logo-group { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; }
+    .logo-text {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-white);
+    }
+    .back-link {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      border: 0.5px solid var(--border-mid);
+      background: var(--bg-surface);
+      padding: 6px 14px;
+      border-radius: 100px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-link:hover { color: var(--light); border-color: var(--accent); }
+
+    /* TITLE BLOCK */
+    .page-title-block {
+      text-align: center;
+      padding: 0 0 56px;
+    }
+    .page-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(109,40,217,0.15);
+      border: 0.5px solid rgba(139,127,232,0.3);
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-white);
+      margin-bottom: 12px;
+    }
+    .page-date {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    /* CONTENT */
+    .legal-content {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 48px;
+    }
+
+    .legal-content h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--light);
+      margin: 40px 0 14px;
+      padding-top: 40px;
+      border-top: 0.5px solid var(--border);
+    }
+    .legal-content h2:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .legal-content h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 24px 0 10px;
+    }
+
+    .legal-content p {
+      font-size: 14px;
+      color: rgba(237,237,255,0.70);
+      margin-bottom: 14px;
+    }
+
+    .legal-content ul {
+      margin: 12px 0 16px 20px;
+      list-style: disc;
+    }
+    .legal-content ul li {
+      font-size: 14px;
+      color: rgba(237,237,255,0.70);
+      margin-bottom: 6px;
+    }
+
+    .legal-content a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .highlight-box {
+      background: rgba(109,40,217,0.12);
+      border: 0.5px solid rgba(139,127,232,0.3);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 14px;
+      color: var(--light);
+    }
+
+    /* FOOTER */
+    .site-footer {
+      text-align: center;
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 0.5px solid var(--border);
+    }
+    .site-footer p { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+    .footer-links { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
+
+    @media (max-width: 600px) {
+      .legal-content { padding: 28px 20px; }
+      .page-title { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <!-- HEADER -->
+    <header class="site-header">
+      <a href="index.html" class="logo-group">
+        <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="12" fill="#1A1836"/>
+          <circle cx="20" cy="20" r="10" stroke="#6D28D9" stroke-width="2"/>
+          <circle cx="20" cy="20" r="5" fill="#8B7FE8"/>
+          <circle cx="20" cy="10" r="2" fill="#C4B5FD"/>
+        </svg>
+        <span class="logo-text">kolyb</span>
+      </a>
+      <a href="index.html" class="back-link">← Support</a>
+    </header>
+
+    <!-- TITLE -->
+    <div class="page-title-block">
+      <div class="page-tag">Légal</div>
+      <h1 class="page-title">Conditions Générales d'Utilisation</h1>
+      <p class="page-date">Dernière mise à jour : avril 2026</p>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="legal-content">
+
+      <div class="highlight-box">
+        kolyb est un outil de bien-être, pas un dispositif médical. Si tu traverses une période difficile, n'hésite pas à consulter un professionnel de santé.
+      </div>
+
+      <h2>1. Objet</h2>
+      <p>Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de l'application mobile et du site web kolyb, édités par Cassandre Pédegas, entreprise individuelle immatriculée en France.</p>
+      <p>En téléchargeant, installant ou utilisant kolyb, tu acceptes sans réserve les présentes CGU. Si tu n'acceptes pas ces conditions, tu ne dois pas utiliser le service.</p>
+
+      <h2>2. Description du service</h2>
+      <p>kolyb est une application de bien-être, de productivité et de mise en réseau dédiée aux entrepreneurs indépendants et freelances. Elle propose notamment :</p>
+      <ul>
+        <li>Un check-in émotionnel matin et soir</li>
+        <li>Un planificateur de journée (3 priorités)</li>
+        <li>Un outil Pomodoro</li>
+        <li>Un suivi du sommeil</li>
+        <li>Une communauté thématique (Le Salon)</li>
+        <li>Un système de badges et de streaks</li>
+      </ul>
+
+      <h2>3. Accès et inscription</h2>
+      <p>L'accès à kolyb nécessite la création d'un compte utilisateur. Tu dois avoir au moins 18 ans pour t'inscrire. Tu t'engages à fournir des informations exactes et à maintenir la confidentialité de tes identifiants.</p>
+      <p>Kolyb se réserve le droit de suspendre ou de supprimer tout compte en cas de violation des présentes CGU.</p>
+
+      <h2>4. Utilisation acceptable</h2>
+      <p>Tu t'engages à utiliser kolyb de manière licite et respectueuse. Il est notamment interdit de :</p>
+      <ul>
+        <li>Publier du contenu illicite, diffamatoire, haineux ou portant atteinte à la vie privée d'autrui</li>
+        <li>Utiliser kolyb à des fins commerciales non autorisées</li>
+        <li>Tenter de contourner les mesures de sécurité de l'application</li>
+        <li>Partager les identifiants de ton compte avec des tiers</li>
+        <li>Collecter des données sur d'autres utilisateurs sans leur consentement</li>
+      </ul>
+
+      <h2>5. Contenu utilisateur</h2>
+      <p>Tu restes propriétaire du contenu que tu publies sur kolyb (posts, check-ins, données personnelles). En publiant du contenu, tu accordes à kolyb une licence non-exclusive, mondiale et gratuite d'utilisation dans le cadre du fonctionnement du service.</p>
+      <p>Tu es seul·e responsable du contenu que tu publies. Kolyb ne saurait être tenu responsable du contenu généré par les utilisateurs.</p>
+
+      <h2>6. Données personnelles</h2>
+      <p>La collecte et le traitement de tes données personnelles sont décrits dans notre <a href="confidentialite.html">Politique de Confidentialité</a>. Kolyb respecte le Règlement Général sur la Protection des Données (RGPD).</p>
+
+      <h2>7. Propriété intellectuelle</h2>
+      <p>L'application kolyb, son logo, ses textes, ses graphiques et son code source sont protégés par les droits de propriété intellectuelle. Toute reproduction, même partielle, est interdite sans autorisation préalable écrite.</p>
+
+      <h2>8. Disponibilité du service</h2>
+      <p>Kolyb s'efforce d'assurer la disponibilité du service 24h/24 et 7j/7, mais ne peut garantir une accessibilité ininterrompue. Des interruptions de service peuvent survenir pour maintenance ou pour des raisons indépendantes de notre volonté.</p>
+
+      <h2>9. Modifications des CGU</h2>
+      <p>Kolyb peut modifier les présentes CGU à tout moment. Les changements significatifs seront notifiés par email ou par notification dans l'application. La poursuite de l'utilisation du service après notification vaut acceptation des nouvelles CGU.</p>
+
+      <h2>10. Résiliation</h2>
+      <p>Tu peux supprimer ton compte à tout moment depuis les Paramètres de l'application. La suppression entraîne l'effacement définitif de tes données personnelles dans un délai de 30 jours.</p>
+
+      <h2>11. Limitation de responsabilité</h2>
+      <p>Kolyb est un outil de bien-être et de productivité. Il ne constitue en aucun cas un dispositif médical, un service de santé mentale ou un service de conseil professionnel. Kolyb décline toute responsabilité en cas de préjudice direct ou indirect résultant de l'utilisation du service.</p>
+
+      <h2>12. Droit applicable et juridiction</h2>
+      <p>Les présentes CGU sont soumises au droit français. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux compétents de Paris seront saisis.</p>
+
+      <h2>13. Contact</h2>
+      <p>Pour toute question relative aux présentes CGU, contacte-nous à : <a href="mailto:hello@kolyb.app">hello@kolyb.app</a></p>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <p>© 2026 kolyb · Tous droits réservés · Fait avec ♥ en France</p>
+      <div class="footer-links">
+        <a href="index.html">Support</a>
+        <a href="mentions-legales.html">Mentions légales</a>
+        <a href="cgu.html">CGU</a>
+        <a href="confidentialite.html">Confidentialité</a>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>

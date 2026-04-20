@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mentions Légales — kolyb</title>
+  <meta name="description" content="Mentions légales de l'application et du site web kolyb." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-deep: #0D0B1E; --bg-surface: #1A1836; --border: #22204A;
+      --border-mid: #2E2B5A; --accent: #8B7FE8; --light: #C4B5FD;
+      --text-white: #FFFFFF; --text-muted: #8B7FE8; --text-dim: #4A4278;
+      --radius-md: 12px; --radius-lg: 18px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg-deep);
+      color: var(--text-white); min-height: 100vh; line-height: 1.7; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(196,181,253,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 9%,  rgba(196,181,253,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 62%, rgba(196,181,253,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 44%, rgba(139,127,232,0.4) 0%, transparent 100%);
+      pointer-events: none; z-index: 0;
+    }
+    .page-wrap { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 0 24px 80px; }
+    .site-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 0 24px; border-bottom: 0.5px solid var(--border); margin-bottom: 60px;
+    }
+    .logo-group { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; }
+    .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-white); }
+    .back-link {
+      font-size: 12px; font-weight: 500; color: var(--text-muted); text-decoration: none;
+      border: 0.5px solid var(--border-mid); background: var(--bg-surface);
+      padding: 6px 14px; border-radius: 100px; transition: color 0.2s, border-color 0.2s;
+    }
+    .back-link:hover { color: var(--light); border-color: var(--accent); }
+    .page-title-block { text-align: center; padding: 0 0 56px; }
+    .page-tag {
+      display: inline-block; font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); background: rgba(109,40,217,0.15);
+      border: 0.5px solid rgba(139,127,232,0.3); padding: 5px 14px;
+      border-radius: 100px; margin-bottom: 24px;
+    }
+    .page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; color: var(--text-white); margin-bottom: 12px; }
+    .page-date { font-size: 13px; color: var(--text-dim); }
+    .legal-content {
+      background: var(--bg-surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 48px;
+    }
+    .legal-content h2 {
+      font-size: 18px; font-weight: 600; color: var(--light);
+      margin: 40px 0 14px; padding-top: 40px; border-top: 0.5px solid var(--border);
+    }
+    .legal-content h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+    .legal-content p { font-size: 14px; color: rgba(237,237,255,0.70); margin-bottom: 10px; }
+    .legal-content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    .info-row { display: flex; gap: 12px; margin-bottom: 8px; }
+    .info-label { font-size: 13px; font-weight: 600; color: var(--light); min-width: 180px; }
+    .info-value { font-size: 13px; color: rgba(237,237,255,0.70); }
+    .site-footer { text-align: center; margin-top: 64px; padding-top: 32px; border-top: 0.5px solid var(--border); }
+    .site-footer p { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+    .footer-links { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
+    @media (max-width: 600px) {
+      .legal-content { padding: 28px 20px; }
+      .page-title { font-size: 26px; }
+      .info-row { flex-direction: column; gap: 2px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <header class="site-header">
+      <a href="index.html" class="logo-group">
+        <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="12" fill="#1A1836"/>
+          <circle cx="20" cy="20" r="10" stroke="#6D28D9" stroke-width="2"/>
+          <circle cx="20" cy="20" r="5" fill="#8B7FE8"/>
+          <circle cx="20" cy="10" r="2" fill="#C4B5FD"/>
+        </svg>
+        <span class="logo-text">kolyb</span>
+      </a>
+      <a href="index.html" class="back-link">← Support</a>
+    </header>
+
+    <div class="page-title-block">
+      <div class="page-tag">Légal</div>
+      <h1 class="page-title">Mentions Légales</h1>
+      <p class="page-date">Dernière mise à jour : avril 2026</p>
+    </div>
+
+    <div class="legal-content">
+
+      <h2>Éditeur de l'application</h2>
+      <div class="info-row"><span class="info-label">Dénomination</span><span class="info-value">Cassandre Pédegas</span></div>
+      <div class="info-row"><span class="info-label">Forme juridique</span><span class="info-value">Entreprise individuelle</span></div>
+      <div class="info-row"><span class="info-label">Pays</span><span class="info-value">France</span></div>
+      <div class="info-row"><span class="info-label">Email</span><span class="info-value"><a href="mailto:hello@kolyb.app">hello@kolyb.app</a></span></div>
+
+      <h2>Directeur de la publication</h2>
+      <p>Cassandre Pédegas</p>
+
+      <h2>Hébergement</h2>
+      <div class="info-row"><span class="info-label">Application mobile</span><span class="info-value">Supabase (Frankfurt, EU)</span></div>
+      <div class="info-row"><span class="info-label">Site web</span><span class="info-value">Vercel Inc. — 340 Pine Street, San Francisco, CA</span></div>
+      <div class="info-row"><span class="info-label">Données</span><span class="info-value">Hébergement EU uniquement (RGPD)</span></div>
+
+      <h2>Propriété intellectuelle</h2>
+      <p>L'ensemble du contenu présent sur l'application et le site web kolyb (textes, graphiques, logo, icônes, illustrations, code source) est protégé par le droit de la propriété intellectuelle et appartient à Cassandre Pédegas, sauf mention contraire.</p>
+      <p>Toute reproduction, représentation, modification, publication ou adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite sans autorisation préalable écrite.</p>
+
+      <h2>Données personnelles</h2>
+      <p>Le traitement de tes données personnelles est décrit dans notre <a href="confidentialite.html">Politique de Confidentialité</a>. Conformément au RGPD, tu peux exercer tes droits en contactant : <a href="mailto:hello@kolyb.app">hello@kolyb.app</a>.</p>
+
+      <h2>Cookies</h2>
+      <p>L'application mobile kolyb n'utilise pas de cookies. Le site web utilise uniquement des cookies techniques nécessaires à son fonctionnement, sans tracking ni publicité.</p>
+
+      <h2>Loi applicable</h2>
+      <p>Le présent site et l'application kolyb sont soumis au droit français. Tout litige relatif à l'utilisation du service relève de la compétence exclusive des tribunaux français.</p>
+
+      <h2>Contact</h2>
+      <p>Pour toute question : <a href="mailto:hello@kolyb.app">hello@kolyb.app</a></p>
+
+    </div>
+
+    <footer class="site-footer">
+      <p>© 2026 kolyb · Tous droits réservés · Fait avec ♥ en France</p>
+      <div class="footer-links">
+        <a href="index.html">Support</a>
+        <a href="mentions-legales.html">Mentions légales</a>
+        <a href="cgu.html">CGU</a>
+        <a href="confidentialite.html">Confidentialité</a>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>

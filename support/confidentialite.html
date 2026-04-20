@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Politique de Confidentialité — kolyb</title>
+  <meta name="description" content="Politique de confidentialité et protection des données personnelles de l'application kolyb." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:     #0D0B1E;
+      --bg-surface:  #1A1836;
+      --bg-card:     #1E1C3A;
+      --border:      #22204A;
+      --border-mid:  #2E2B5A;
+      --primary:     #6D28D9;
+      --accent:      #8B7FE8;
+      --light:       #C4B5FD;
+      --text-white:  #FFFFFF;
+      --text-soft:   #C4B5FD;
+      --text-muted:  #8B7FE8;
+      --text-dim:    #4A4278;
+      --radius-sm:   8px;
+      --radius-md:   12px;
+      --radius-lg:   18px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-white);
+      min-height: 100vh;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(196,181,253,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 9%,  rgba(196,181,253,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 62%, rgba(196,181,253,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 44%, rgba(139,127,232,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 67% 29%, rgba(196,181,253,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 94% 77%, rgba(196,181,253,0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 24px;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 60px;
+    }
+    .logo-group { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; }
+    .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-white); }
+    .back-link {
+      font-size: 12px; font-weight: 500; color: var(--text-muted);
+      text-decoration: none; border: 0.5px solid var(--border-mid);
+      background: var(--bg-surface); padding: 6px 14px; border-radius: 100px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-link:hover { color: var(--light); border-color: var(--accent); }
+
+    .page-title-block { text-align: center; padding: 0 0 56px; }
+    .page-tag {
+      display: inline-block; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent);
+      background: rgba(109,40,217,0.15); border: 0.5px solid rgba(139,127,232,0.3);
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 24px;
+    }
+    .page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; color: var(--text-white); margin-bottom: 12px; }
+    .page-date { font-size: 13px; color: var(--text-dim); }
+
+    .legal-content {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 48px;
+    }
+    .legal-content h2 {
+      font-size: 18px; font-weight: 600; color: var(--light);
+      margin: 40px 0 14px; padding-top: 40px; border-top: 0.5px solid var(--border);
+    }
+    .legal-content h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+    .legal-content h3 { font-size: 15px; font-weight: 600; color: var(--accent); margin: 24px 0 10px; }
+    .legal-content p { font-size: 14px; color: rgba(237,237,255,0.70); margin-bottom: 14px; }
+    .legal-content ul { margin: 12px 0 16px 20px; list-style: disc; }
+    .legal-content ul li { font-size: 14px; color: rgba(237,237,255,0.70); margin-bottom: 6px; }
+    .legal-content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+    .highlight-box {
+      background: rgba(109,40,217,0.12); border: 0.5px solid rgba(139,127,232,0.3);
+      border-radius: var(--radius-md); padding: 16px 20px; margin: 20px 0;
+      font-size: 14px; color: var(--light);
+    }
+
+    .data-table {
+      width: 100%; border-collapse: collapse; margin: 16px 0 24px;
+    }
+    .data-table th {
+      text-align: left; font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-muted); padding: 10px 14px;
+      border-bottom: 0.5px solid var(--border-mid);
+    }
+    .data-table td {
+      font-size: 13px; color: rgba(237,237,255,0.65); padding: 10px 14px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .site-footer { text-align: center; margin-top: 64px; padding-top: 32px; border-top: 0.5px solid var(--border); }
+    .site-footer p { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+    .footer-links { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
+
+    @media (max-width: 600px) {
+      .legal-content { padding: 28px 20px; }
+      .page-title { font-size: 26px; }
+      .data-table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <header class="site-header">
+      <a href="index.html" class="logo-group">
+        <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="12" fill="#1A1836"/>
+          <circle cx="20" cy="20" r="10" stroke="#6D28D9" stroke-width="2"/>
+          <circle cx="20" cy="20" r="5" fill="#8B7FE8"/>
+          <circle cx="20" cy="10" r="2" fill="#C4B5FD"/>
+        </svg>
+        <span class="logo-text">kolyb</span>
+      </a>
+      <a href="index.html" class="back-link">← Support</a>
+    </header>
+
+    <div class="page-title-block">
+      <div class="page-tag">RGPD</div>
+      <h1 class="page-title">Politique de Confidentialité</h1>
+      <p class="page-date">Dernière mise à jour : avril 2026</p>
+    </div>
+
+    <div class="legal-content">
+
+      <div class="highlight-box">
+        🇪🇺 Toutes tes données sont hébergées en Europe (Frankfurt, EU) et traitées conformément au RGPD. Nous ne vendons jamais tes données. Jamais.
+      </div>
+
+      <h2>1. Responsable du traitement</h2>
+      <p>Le responsable du traitement des données à caractère personnel est :</p>
+      <p><strong style="color: var(--light);">Cassandre Pédegas</strong><br/>
+      Entreprise individuelle — France<br/>
+      Email : <a href="mailto:hello@kolyb.app">hello@kolyb.app</a></p>
+
+      <h2>2. Données collectées</h2>
+      <p>Nous collectons uniquement les données nécessaires au fonctionnement du service :</p>
+
+      <h3>Données d'inscription</h3>
+      <ul>
+        <li>Adresse email</li>
+        <li>Prénom (optionnel)</li>
+        <li>Méthode d'authentification (email, Google, Apple)</li>
+      </ul>
+
+      <h3>Données d'utilisation</h3>
+      <ul>
+        <li>Check-ins émotionnels (matin et soir) — <strong>données sensibles chiffrées</strong></li>
+        <li>Tâches du planificateur</li>
+        <li>Données de sommeil — <strong>données sensibles chiffrées</strong></li>
+        <li>Posts et interactions dans la communauté</li>
+        <li>Streaks et badges</li>
+      </ul>
+
+      <h3>Données techniques</h3>
+      <ul>
+        <li>Adresse IP (anonymisée)</li>
+        <li>Type d'appareil et version de l'OS</li>
+        <li>Logs d'erreur anonymisés</li>
+      </ul>
+
+      <h2>3. Finalités du traitement</h2>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Finalité</th>
+            <th>Base légale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fourniture du service kolyb</td>
+            <td>Exécution du contrat</td>
+          </tr>
+          <tr>
+            <td>Personnalisation de l'expérience</td>
+            <td>Intérêt légitime</td>
+          </tr>
+          <tr>
+            <td>Envoi de notifications push</td>
+            <td>Consentement (opt-in)</td>
+          </tr>
+          <tr>
+            <td>Amélioration du service</td>
+            <td>Intérêt légitime</td>
+          </tr>
+          <tr>
+            <td>Sécurité et prévention des fraudes</td>
+            <td>Obligation légale</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>4. Durée de conservation</h2>
+      <ul>
+        <li><strong>Données de compte :</strong> durée de vie du compte + 30 jours après suppression</li>
+        <li><strong>Check-ins et données de bien-être :</strong> 12 mois glissants (suppression automatique des données de plus d'un an)</li>
+        <li><strong>Logs techniques :</strong> 90 jours maximum</li>
+        <li><strong>Données de facturation :</strong> 10 ans (obligation légale)</li>
+      </ul>
+
+      <h2>5. Partage des données</h2>
+      <p>Nous ne vendons, ne louons et ne partageons jamais tes données personnelles à des fins commerciales. Tes données peuvent être transmises à :</p>
+      <ul>
+        <li><strong>Supabase</strong> (hébergement BDD, EU Frankfurt) — sous-traitant</li>
+        <li><strong>Firebase / Google</strong> (notifications push) — sous-traitant</li>
+        <li><strong>Apple</strong> (authentification Sign in with Apple) — sous-traitant</li>
+      </ul>
+      <p>Tous nos sous-traitants sont liés par des accords de traitement des données conformes au RGPD.</p>
+
+      <h2>6. Tes droits</h2>
+      <p>Conformément au RGPD, tu disposes des droits suivants :</p>
+      <ul>
+        <li><strong>Droit d'accès :</strong> obtenir une copie de tes données</li>
+        <li><strong>Droit de rectification :</strong> corriger des données inexactes</li>
+        <li><strong>Droit à l'effacement :</strong> supprimer ton compte et tes données (dans les 30 jours)</li>
+        <li><strong>Droit à la portabilité :</strong> recevoir tes données dans un format structuré</li>
+        <li><strong>Droit d'opposition :</strong> t'opposer à certains traitements</li>
+        <li><strong>Droit à la limitation :</strong> limiter le traitement de tes données</li>
+      </ul>
+      <p>Pour exercer ces droits : <a href="mailto:hello@kolyb.app">hello@kolyb.app</a> — Réponse sous 30 jours.</p>
+      <p>Tu peux également introduire une réclamation auprès de la <a href="https://www.cnil.fr" target="_blank" rel="noopener">CNIL</a>.</p>
+
+      <h2>7. Sécurité</h2>
+      <p>Nous mettons en œuvre des mesures de sécurité adaptées :</p>
+      <ul>
+        <li>Chiffrement des données sensibles (check-ins, sommeil) au repos et en transit (TLS)</li>
+        <li>Row Level Security (RLS) activé sur toutes les tables de la base de données</li>
+        <li>Accès aux données restreint au strict nécessaire</li>
+        <li>Authentification forte requise pour l'accès aux systèmes</li>
+      </ul>
+
+      <h2>8. Cookies et traceurs</h2>
+      <p>L'application mobile kolyb n'utilise pas de cookies. Le site web landing page utilise uniquement des cookies techniques strictement nécessaires au fonctionnement du service. Aucun cookie publicitaire ou de tracking tiers n'est utilisé.</p>
+
+      <h2>9. Modifications de cette politique</h2>
+      <p>Toute modification significative de cette politique sera notifiée par email avec un délai de préavis de 15 jours. La date de mise à jour est toujours indiquée en haut de ce document.</p>
+
+      <h2>10. Contact</h2>
+      <p>Pour toute question relative à tes données personnelles :<br/>
+      <a href="mailto:hello@kolyb.app">hello@kolyb.app</a></p>
+
+    </div>
+
+    <footer class="site-footer">
+      <p>© 2026 kolyb · Tous droits réservés · Fait avec ♥ en France</p>
+      <div class="footer-links">
+        <a href="index.html">Support</a>
+        <a href="mentions-legales.html">Mentions légales</a>
+        <a href="cgu.html">CGU</a>
+        <a href="confidentialite.html">Confidentialité</a>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>

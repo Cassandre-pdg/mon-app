@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — kolyb</title>
+  <meta name="description" content="Centre d'aide officiel de l'application kolyb. FAQ, contact support, conditions d'utilisation et politique de confidentialité." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:     #0D0B1E;
+      --bg-surface:  #1A1836;
+      --bg-card:     #1E1C3A;
+      --border:      #22204A;
+      --border-mid:  #2E2B5A;
+      --primary:     #6D28D9;
+      --accent:      #8B7FE8;
+      --light:       #C4B5FD;
+      --text-white:  #FFFFFF;
+      --text-soft:   #C4B5FD;
+      --text-muted:  #8B7FE8;
+      --text-dim:    #4A4278;
+      --radius-sm:   8px;
+      --radius-md:   12px;
+      --radius-lg:   18px;
+      --radius-xl:   24px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-white);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── STARS background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(196,181,253,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 9%, rgba(196,181,253,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 62%, rgba(196,181,253,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 44%, rgba(139,127,232,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 23% 81%, rgba(196,181,253,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 67% 29%, rgba(196,181,253,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 53%, rgba(139,127,232,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 94% 77%, rgba(196,181,253,0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 35% 40%, rgba(196,181,253,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 90%, rgba(139,127,232,0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── LAYOUT ── */
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 24px;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 60px;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .logo-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-white);
+    }
+
+    .header-badge {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-mid);
+      padding: 5px 12px;
+      border-radius: 100px;
+      text-transform: uppercase;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 0 0 64px;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(109,40,217,0.15);
+      border: 0.5px solid rgba(139,127,232,0.3);
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(30px, 5vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-white);
+      margin-bottom: 16px;
+      line-height: 1.1;
+    }
+
+    .hero h1 span {
+      color: var(--accent);
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-soft);
+      max-width: 500px;
+      margin: 0 auto;
+      opacity: 0.8;
+    }
+
+    /* ── SECTION TITLES ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-white);
+      margin-bottom: 8px;
+    }
+
+    .section-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 0.5px solid var(--border);
+      margin: 64px 0;
+    }
+
+    /* ── APP INFO CARD ── */
+    .app-info-card {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border-mid);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .app-icon-large {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .app-info-meta h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .app-info-meta .tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+
+    .app-info-meta .desc {
+      font-size: 14px;
+      color: var(--text-soft);
+      opacity: 0.85;
+      line-height: 1.7;
+    }
+
+    .store-badges {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .store-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-white);
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-mid);
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .store-badge:hover {
+      border-color: var(--accent);
+      background: rgba(109,40,217,0.12);
+    }
+
+    .store-badge svg {
+      width: 14px;
+      height: 14px;
+      opacity: 0.8;
+    }
+
+    /* ── INFO PILLS ── */
+    .info-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-soft);
+      background: rgba(34,32,74,0.6);
+      border: 0.5px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 100px;
+    }
+
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* ── FAQ ── */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .faq-item {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .faq-item:hover {
+      border-color: var(--border-mid);
+    }
+
+    .faq-item.open {
+      border-color: rgba(139,127,232,0.4);
+    }
+
+    .faq-q {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-white);
+    }
+
+    .faq-q:hover { color: var(--light); }
+
+    .faq-arrow {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(109,40,217,0.2);
+      border: 0.5px solid rgba(139,127,232,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.25s, background 0.2s;
+    }
+
+    .faq-item.open .faq-arrow {
+      transform: rotate(180deg);
+      background: rgba(109,40,217,0.4);
+    }
+
+    .faq-arrow svg {
+      width: 9px;
+      height: 9px;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 20px;
+    }
+
+    .faq-a-inner {
+      font-size: 14px;
+      color: var(--text-soft);
+      opacity: 0.9;
+      line-height: 1.75;
+      padding-bottom: 20px;
+      border-top: 0.5px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .faq-item.open .faq-a {
+      max-height: 300px;
+    }
+
+    .faq-placeholder {
+      font-size: 14px;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    /* ── CONTACT ── */
+    .contact-card {
+      background: linear-gradient(135deg, rgba(109,40,217,0.18) 0%, rgba(26,24,54,0.95) 100%);
+      border: 0.5px solid rgba(139,127,232,0.35);
+      border-radius: var(--radius-xl);
+      padding: 40px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contact-card::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(109,40,217,0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .contact-icon {
+      width: 52px;
+      height: 52px;
+      background: rgba(109,40,217,0.25);
+      border: 0.5px solid rgba(139,127,232,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .contact-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .contact-card h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+
+    .contact-card p {
+      font-size: 14px;
+      color: var(--text-soft);
+      opacity: 0.85;
+      max-width: 400px;
+      margin: 0 auto 28px;
+    }
+
+    .contact-email-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-white);
+      background: var(--primary);
+      padding: 12px 28px;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+
+    .contact-email-btn:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .contact-email-btn svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: white;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .response-time {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 16px;
+    }
+
+    .response-time-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    /* ── LEGAL LINKS ── */
+    .legal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .legal-card {
+      background: var(--bg-surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .legal-card:hover {
+      border-color: var(--accent);
+      background: rgba(109,40,217,0.1);
+    }
+
+    .legal-card-icon {
+      width: 38px;
+      height: 38px;
+      background: rgba(109,40,217,0.18);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .legal-card-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .legal-card-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .legal-card-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-white);
+    }
+
+    .legal-card-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .legal-card-arrow {
+      margin-left: auto;
+      opacity: 0.3;
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      border-top: 0.5px solid var(--border);
+      padding-top: 32px;
+      margin-top: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-logo {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-white);
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero          { animation: fadeUp 0.5s ease both; }
+    .app-info-card { animation: fadeUp 0.5s 0.1s ease both; }
+    .info-pills    { animation: fadeUp 0.5s 0.15s ease both; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 580px) {
+      .app-info-card {
+        grid-template-columns: 1fr;
+      }
+      .app-icon-large { width: 56px; height: 56px; }
+      .contact-card { padding: 28px 20px; }
+      .site-footer { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- ══ HEADER ══ -->
+  <header class="site-header">
+    <div class="logo-group">
+      <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="40" height="40" rx="10" fill="#1A1836"/>
+        <path d="M20 10 C20 10 13.5 20 13.5 28 L26.5 28 C26.5 20 20 10 20 10Z" fill="white"/>
+        <path d="M20 10 C20 10 17 15 17 20 L23 20 C23 15 20 10 20 10Z" fill="white"/>
+        <path d="M13.5 26.5 C13.5 26.5 9 29 9 31.5 L13.5 30 Z" fill="white"/>
+        <path d="M26.5 26.5 C26.5 26.5 31 29 31 31.5 L26.5 30 Z" fill="white"/>
+        <circle cx="20" cy="26" r="3" fill="#1A1836"/>
+        <circle cx="20" cy="26" r="1.8" fill="#8B7FE8"/>
+        <path d="M17.5 30 C17.5 30 18.2 32.5 19 34 C19.5 35 20 35.5 20 35.5 C20 35.5 20.5 35 21 34 C21.8 32.5 22.5 30 22.5 30 Z" fill="#8B7FE8" opacity="0.6"/>
+      </svg>
+      <span class="logo-text">kolyb</span>
+    </div>
+    <span class="header-badge">Centre de support</span>
+  </header>
+
+  <!-- ══ HERO ══ -->
+  <section class="hero">
+    <div class="hero-tag">Support &amp; Aide</div>
+    <h1>On est là pour<br/><span>ton élan.</span></h1>
+    <p>Retrouve ici toutes les infos sur l'application, les réponses aux questions fréquentes, et comment nous contacter.</p>
+  </section>
+
+  <!-- ══ APP INFO ══ -->
+  <section>
+    <p class="section-label">L'application</p>
+
+    <div class="app-info-card">
+      <div class="app-icon-large">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+          <path d="M24 8 C24 8 15 21 15 33 L33 33 C33 21 24 8 24 8Z" fill="white"/>
+          <path d="M24 8 C24 8 20 15 20 22 L28 22 C28 15 24 8 24 8Z" fill="white"/>
+          <path d="M15 30.5 C15 30.5 8 34.5 8 38.5 L15 36 Z" fill="white"/>
+          <path d="M33 30.5 C33 30.5 40 34.5 40 38.5 L33 36 Z" fill="white"/>
+          <circle cx="24" cy="30" r="5" fill="#6D28D9"/>
+          <circle cx="24" cy="30" r="3" fill="#C4B5FD" opacity="0.7"/>
+          <path d="M20 39 C20 39 21.5 43.5 23 46 C23.5 47 24 47.5 24 47.5 C24 47.5 24.5 47 25 46 C26.5 43.5 28 39 28 39 Z" fill="white" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="app-info-meta">
+        <h2>kolyb</h2>
+        <p class="tagline">Ton élan, au quotidien. — Compagnon des entrepreneurs.</p>
+        <p class="desc">
+          kolyb est une application mobile conçue pour accompagner les entrepreneurs dans leur quotidien : routines, élan, progression. Disponible sur iOS et Android.
+          <!-- MODIFIER : ajoutez ici une description plus complète de votre app si souhaité -->
+        </p>
+        <div class="store-badges">
+          <a href="----" class="store-badge">
+            <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.5 1.5L7 4 4.5 1.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M7 4V9.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M2 7.5C2 7.5 1 8 1 9.5C1 11.5 2.5 12.5 7 12.5C11.5 12.5 13 11.5 13 9.5C13 8 12 7.5 12 7.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            App Store
+          </a>
+          <a href="----" class="store-badge">
+            <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.5 1.5L7 4 4.5 1.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M7 4V9.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+              <path d="M2 7.5C2 7.5 1 8 1 9.5C1 11.5 2.5 12.5 7 12.5C11.5 12.5 13 11.5 13 9.5C13 8 12 7.5 12 7.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            Google Play
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-pills">
+      <span class="pill"><span class="pill-dot"></span>Version actuelle : <strong>----</strong></span>
+      <span class="pill"><span class="pill-dot"></span>iOS ---- · Android ----</span>
+      <span class="pill"><span class="pill-dot"></span>Langue : Français</span>
+      <span class="pill"><span class="pill-dot"></span>Gratuit · Achats intégrés</span>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ══ FAQ ══ -->
+  <section>
+    <p class="section-label">Foire aux questions</p>
+    <h2 class="section-title">Questions fréquentes</h2>
+    <p class="section-sub">Les réponses aux questions les plus courantes sur kolyb.</p>
+
+    <div class="faq-list" id="faq">
+
+      <!-- FAQ 1 -->
+      <div class="faq-item" data-index="0">
+        <button class="faq-q" onclick="toggleFaq(0)">
+          Comment créer mon compte kolyb ?
+          <span class="faq-arrow"><svg viewBox="0 0 10 10"><polyline points="2,3 5,7 8,3"/></svg></span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner faq-placeholder">---- (à remplir)</div>
+        </div>
+      </div>
+
+      <!-- FAQ 2 -->
+      <div class="faq-item" data-index="1">
+        <button class="faq-q" onclick="toggleFaq(1)">
+          L'application est-elle gratuite ?
+          <span class="faq-arrow"><svg viewBox="0 0 10 10"><polyline points="2,3 5,7 8,3"/></svg></span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner faq-placeholder">---- (à remplir)</div>
+        </div>
+      </div>
+
+      <!-- FAQ 3 -->
+      <div class="faq-item" data-index="2">
+        <button class="faq-q" onclick="toggleFaq(2)">
+          Comment réinitialiser mon mot de passe ?
+          <span class="faq-arrow"><svg viewBox="0 0 10 10"><polyline points="2,3 5,7 8,3"/></svg></span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner faq-placeholder">---- (à remplir)</div>
+        </div>
+      </div>
+
+      <!-- FAQ 4 -->
+      <div class="faq-item" data-index="3">
+        <button class="faq-q" onclick="toggleFaq(3)">
+          Mes données sont-elles sécurisées et confidentielles ?
+          <span class="faq-arrow"><svg viewBox="0 0 10 10"><polyline points="2,3 5,7 8,3"/></svg></span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">
+            Oui. kolyb respecte le RGPD et ne vend jamais vos données. Vos informations sont utilisées uniquement pour faire fonctionner l'application. Pour en savoir plus, consultez notre <a href="#legal" style="color: var(--accent);">politique de confidentialité</a>.
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ 5 -->
+      <div class="faq-item" data-index="4">
+        <button class="faq-q" onclick="toggleFaq(4)">
+          Comment supprimer mon compte ?
+          <span class="faq-arrow"><svg viewBox="0 0 10 10"><polyline points="2,3 5,7 8,3"/></svg></span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner faq-placeholder">---- (à remplir)</div>
+        </div>
+      </div>
+
+      <!-- FAQ 6 -->
+      <div class="faq-item" data-index="5">
+        <button class="faq-q" onclick="toggleFaq(5)">
+          L'application fonctionne-t-elle hors ligne ?
+          <span class="faq-arrow"><svg viewBox="0 0 10 10"><polyline points="2,3 5,7 8,3"/></svg></span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner faq-placeholder">---- (à remplir)</div>
+        </div>
+      </div>
+
+      <!-- FAQ 7 -->
+      <div class="faq-item" data-index="6">
+        <button class="faq-q" onclick="toggleFaq(6)">
+          Comment signaler un bug ou un problème technique ?
+          <span class="faq-arrow"><svg viewBox="0 0 10 10"><polyline points="2,3 5,7 8,3"/></svg></span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner">
+            Écris-nous directement à <a href="mailto:support@kolyb.app" style="color: var(--accent);">support@kolyb.app</a> en décrivant le problème, ton appareil et ta version iOS/Android. On répond en général sous 48h.
+            <!-- MODIFIER : remplacez l'adresse email si nécessaire -->
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ 8 — placeholder libre -->
+      <div class="faq-item" data-index="7">
+        <button class="faq-q" onclick="toggleFaq(7)">
+          ---- (question à ajouter)
+          <span class="faq-arrow"><svg viewBox="0 0 10 10"><polyline points="2,3 5,7 8,3"/></svg></span>
+        </button>
+        <div class="faq-a">
+          <div class="faq-a-inner faq-placeholder">---- (à remplir)</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ══ CONTACT ══ -->
+  <section id="contact">
+    <p class="section-label">Nous écrire</p>
+
+    <div class="contact-card">
+      <div class="contact-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <h2>Une question ? On répond.</h2>
+      <p>Notre équipe support est disponible du lundi au vendredi. On s'engage à répondre sous 48h ouvrées.</p>
+      <a href="mailto:support@kolyb.app" class="contact-email-btn">
+        <!-- MODIFIER : remplacez par votre vraie adresse email support -->
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        support@kolyb.app
+      </a>
+      <div class="response-time">
+        <span class="response-time-dot"></span>
+        Réponse habituelle sous 48h ouvrées
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ══ DOCUMENTS LÉGAUX ══ -->
+  <section id="legal">
+    <p class="section-label">Documents légaux</p>
+    <h2 class="section-title">Légal &amp; confidentialité</h2>
+    <p class="section-sub">Tous les documents encadrant l'utilisation de kolyb.</p>
+
+    <div class="legal-grid">
+
+      <a href="----" class="legal-card" target="_blank">
+        <!-- MODIFIER : remplacez href par l'URL de votre Politique de confidentialité -->
+        <div class="legal-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="legal-card-text">
+          <span class="legal-card-label">Politique de confidentialité</span>
+          <span class="legal-card-sub">Données &amp; RGPD</span>
+        </div>
+        <span class="legal-card-arrow">↗</span>
+      </a>
+
+      <a href="----" class="legal-card" target="_blank">
+        <!-- MODIFIER : remplacez href par l'URL de vos CGU -->
+        <div class="legal-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="legal-card-text">
+          <span class="legal-card-label">Conditions générales d'utilisation</span>
+          <span class="legal-card-sub">CGU &amp; règles d'usage</span>
+        </div>
+        <span class="legal-card-arrow">↗</span>
+      </a>
+
+      <a href="----" class="legal-card" target="_blank">
+        <!-- MODIFIER : optionnel — ajoutez ou supprimez cette carte -->
+        <div class="legal-card-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        </div>
+        <div class="legal-card-text">
+          <span class="legal-card-label">Mentions légales</span>
+          <span class="legal-card-sub">Éditeur &amp; hébergement</span>
+        </div>
+        <span class="legal-card-arrow">↗</span>
+      </a>
+
+      <a href="----" class="legal-card" target="_blank">
+        <!-- MODIFIER : optionnel — politique de cookies ou autre -->
+        <div class="legal-card-icon">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="legal-card-text">
+          <span class="legal-card-label">Gestion des données</span>
+          <span class="legal-card-sub">Supprimer mon compte</span>
+        </div>
+        <span class="legal-card-arrow">↗</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="site-footer">
+    <div>
+      <div class="footer-logo">kolyb</div>
+      <p class="footer-text" style="margin-top:4px;">Ton élan, au quotidien.</p>
+    </div>
+    <div>
+      <p class="footer-text">© 2025 kolyb. Tous droits réservés.<!-- MODIFIER : ajustez l'année et la raison sociale --></p>
+    </div>
+    <div class="footer-links">
+      <a href="#contact">Contact</a>
+      <a href="----">CGU</a>
+      <a href="----">Confidentialité</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  function toggleFaq(index) {
+    const items = document.querySelectorAll('.faq-item');
+    const item = items[index];
+    const isOpen = item.classList.contains('open');
+    items.forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+
+</body>
+</html>
