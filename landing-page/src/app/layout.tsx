@@ -23,6 +23,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Kolyb" }],
   creator: "Kolyb",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/kolyb_icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/kolyb_icon.svg",
+  },
   openGraph: {
     type: "website",
     locale: "fr_FR",
@@ -30,12 +37,21 @@ export const metadata: Metadata = {
     description:
       "L'app compagnon des entrepreneurs indépendants. Check-in, planificateur, sommeil, communauté, tout en un.",
     siteName: "kolyb",
+    images: [
+      {
+        url: "/kolyb_icon.svg",
+        width: 1024,
+        height: 1024,
+        alt: "kolyb — Ton élan, au quotidien.",
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "kolyb : Ton élan, au quotidien.",
     description:
       "L'app compagnon des entrepreneurs indépendants. Avance à ton rythme, jamais seul.",
+    images: ["/kolyb_icon.svg"],
   },
   robots: {
     index: true,

@@ -101,14 +101,21 @@ body {
 /* ─── SECTION HERO ─────────────────────────────────────── */
 
 #hero-form{
-  padding-top: 15px;
+  padding-top: 12px;
+  padding-bottom: 16px;
 }
 .badge-hero{
-  margin: 10px auto 18px;
+  margin: 10px auto 12px;
   gap: 14px;
 }
 .badgess{
-  padding: 8px 12px;
+  padding: 6px 12px;
+}
+.hero-text{
+  margin: 12px auto;
+}
+.icon-hero{
+  margin: 15px auto 20px;
 }
 /* ─── SECTION HEADER ─────────────────────────────────────── */
 
@@ -149,9 +156,11 @@ body {
   max-width: 480px;
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: 10px;
 }
 .badge-pbm {
-  margin-top: 20px;
+  margin-top: 35px;
+  padding: 7px 14px;
 }
 /* ─── CARDS ──────────────────────────────────────────────── */
 
@@ -280,7 +289,7 @@ body {
 }
 .badge-feat
 {
-  margin-bottom: 15px;
+  margin-bottom: 25px;
 }
 /* ─── FORM INPUTS ────────────────────────────────────────── */
 /*
@@ -498,8 +507,9 @@ body {
 /* ─── FEATURE TABS ───────────────────────────────────────── */
 
 .feature-tab {
-  padding: 10px 20px;
-  border-radius: 12px;
+  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: 9999px;
 }
 
 /* ─── FAQ STYLES — redesign 2026 ─────────────────────────── */
@@ -573,7 +583,7 @@ h3{
 }
 
 .separator{
-  margin: 15px auto;
+  margin: 25px auto;
 }
 
 .announce {
@@ -581,7 +591,8 @@ h3{
 }
 
 .footer-princ{
-  padding: 20px auto 15px;
+  padding-top: 20px;
+  padding-bottom: 22px;
 }
 
 .sous-titre-foot{

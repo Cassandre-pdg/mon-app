@@ -83,7 +83,7 @@ export default function Hero() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex justify-center mb-10"
+          className="icon-hero flex justify-center mb-10"
         >
           <KolybIcon size={96} variant="violet" animate={true} />
         </motion.div>
@@ -105,7 +105,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-lg md:text-l text-[#EDEDFF]/65 leading-relaxed mb-8"
+          className="hero-text text-lg md:text-l text-[#EDEDFF]/65 leading-relaxed mb-8"
         >
           kolyb réunit tout ce dont tu as besoin pour avancer, à ton rythme,{" "}
           <span className="text-[#C4B5FD] font-medium">jamais seul·e.</span>
