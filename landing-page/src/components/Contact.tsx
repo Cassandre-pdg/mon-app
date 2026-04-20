@@ -182,7 +182,7 @@ export default function Contact() {
                       value={form.firstName}
                       onChange={handleChange}
                       placeholder="Alex"
-                      className="input input-dark"
+                      className="input input-dark input-form"
                     />
                   </div>
                   <div className="field">
@@ -194,7 +194,7 @@ export default function Contact() {
                       onChange={handleChange}
                       placeholder="alex@freelance.fr"
                       required
-                      className="input input-dark"
+                      className="input input-dark input-form"
                     />
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function Contact() {
                     name="subject"
                     value={form.subject}
                     onChange={handleChange}
-                    className="input input-dark appearance-none cursor-pointer"
+                    className="input input-dark input-form appearance-none cursor-pointer"
                   >
                     {subjects.map((s) => (
                       <option key={s} value={s} className="bg-[#1A1836]">
@@ -224,7 +224,7 @@ export default function Contact() {
                     required
                     rows={5}
                     placeholder="Dis-nous tout…"
-                    className="input input-dark resize-none"
+                    className="input input-dark input-form resize-none"
                   />
                 </div>
 

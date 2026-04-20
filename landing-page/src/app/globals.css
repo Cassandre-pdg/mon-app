@@ -345,6 +345,10 @@ body {
   box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.14);
 }
 
+.input-form {
+  border-radius: 18px;
+}
+
 /* ─── DIVIDER ────────────────────────────────────────────── */
 
 .divider {
@@ -583,7 +587,7 @@ h3{
 }
 
 .separator{
-  margin: 25px auto;
+  margin: 45px auto;
 }
 
 .announce {
@@ -591,8 +595,8 @@ h3{
 }
 
 .footer-princ{
-  padding-top: 20px;
-  padding-bottom: 22px;
+  padding-top: 30px;
+  padding-bottom: 35;
 }
 
 .sous-titre-foot{
