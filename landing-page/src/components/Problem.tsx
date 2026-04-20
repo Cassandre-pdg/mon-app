@@ -11,7 +11,7 @@ const problems = [
     bgColor: "rgba(255,77,106,0.1)",
     title: "Trop d'apps, pas assez de clarté",
     description:
-      "Tu jonglais entre Notion, Todoist, Apple Health, Slack et ton journal papier. Résultat : tu passes plus de temps à organiser qu'à avancer.",
+      "Tu jongles entre Notion, Todoist, Apple Health, Slack et ton journal papier. Résultat : tu passes plus de temps à organiser qu'à avancer.",
   },
   {
     icon: Users,
@@ -90,7 +90,7 @@ export default function Problem() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="mt-14 text-center"
         >
-          <div className="inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-[#6D28D9]/15 border border-[#6D28D9]/30">
+          <div className="badge-pbm inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-[#6D28D9]/15 border border-[#6D28D9]/30">
             <span className="text-2xl">💡</span>
             <p className="text-[#C4B5FD] font-medium text-sm sm:text-base">
               kolyb réunit tout en un, conçu pour ton quotidien d&apos;indépendant·e.

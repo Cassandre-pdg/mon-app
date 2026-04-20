@@ -37,7 +37,7 @@ export default function Footer() {
 
       <div className="wrap">
         {/* Main grid */}
-        <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-14 pb-20">
+        <div className="footer-princ grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-14 pb-20">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2.5 mb-6">
@@ -46,15 +46,15 @@ export default function Footer() {
                 kolyb
               </span>
             </div>
-            <p className="text-sm text-[#8B7FE8] mb-4" style={{ letterSpacing: "0.03em" }}>
+            <p className="sous-titre-foot text-sm text-[#8B7FE8] mb-4" style={{ letterSpacing: "0.03em" }}>
               Ton élan, au quotidien.
             </p>
             <p className="text-sm text-[#EDEDFF]/32 leading-relaxed max-w-[200px]">
-              Le compagnon des entrepreneurs indépendants.
+              Le compagnon des entrepreneurs.
             </p>
 
             {/* Social icons */}
-            <div className="flex items-center gap-3 mt-10">
+            <div className="icon-footer flex items-center gap-3 mt-10">
               {socials.map((s) => {
                 const Icon = s.icon;
                 return (

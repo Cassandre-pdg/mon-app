@@ -105,7 +105,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-lg md:text-xl text-[#EDEDFF]/65 leading-relaxed mb-8"
+          className="text-lg md:text-l text-[#EDEDFF]/65 leading-relaxed mb-8"
         >
           kolyb réunit tout ce dont tu as besoin pour avancer, à ton rythme,{" "}
           <span className="text-[#C4B5FD] font-medium">jamais seul·e.</span>
@@ -116,12 +116,12 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap justify-center gap-2.5 mb-16"
+          className="badge-hero flex flex-wrap justify-center gap-2.5 mb-16"
         >
           {features.map((f) => (
             <span
               key={f}
-              className="flex items-center gap-2 text-sm text-[#8B7FE8] px-4 py-2 rounded-full font-medium"
+              className="badgess flex items-center gap-2 text-sm text-[#8B7FE8] px-4 py-2 rounded-full font-medium"
               style={{ background: "rgba(109,40,217,0.12)", border: "1px solid rgba(109,40,217,0.25)" }}
             >
               <CheckCircle2 size={13} className="text-[#00D4C8]" />
@@ -150,7 +150,7 @@ export default function Hero() {
               </p>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+            <form onSubmit={handleSubmit} className="newsletter-form flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
                 value={email}

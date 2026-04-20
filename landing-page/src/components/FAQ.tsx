@@ -47,19 +47,21 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+      className={`faq-item rounded-2xl border transition-all duration-300 overflow-hidden ${
         open
-          ? "bg-[#1A1836] border-[#6D28D9]/35"
-          : "bg-[#1A1836]/60 border-[#22204A] hover:border-[#6D28D9]/25"
+          ? "faq-item-open bg-[#1A1836] border-[#6D28D9]/40"
+          : "bg-[#1A1836]/50 border-[#22204A] hover:border-[#6D28D9]/20"
       }`}
+      style={open ? { boxShadow: "0 0 40px rgba(109,40,217,0.07)" } : {}}
     >
       <button
         onClick={() => setOpen(!open)}
-        className="faq-btn w-full flex items-center justify-between text-left gap-5 group cursor-pointer"
+        className="faq-btn w-full flex items-center gap-5 text-left group cursor-pointer"
       >
+        <span className="faq-index">{String(index + 1).padStart(2, "0")}</span>
         <span
-          className={`text-[15px] font-medium leading-snug transition-colors ${
-            open ? "text-white" : "text-[#EDEDFF]/80 group-hover:text-white"
+          className={`flex-1 text-[15px] font-medium leading-snug transition-colors ${
+            open ? "text-white" : "text-[#EDEDFF]/75 group-hover:text-white"
           }`}
         >
           {q}
@@ -88,7 +90,8 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <p className="px-8 pb-7 text-sm text-[#EDEDFF]/60 leading-relaxed">
+            <div className="faq-separator" />
+            <p className="faq-answer text-sm text-[#EDEDFF]/65 leading-relaxed">
               {a}
             </p>
           </motion.div>

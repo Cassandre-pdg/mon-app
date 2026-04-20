@@ -86,7 +86,7 @@ export default function Contact() {
         </motion.div>
 
         {/* Separator */}
-        <div className="flex items-center gap-4 mb-20">
+        <div className="separator flex items-center gap-4 mb-20">
           <div className="flex-1 h-px bg-[#22204A]" />
           <span className="text-sm text-[#EDEDFF]/28 font-medium px-4 whitespace-nowrap">
             ou envoie-nous un message
@@ -105,7 +105,7 @@ export default function Contact() {
           >
             <div>
               <h3 className="text-2xl font-bold text-white mb-5" style={{ letterSpacing: "-0.02em" }}>
-                On adore avoir de tes nouvelles
+              Quelque chose manque ? Une idée en tête ? On t'écoute.
               </h3>
               <p className="text-[#EDEDFF]/55 leading-relaxed text-sm">
                 Idée de feature, question, feedback, partenariat : toutes les raisons sont bonnes.
@@ -135,7 +135,7 @@ export default function Contact() {
               })}
             </div>
 
-            <div className="p-7 rounded-2xl bg-[#1A1836] border border-[#22204A]">
+            <div className="announce p-7 rounded-2xl bg-[#1A1836] border border-[#22204A]">
               <p className="text-sm text-[#EDEDFF]/55 leading-relaxed">
                 <span className="text-[#C4B5FD] font-semibold">kolyb</span> est construit par une
                 fondatrice solo qui vit les mêmes défis que toi. Ton retour compte vraiment, il
@@ -171,7 +171,7 @@ export default function Contact() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="p-8 rounded-2xl bg-[#1A1836] border border-[#22204A] flex flex-col gap-7"
+                className="contact-form rounded-2xl bg-[#1A1836] border border-[#22204A] flex flex-col gap-7"
               >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="field">
@@ -295,7 +295,7 @@ function NewsletterForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"
+      className="newsletter-form flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"
     >
       <input
         type="email"
