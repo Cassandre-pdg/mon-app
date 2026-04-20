@@ -1,0 +1,45 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Tests & Analyse
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: stable
+          cache: true
+
+      - name: Installer les dépendances
+        working-directory: flutter_app
+        run: flutter pub get
+
+      - name: Générer les fichiers Riverpod
+        working-directory: flutter_app
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyse du code
+        working-directory: flutter_app
+        run: flutter analyze --no-fatal-infos
+
+      - name: Tests unitaires
+        working-directory: flutter_app
+        run: flutter test --coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: flutter_app/coverage/lcov.info
+        continue-on-error: true

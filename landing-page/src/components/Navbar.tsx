@@ -98,7 +98,7 @@ export default function Navbar() {
               <a
                 href="#hero-form"
                 onClick={() => setMobileOpen(false)}
-                className="btn btn-primary mt-4 w-full"
+                className="btn btn-primary mt-4 mx-auto"
               >
                 Rejoindre la beta
               </a>

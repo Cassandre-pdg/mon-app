@@ -1,30 +1,35 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary:       #6D28D9;
+  --color-primary: #6D28D9;
   --color-primary-light: #8B7FE8;
-  --color-primary-pale:  #C4B5FD;
-  --color-secondary:     #FF4D6A;
-  --color-accent:        #00D4C8;
-  --color-amber:         #FFB800;
+  --color-primary-pale: #C4B5FD;
+  --color-secondary: #FF4D6A;
+  --color-accent: #00D4C8;
+  --color-amber: #FFB800;
 
-  --color-bg-dark:           #0D0B1E;
-  --color-surface-dark:      #1A1836;
-  --color-surface-elevated:  #22204A;
+  --color-bg-dark: #0D0B1E;
+  --color-surface-dark: #1A1836;
+  --color-surface-elevated: #22204A;
 
-  --color-text-dark:  #EDEDFF;
+  --color-text-dark: #EDEDFF;
   --color-text-muted: rgba(237, 237, 255, 0.5);
 
+  --font-jakarta: 'Plus Jakarta Sans', -apple-system, sans-serif;
   --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   --radius-card: 16px;
-  --radius-btn:  12px;
-  --radius-pill: 20px;
+  --radius-btn: 9999px;
+  /* Pill complet — jamais carré */
+  --radius-pill: 9999px;
+  --radius-input: 14px;
 }
 
 /* ─── RESET ──────────────────────────────────────────────── */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -38,7 +43,7 @@ html {
 body {
   background-color: #0D0B1E;
   color: #EDEDFF;
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-inter);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
@@ -53,10 +58,18 @@ body {
   .wrap-sm  → idem, encore plus étroite (forms, CTA centered)
 */
 
+
 .section {
-  padding-top: 96px;
-  padding-bottom: 96px;
+  padding-top: 88px;
+  padding-bottom: 88px;
   position: relative;
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
 }
 
 .wrap {
@@ -93,6 +106,12 @@ body {
   margin-bottom: 72px;
 }
 
+@media (min-width: 768px) {
+  .section-header {
+    margin-bottom: 64px;
+  }
+}
+
 .eyebrow {
   display: inline-block;
   font-size: 11px;
@@ -127,7 +146,7 @@ body {
   background: #1A1836;
   border: 1px solid #22204A;
   border-radius: 16px;
-  padding: 28px 28px 26px;
+  padding: 28px;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
@@ -137,7 +156,20 @@ body {
   border-color: rgba(109, 40, 217, 0.28);
 }
 
+.card .icon-box,
+.card .icon-box-lg {
+  margin-bottom: 25px;
+}
+
 /* ─── BUTTONS ────────────────────────────────────────────── */
+/*
+  Règles Kolyb boutons :
+  - Toujours pill (border-radius: 9999px) — jamais carré ou légèrement arrondi
+  - Jamais pleine largeur du conteneur — toujours auto ou max-width contrainte
+  - Largeur : fit-content, min 140px pour lisibilité
+  - Pour les boutons dans les formulaires : utiliser .btn-block (centré, max 360px)
+  - Même famille visuelle (taille + padding) pour tout le site
+*/
 
 .btn {
   display: inline-flex;
@@ -147,13 +179,25 @@ body {
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
-  border-radius: 12px;
+  border-radius: 9999px;
   padding: 14px 28px;
   border: none;
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
   transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  /* Jamais pleine largeur : toujours fit-content */
+  width: fit-content;
+  min-width: 140px;
+}
+
+/* Variante form — centré, plus large, mais jamais 100% page */
+.btn-block {
+  width: 100%;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
 }
 
 .btn:disabled {
@@ -162,7 +206,7 @@ body {
 }
 
 .btn-primary {
-  background: #6D28D9;
+  background: #5535E0;
   color: #fff;
 }
 
@@ -194,6 +238,7 @@ body {
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.01em;
+  margin-bottom: 25px;
 }
 
 .badge-violet {
@@ -221,6 +266,12 @@ body {
 }
 
 /* ─── FORM INPUTS ────────────────────────────────────────── */
+/*
+  Règles Kolyb inputs :
+  - border-radius: 14px pour inputs standards (généreux, pas pill)
+  - padding horizontal : min 18px pour ne jamais coller le texte aux bords
+  - focus : ring violet 3px
+*/
 
 .field {
   display: flex;
@@ -238,8 +289,8 @@ body {
 
 .input {
   width: 100%;
-  padding: 14px 18px;
-  border-radius: 12px;
+  padding: 14px 20px;
+  border-radius: 14px;
   background: #1A1836;
   border: 1px solid #22204A;
   color: #EDEDFF;
@@ -276,9 +327,35 @@ body {
 }
 
 /* ─── GRADIENT TEXT ──────────────────────────────────────── */
+/*
+  Classes gradient texte Kolyb — toujours utiliser ces classes, jamais de gradient inline.
+  Usage :
+    .gradient-text         → violet clair → teal : titres hero, mots-clés impactants
+    .gradient-violet       → violet profond → violet pâle : sous-titres, accents doux
+    .gradient-energy       → corail → amber : mots d'action, CTA, énergie
+  Dans l'app Flutter : utiliser le ShaderMask avec les mêmes couleurs (voir app_text_styles.dart)
+*/
 
+/* Principale — violet → teal : "au quotidien.", "en un seul endroit", etc. */
 .gradient-text {
   background: linear-gradient(135deg, #8B7FE8 0%, #C4B5FD 50%, #00D4C8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 25px auto; 
+}
+
+/* Violet spectrum — violet profond → violet pâle : accents doux, sections */
+.gradient-violet {
+  background: linear-gradient(135deg, #6D28D9 0%, #C4B5FD 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Energy — corail → amber : CTA, actions, mots d'élan */
+.gradient-energy {
+  background: linear-gradient(135deg, #FF4D6A 0%, #FFB800 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -326,10 +403,22 @@ body {
 
 /* ─── SCROLLBAR ──────────────────────────────────────────── */
 
-::-webkit-scrollbar       { width: 6px; }
-::-webkit-scrollbar-track { background: #0D0B1E; }
-::-webkit-scrollbar-thumb { background: #22204A; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #6D28D9; }
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0D0B1E;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #22204A;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6D28D9;
+}
 
 /* ─── SELECTION + FOCUS ──────────────────────────────────── */
 
@@ -344,8 +433,62 @@ body {
   border-radius: 4px;
 }
 
+/* ─── ESPACEMENT — RÈGLES DE COMPOSITION ────────────────────── */
+/*
+  Règles Kolyb spacing :
+  - Titre (h1/h2)    + texte (p)      : margin-top 16px min
+  - Titre (h2/h3)    + image/icône    : margin-bottom 24px sur le titre
+  - Badge            + heading        : margin-top 16px sur le heading
+  - Badge            + texte          : margin-top 12px
+  - Icon-box         + titre/texte    : margin-top 16px sur l'élément suivant
+  - Section header   → contenu cards : 72px (géré par .section-header margin-bottom)
+  - Entre cards      : gap 16–20px minimum
+  Interdiction : jamais de tiret long "—" dans les textes visibles. Remplacer par ":", "," ou "-"
+*/
+
+/* Badge → heading ou texte suivant (frères directs dans le DOM) */
+.badge+h1,
+.badge+h2,
+.badge+h3,
+.badge+h4 {
+  margin-top: 16px;
+}
+
+.badge+p {
+  margin-top: 12px;
+}
+
+/* Icon-box → élément suivant (frères directs) */
+.icon-box+h1,
+.icon-box+h2,
+.icon-box+h3,
+.icon-box+h4,
+.icon-box+p,
+.icon-box-lg+h1,
+.icon-box-lg+h2,
+.icon-box-lg+h3,
+.icon-box-lg+p {
+  margin-top: 16px;
+}
+
+/* ─── FAQ STYLES ─────────────────────────────────────────── */
+/*
+  FAQ Kolyb : lisible, aéré, moderne — padding généreux pour donner envie de cliquer
+  Règles : bouton FAQ min px-7 py-6, réponse min px-7 pb-7, gap entre items min 16px
+*/
+
+.faq-btn {
+  padding: 20px 15px;
+}
+
+.faq-answer {
+  padding: 0 32px 28px;
+}
+
 /* ─── MISC ───────────────────────────────────────────────── */
 
-input, textarea, select {
+input,
+textarea,
+select {
   background: transparent;
 }

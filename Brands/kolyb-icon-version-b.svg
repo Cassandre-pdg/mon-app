@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+
+  <!-- Fond carré arrondi sombre Version B -->
+  <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+
+  <!-- Ogive -->
+  <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+
+  <!-- Corps principal -->
+  <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+
+  <!-- Hublot -->
+  <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+  <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+
+  <!-- Aileron gauche -->
+  <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+
+  <!-- Aileron droit -->
+  <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+
+  <!-- Flamme gauche -->
+  <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+  <!-- Flamme centre -->
+  <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+  <!-- Flamme droite -->
+  <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+
+  <!-- 3 étoiles -->
+  <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+  <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+  <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+
+</svg>

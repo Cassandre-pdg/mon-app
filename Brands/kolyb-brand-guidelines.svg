@@ -1,0 +1,269 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1060" viewBox="0 0 800 1060">
+
+  <!-- Background général -->
+  <rect width="800" height="1060" fill="#0D0B1E"/>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 1 — ICÔNE VERSION B · DARK                 -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <text x="40" y="42" font-family="Inter, sans-serif" font-size="10" font-weight="400" fill="#8B7FE8" letter-spacing="0.08em">ICÔNE PRINCIPALE — VERSION B · DARK</text>
+
+  <!-- 120px -->
+  <g transform="translate(40,54) scale(0.1172)">
+    <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+    <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="100" y="188" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">120px</text>
+
+  <!-- 80px -->
+  <g transform="translate(180,74) scale(0.0781)">
+    <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+    <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="220" y="168" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">80px</text>
+
+  <!-- 56px -->
+  <g transform="translate(300,86) scale(0.0547)">
+    <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+    <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="328" y="154" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">56px</text>
+
+  <!-- 36px -->
+  <g transform="translate(390,96) scale(0.0352)">
+    <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+    <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="408" y="144" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">36px</text>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 2 — VARIANTE STORE VERSION C · VIOLET      -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <text x="40" y="216" font-family="Inter, sans-serif" font-size="10" font-weight="400" fill="#8B7FE8" letter-spacing="0.08em">VARIANTE STORE — VERSION C · FOND VIOLET</text>
+
+  <!-- 120px store -->
+  <g transform="translate(40,228) scale(0.1172)">
+    <rect width="1024" height="1024" rx="220" fill="#6D28D9"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#6D28D9"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+    <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="100" y="362" font-family="Inter, sans-serif" font-size="10" fill="#8B7FE8" text-anchor="middle">App Store · Google Play</text>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 3 — LOGO HORIZONTAL                        -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <text x="40" y="398" font-family="Inter, sans-serif" font-size="10" font-weight="400" fill="#8B7FE8" letter-spacing="0.08em">LOGO HORIZONTAL — FINAL</text>
+
+  <!-- Icône 52px -->
+  <g transform="translate(40,410) scale(0.0508)">
+    <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+    <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="104" y="444" font-family="Inter, sans-serif" font-size="30" font-weight="700" fill="white" letter-spacing="-0.02em">kolyb</text>
+  <text x="104" y="462" font-family="Inter, sans-serif" font-size="11" font-weight="500" fill="#8B7FE8" letter-spacing="0.03em">Ton élan, au quotidien.</text>
+  <text x="104" y="476" font-family="Inter, sans-serif" font-size="9" font-weight="400" fill="#6D28D9" letter-spacing="0.05em">COMPAGNON DES ENTREPRENEURS</text>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 4 — TYPOGRAPHIE                            -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <text x="40" y="516" font-family="Inter, sans-serif" font-size="10" font-weight="400" fill="#8B7FE8" letter-spacing="0.08em">TYPOGRAPHIE</text>
+
+  <text x="40" y="550" font-family="Inter, sans-serif" font-size="28" font-weight="700" fill="white" letter-spacing="-0.02em">kolyb</text>
+  <text x="200" y="550" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9">Nom de marque — 700, -0.02em</text>
+
+  <text x="40" y="576" font-family="Inter, sans-serif" font-size="15" font-weight="500" fill="#C4B5FD" letter-spacing="0.03em">Ton élan, au quotidien.</text>
+  <text x="210" y="576" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9">Slogan — 500, +0.03em</text>
+
+  <text x="40" y="600" font-family="Inter, sans-serif" font-size="11" font-weight="400" fill="#8B7FE8" letter-spacing="0.05em">COMPAGNON DES ENTREPRENEURS</text>
+  <text x="290" y="600" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9">Sous-titre — caps, 400, +0.05em</text>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 5 — PALETTE                                -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <text x="40" y="638" font-family="Inter, sans-serif" font-size="10" font-weight="400" fill="#8B7FE8" letter-spacing="0.08em">PALETTE FINALE</text>
+
+  <rect x="40"  y="650" width="100" height="60" rx="8" fill="#0D0B1E"/>
+  <rect x="40"  y="650" width="100" height="60" rx="8" fill="none" stroke="#22204A" stroke-width="0.5"/>
+  <text x="90"  y="674" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">#0D0B1E</text>
+  <text x="90"  y="688" font-family="Inter, sans-serif" font-size="9"  fill="#22204A" text-anchor="middle">Fond app</text>
+
+  <rect x="150" y="650" width="100" height="60" rx="8" fill="#1A1836"/>
+  <text x="200" y="674" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">#1A1836</text>
+  <text x="200" y="688" font-family="Inter, sans-serif" font-size="9"  fill="#22204A" text-anchor="middle">Surface</text>
+
+  <rect x="260" y="650" width="100" height="60" rx="8" fill="#22204A"/>
+  <text x="310" y="674" font-family="Inter, sans-serif" font-size="10" fill="#8B7FE8" text-anchor="middle">#22204A</text>
+  <text x="310" y="688" font-family="Inter, sans-serif" font-size="9"  fill="#8B7FE8" text-anchor="middle">Bordure</text>
+
+  <rect x="370" y="650" width="100" height="60" rx="8" fill="#6D28D9"/>
+  <text x="420" y="674" font-family="Inter, sans-serif" font-size="10" fill="white" text-anchor="middle">#6D28D9</text>
+  <text x="420" y="688" font-family="Inter, sans-serif" font-size="9"  fill="#C4B5FD" text-anchor="middle">Primaire</text>
+
+  <rect x="480" y="650" width="100" height="60" rx="8" fill="#8B7FE8"/>
+  <text x="530" y="674" font-family="Inter, sans-serif" font-size="10" fill="white" text-anchor="middle">#8B7FE8</text>
+  <text x="530" y="688" font-family="Inter, sans-serif" font-size="9"  fill="white" text-anchor="middle">Accent</text>
+
+  <rect x="590" y="650" width="100" height="60" rx="8" fill="#C4B5FD"/>
+  <text x="640" y="674" font-family="Inter, sans-serif" font-size="10" fill="#1A1836" text-anchor="middle">#C4B5FD</text>
+  <text x="640" y="688" font-family="Inter, sans-serif" font-size="9"  fill="#1A1836" text-anchor="middle">Clair</text>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SECTION 6 — SÉQUENCE ANIMATION                     -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <text x="40" y="748" font-family="Inter, sans-serif" font-size="10" font-weight="400" fill="#8B7FE8" letter-spacing="0.08em">SÉQUENCE D'ANIMATION — ICÔNE B</text>
+
+  <!-- État 1 Repos — scale 0.072 = 73.7px -->
+  <g transform="translate(40,762) scale(0.072)">
+    <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+    <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="77" y="850" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">① Repos</text>
+
+  <text x="134" y="806" font-family="Inter, sans-serif" font-size="14" fill="#6D28D9">›</text>
+
+  <!-- État 2 Frémit -->
+  <g transform="translate(148,762) scale(0.072)">
+    <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="80" fill="white" fill-opacity="0.55"/>
+    <ellipse cx="512" cy="828" rx="52" ry="100" fill="white" fill-opacity="0.75"/>
+    <ellipse cx="550" cy="808" rx="38" ry="80" fill="white" fill-opacity="0.55"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="185" y="850" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">② Frémit</text>
+
+  <text x="242" y="806" font-family="Inter, sans-serif" font-size="14" fill="#6D28D9">›</text>
+
+  <!-- État 3 Décollage -->
+  <g transform="translate(256,750) scale(0.072)">
+    <rect width="1024" height="1024" rx="220" fill="#1A1836"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#1A1836"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="820" rx="38" ry="100" fill="white" fill-opacity="0.5"/>
+    <ellipse cx="512" cy="840" rx="52" ry="130" fill="white" fill-opacity="0.75"/>
+    <ellipse cx="550" cy="820" rx="38" ry="100" fill="white" fill-opacity="0.5"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="293" y="850" font-family="Inter, sans-serif" font-size="10" fill="#6D28D9" text-anchor="middle">③ Décollage</text>
+
+  <text x="350" y="806" font-family="Inter, sans-serif" font-size="14" fill="#6D28D9">›</text>
+
+  <!-- État 4 En orbite — fond violet -->
+  <g transform="translate(364,762) scale(0.072)">
+    <rect width="1024" height="1024" rx="220" fill="#6D28D9"/>
+    <path d="M380 560 L510 220 Q512 216 514 220 L644 560 Z" fill="white"/>
+    <rect x="400" y="556" width="224" height="230" rx="40" fill="white"/>
+    <circle cx="512" cy="630" r="62" fill="#6D28D9"/>
+    <circle cx="512" cy="630" r="36" fill="white" fill-opacity="0.78"/>
+    <path d="M400 610 L296 730 L400 692 Z" fill="white" fill-opacity="0.88"/>
+    <path d="M624 610 L728 730 L624 692 Z" fill="white" fill-opacity="0.88"/>
+    <ellipse cx="474" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <ellipse cx="512" cy="824" rx="50" ry="90" fill="white" fill-opacity="0.65"/>
+    <ellipse cx="550" cy="808" rx="38" ry="72" fill="white" fill-opacity="0.42"/>
+    <circle cx="310" cy="200" r="18" fill="white" fill-opacity="0.65"/>
+    <circle cx="740" cy="172" r="14" fill="white" fill-opacity="0.52"/>
+    <circle cx="718" cy="290" r="9"  fill="white" fill-opacity="0.40"/>
+  </g>
+  <text x="401" y="850" font-family="Inter, sans-serif" font-size="10" fill="#8B7FE8" text-anchor="middle">④ En orbite</text>
+
+  <!-- Specs Lottie -->
+  <text x="40" y="878" font-family="Inter, sans-serif" font-size="9" fill="#6D28D9">Durée : 1.4s  ·  Easing : spring(0.5, 0, 0.2, 1)  ·  Déclencheur : tap  ·  Loop : non (one-shot)  ·  B → C : transition couleur à l'orbite</text>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FOOTER                                             -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <line x1="40" y1="904" x2="760" y2="904" stroke="#22204A" stroke-width="0.5"/>
+  <text x="40"  y="924" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#8B7FE8" letter-spacing="-0.01em">kolyb</text>
+  <text x="82"  y="924" font-family="Inter, sans-serif" font-size="11" fill="#6D28D9"> — Brand Guidelines · Icône &amp; Identité visuelle</text>
+  <text x="40"  y="940" font-family="Inter, sans-serif" font-size="9"  fill="#22204A">Inter · Figtree · DM Sans  ·  #0D0B1E · #1A1836 · #22204A · #6D28D9 · #8B7FE8 · #C4B5FD</text>
+
+</svg>

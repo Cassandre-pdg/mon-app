@@ -17,7 +17,7 @@ const benefits = [
     color: "#FFB800",
     title: "2 min suffisent",
     description:
-      "Le check-in, le planificateur, le suivi sommeil — tout est conçu pour prendre le moins de temps possible. L'app travaille pour toi, pas l'inverse.",
+      "Le check-in, le planificateur, le suivi sommeil : tout est conçu pour prendre le moins de temps possible. L'app travaille pour toi, pas l'inverse.",
   },
   {
     icon: Shield,
@@ -38,7 +38,7 @@ const benefits = [
     color: "#6D28D9",
     title: "Communauté qualitative",
     description:
-      "Ma Tribu, c'est l'anti-LinkedIn. Pas de compteur de followers, pas de personal branding. Juste des échanges vrais entre indépendants.",
+      "Le Salon, c'est l'anti-LinkedIn. Pas de compteur de followers, pas de personal branding. Juste des échanges vrais entre indépendants.",
   },
   {
     icon: Lock,

@@ -71,7 +71,7 @@ export default function Contact() {
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          className="text-center mb-28"
         >
           <p className="eyebrow">Rejoindre l&apos;aventure</p>
           <h2 className="section-title mt-0">
@@ -86,7 +86,7 @@ export default function Contact() {
         </motion.div>
 
         {/* Separator */}
-        <div className="flex items-center gap-4 mb-16">
+        <div className="flex items-center gap-4 mb-20">
           <div className="flex-1 h-px bg-[#22204A]" />
           <span className="text-sm text-[#EDEDFF]/28 font-medium px-4 whitespace-nowrap">
             ou envoie-nous un message
@@ -101,19 +101,19 @@ export default function Contact() {
             initial={{ opacity: 0, x: -20 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-col gap-8"
+            className="flex flex-col gap-12"
           >
             <div>
-              <h3 className="text-2xl font-bold text-white mb-3" style={{ letterSpacing: "-0.02em" }}>
+              <h3 className="text-2xl font-bold text-white mb-5" style={{ letterSpacing: "-0.02em" }}>
                 On adore avoir de tes nouvelles
               </h3>
               <p className="text-[#EDEDFF]/55 leading-relaxed text-sm">
-                Idée de feature, question, feedback, partenariat — toutes les raisons sont bonnes.
+                Idée de feature, question, feedback, partenariat : toutes les raisons sont bonnes.
                 On répond personnellement dans les 48h.
               </p>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
               {[
                 { icon: Mail, label: "Email", value: "hello@kolyb.app" },
                 { icon: MessageCircle, label: "Réponse", value: "Toujours sous 48h" },
@@ -135,10 +135,10 @@ export default function Contact() {
               })}
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#1A1836] border border-[#22204A]">
+            <div className="p-7 rounded-2xl bg-[#1A1836] border border-[#22204A]">
               <p className="text-sm text-[#EDEDFF]/55 leading-relaxed">
                 <span className="text-[#C4B5FD] font-semibold">kolyb</span> est construit par une
-                fondatrice solo qui vit les mêmes défis que toi. Ton retour compte vraiment — il
+                fondatrice solo qui vit les mêmes défis que toi. Ton retour compte vraiment, il
                 façonne directement l&apos;app.
               </p>
             </div>
@@ -171,7 +171,7 @@ export default function Contact() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="p-7 rounded-2xl bg-[#1A1836] border border-[#22204A] flex flex-col gap-5"
+                className="p-8 rounded-2xl bg-[#1A1836] border border-[#22204A] flex flex-col gap-7"
               >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="field">
@@ -232,7 +232,7 @@ export default function Contact() {
                   <p className="text-[#FF4D6A] text-sm">{responseMsg}</p>
                 )}
 
-                <button type="submit" disabled={status === "loading"} className="btn btn-primary w-full">
+                <button type="submit" disabled={status === "loading"} className="btn btn-primary btn-block">
                   {status === "loading" ? (
                     <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (

@@ -5,13 +5,13 @@
 
 ## 🎯 QUI JE SUIS ET CE QU'ON CONSTRUIT
 
-Je suis Cassandre, fondatrice solo de **Solo Pro** — une application Flutter de bien-être, productivité et réseau social pour entrepreneurs indépendants.
+Je suis Cassandre, fondatrice solo de **Kolyb** — une application Flutter de bien-être, productivité et réseau social pour entrepreneurs indépendants.
 
 **Le problème résolu :**
-Les indépendants jonglent entre 5 apps différentes, s'isolent progressivement, et perdent le fil de leur progression. Solo Pro réunit tout en un seul endroit.
+Les indépendants jonglent entre 5 apps différentes, s'isolent progressivement, et perdent le fil de leur progression. Kolyb réunit tout en un seul endroit.
 
 **La promesse de l'app :**
-> "Avance chaque jour, sans jamais te sentir seul."
+> "Ton élan, au quotidien."
 
 ---
 
@@ -85,56 +85,140 @@ notification_settings  → préférences notifications
 
 ## 🎨 DESIGN SYSTEM — TOUJOURS RESPECTER CES VALEURS
 
-### Couleurs
+### Couleurs — Palette Kolyb officielle
 
 ```dart
-// Primaire
-primary: Color(0xFF6C47FF),        // Violet profond
-secondary: Color(0xFFFF6B6B),      // Corail énergisant
-accent: Color(0xFF4ECDC4),         // Vert succès
+// ─── PRIMAIRES ───────────────────────────────────────────
+primary:      Color(0xFF6D28D9),  // Violet profond — couleur structurante principale
+primaryLight: Color(0xFF8B7FE8),  // Accent / hover / pills
+primaryPale:  Color(0xFFC4B5FD),  // Textes sur fond sombre, labels
 
-// Fond Dark Mode
-backgroundDark: Color(0xFF0F0F1A), // Presque noir
-surfaceDark: Color(0xFF1A1A2E),    // Carte dark
+// ─── SECONDAIRES ─────────────────────────────────────────
+secondary: Color(0xFFFF4D6A),  // Corail — énergie, alertes
+accent:    Color(0xFF00D4C8),  // Teal — succès, graphiques
 
-// Fond Light Mode
-backgroundLight: Color(0xFFF8F7FF), // Blanc cassé
-surfaceLight: Color(0xFFFFFFFF),    // Blanc pur
+// ─── DONNÉES / GRAPHIQUES ────────────────────────────────
+chartAmber:  Color(0xFFFFB800), // Amber — warnings, badges, 3e série
+chartViolet: Color(0xFF8B7FE8), // Violet clair — 2e série, éléments actifs
 
-// Texte
-textDark: Color(0xFFE8E8F0),       // Blanc doux (sur fond dark)
-textLight: Color(0xFF2D2D3A),      // Gris foncé (sur fond light)
+// ─── FONDS DARK MODE (défaut) ────────────────────────────
+backgroundDark:      Color(0xFF0D0B1E), // Fond principal
+surfaceDark:         Color(0xFF1A1836), // Cards, panneaux
+surfaceElevatedDark: Color(0xFF22204A), // Modals, bottom sheets, bordures
 
-// États
-success: Color(0xFF4ECDC4),
-warning: Color(0xFFFFBE0B),
-error: Color(0xFFFF6B6B),
+// ─── FONDS LIGHT MODE ────────────────────────────────────
+backgroundLight: Color(0xFFF5F4FF), // Blanc cassé violet — jamais blanc pur
+surfaceLight:    Color(0xFFFFFFFF), // Cards uniquement
+
+// ─── TEXTE ───────────────────────────────────────────────
+textDark:      Color(0xFFEDEDFF), // Blanc doux (sur fond dark)
+textDarkMuted: Color(0x80EDEDED), // Blanc 50% — labels, captions
+textLight:     Color(0xFF12122A), // Quasi-noir (sur fond light)
+
+// ─── ÉTATS ───────────────────────────────────────────────
+success: Color(0xFF00D4C8), // = accent teal
+warning: Color(0xFFFFB800), // = amber
+error:   Color(0xFFFF4D6A), // = corail
 ```
 
-### Typographie
+### Typographie — Inter uniquement
 
 ```dart
-// Titres → Plus Jakarta Sans
-// Corps  → Inter
-// Ne jamais utiliser d'autre police
+// Toute l'app utilise Inter (Google Fonts)
+// Jamais de Plus Jakarta Sans, jamais d'autre police
+
+// ─── HIÉRARCHIE ──────────────────────────────────────────
+brandName:    Inter 700, 28px, letterSpacing -0.02em  // "kolyb" (logo/splash)
+brandSlogan:  Inter 500, 15px, letterSpacing +0.03em  // "Ton élan, au quotidien."
+displayLarge: Inter 700, 32px, letterSpacing -0.5     // Grands titres
+headingLarge: Inter 700, 24px, letterSpacing -0.3     // Titres de section
+headingMedium:Inter 600, 20px                          // "Mon Espace"
+headingSmall: Inter 600, 16px                          // Sous-titres
+bodyMedium:   Inter 400, 14px, lineHeight 1.5          // Texte courant
+labelMedium:  Inter 500, 13px                          // Labels
+caption:      Inter 400, 11px                          // "Aujourd'hui à 18h30"
 ```
 
 ### Règles UI
 
-- **Toujours** proposer dark mode ET light mode
 - **Jamais** de design plat et générique — style friendly pro, rounded
-- **Arrondis :** BorderRadius.circular(16) pour les cartes, 12 pour les boutons
-- **Espacement :** multiples de 8 (8, 16, 24, 32, 48)
-- **Animations :** subtiles, jamais > 400ms sauf récompenses spéciales
-- **Icônes :** style rounded stroke, cohérent dans toute l'app
 
+MODE           → Dark par défaut. Toggle dark/light dans Mon Profil > Paramètres.
+               → Light mode : fond #F8F7FF jamais #FFFFFF pur comme fond de page.
+               → Cards en light : fond blanc #FFFFFF avec bordure 0.5px subtile.
+
+CARDS          → BorderRadius.circular(16) — coins généreux, jamais anguleux
+               → Séparation entre cards : espacement 12px minimum, jamais de ligne dure
+               → Fond dark : #1A1836 avec bordure #22204A
+               → Fond light : #FFFFFF avec bordure rgba(0,0,0,0.08)
+
+BOUTONS        → Pill complet : StadiumBorder() Flutter / border-radius: 9999px web — JAMAIS carré
+               → JAMAIS pleine largeur du conteneur (pas de w-full hors contexte formulaire)
+               → Largeur : fit-content, min 140px, max 320px — même famille visuelle partout
+               → CTA principal : background violet #6D28D9, texte blanc
+               → CTA secondaire : background rgba(255,255,255,0.10), texte blanc doux
+               → Bouton destructif : corail #FF4D6A
+               → Dans un formulaire : .btn-block (centré, max 360px) — pas w-full pleine page
+
+GRAPHIQUES     → Fond sombre, trait/barre fin(e) — une couleur d'accent par série
+               → Couleurs graphiques dans l'ordre : violet → teal → amber → corail
+               → Zéro surcharge : légende minimale, axe discret
+               → Ring/donut chart pour la progression globale (inspiré Kolyb + Revolut)
+
+FORMULAIRES    → Une question à la fois, centrée, pleine hauteur (inspiré Headspace)
+               → Progress indicator discret en haut (ex. "3/7")
+               → Radio buttons avec sélection visuelle immédiate (point violet)
+               → CTA unique pleine largeur ancré en bas
+               → Jamais de page scrollable avec plusieurs questions
+
+CHECK-IN       → Bimodal matin/soir : deux cards côte à côte (inspiré Stoic)
+               → Card matin : fond light/neutre, texte inspirant, ton frais
+               → Card soir : fond #0D0B1E, texte violet, plus introspectif
+               → Les deux ont leur propre bouton "Commencer"
+
+FEEDBACK       → Écran de complétion centré (inspiré Brilliant) : illustration + chiffre + bouton
+               → Animations max 400ms sauf récompenses spéciales (max 800ms)
+               → Badge de streak : tag pill violet avec emoji fire
+
+TAGS / BADGES  → Pills arrondies BorderRadius.circular(20)
+               → Violet : rgba(109,40,217,0.18) / texte #8B7FE8
+               → Teal   : rgba(0,212,200,0.15)  / texte #00D4C8
+               → Amber  : rgba(255,184,0,0.15)  / texte #FFB800
+               → Corail : rgba(255,77,106,0.15) / texte #FF4D6A
+
+ICÔNES         → Style rounded stroke, cohérent dans toute l'app
+               → Jamais filled/solid sauf état actif dans la tab bar
+
+ESPACEMENT     → Multiples de 8 : 8, 16, 24, 32, 48
+               → Padding interne des cards : 16px horizontal, 14px vertical
+               → Badge → titre/texte en dessous : min 16px margin entre les deux
+               → Icône → titre en dessous : min 16px margin entre les deux
+               → Elements dans une section : toujours espacés, jamais collés aux bords
+               → FAQ : padding bouton min px-8 py-6, réponse min px-8 pb-7, gap min 16px
+
+GRADIENT TEXT  → Classes prédéfinies à utiliser — jamais de gradient inline :
+               Web (CSS class) :
+                 .gradient-text    → violet clair → teal : titres hero, mots impactants
+                 .gradient-violet  → violet profond → violet pâle : accents doux, sections
+                 .gradient-energy  → corail → amber : CTA, mots d'action, élan
+               App Flutter (ShaderMask avec mêmes couleurs) :
+                 gradientMain   → [#8B7FE8, #C4B5FD, #00D4C8]
+                 gradientViolet → [#6D28D9, #C4B5FD]
+                 gradientEnergy → [#FF4D6A, #FFB800]
+
+COMMUNAUTÉ     → Inspiré Discord simplifié : channels thématiques par groupe
+               → Pas de liste de chats style messagerie (anti-WhatsApp)
+               → Pas de profil CV (anti-LinkedIn)
+               → Profil : option public / privé dans les paramètres
+               → Profil public : minimaliste, prénom + avatar + bio courte + niveau
+               → Aucun compteur de followers affiché publiquement
 ---
 
 ## 📱 NAVIGATION — 5 ONGLETS FIXES
 
 ```
 Barre du bas :
-[ Mon Espace 🏠 ] [ Ma Journée ✅ ] [ Ma Tribu 👥 ] [ Mon Sommeil 😴 ] [ Mon Profil 👤 ]
+[ Mon Espace 🏠 ] [ Ma Journée ✅ ] [ Le Salon 👥 ] [ Mon Sommeil 😴 ] [ Mon Profil 👤 ]
 ```
 
 **Routes go_router :**
@@ -143,7 +227,7 @@ Barre du bas :
 /onboarding         → onboarding (4 écrans)
 /home               → dashboard "Mon Espace"
 /planner            → "Ma Journée"
-/community          → "Ma Tribu"
+/community          → "Le Salon"
 /sleep              → "Mon Sommeil"
 /profile            → "Mon Profil"
 /checkin/morning    → check-in matin
@@ -160,6 +244,15 @@ Barre du bas :
 - Tutoiement TOUJOURS ("tu", jamais "vous")
 - Ami expert qui tire vers le haut sans juger
 - Phrases courtes, directes, positives
+
+### Ponctuation INTERDITE dans tous les textes visibles
+```
+❌ — (tiret long / em dash) → remplacer par : ou , ou . selon le contexte
+   Exemples :
+     "avancer — à ton rythme"  →  "avancer, à ton rythme"
+     "partenariat — toutes"    →  "partenariat : toutes"
+     "jours sans — reprends"   →  "jours sans. Reprends"
+```
 
 ### Mots INTERDITS dans tous les textes de l'app
 ```
@@ -191,15 +284,15 @@ Dashboard    → "Mon Espace"
 Check-in     → "Mon Check-in"
 Productivité → "Ma Journée"
 Sommeil      → "Mon Sommeil"
-Communauté   → "Ma Tribu"
+Communauté   → "Le Salon"
 Profil       → "Mon Profil"
 Récompenses  → "Mes Badges"
 ```
 
 ### Messages clés
 ```
-Onboarding   → "Solo Pro, ton compagnon de route. Chaque jour, un pas de plus — à ton rythme, jamais seul."
-Streak cassé → "Pas grave, tout le monde a des jours sans — reprends aujourd'hui 💪"
+Onboarding   → "kolyb, ton compagnon de route. Ton élan, au quotidien, à ton rythme, jamais seul."
+Streak cassé → "Pas grave, tout le monde a des jours sans. Reprends aujourd'hui 💪"
 Tâche cochée → "Belle avancée ! ✅"
 Check-in fait → animation badge + phrase inspirante du jour
 ```
@@ -218,7 +311,7 @@ Check-in fait → animation badge + phrase inspirante du jour
 7. Outil Pomodoro (25 min / 5 min)
 8. Tracker sommeil (manuel + Apple Health optionnel iOS)
 9. Feed communauté (lecture + 3 posts/semaine gratuit)
-10. Messagerie privée basique + personnage "Solo"
+10. Messagerie privée basique + personnage "Kolyb"
 11. Profil utilisateur
 12. Système de badges et streaks
 13. Notifications push (6 types)
@@ -318,7 +411,7 @@ Se relever après échec     → +15 pts (bonus bienveillance)
 2. **Jamais** de données stockées hors EU
 3. **Chiffrement** pour check-ins et données sommeil (données sensibles)
 4. **Bouton suppression** compte dans Paramètres → effacement total 30j
-5. **Disclaimer** visible : "Solo Pro est un outil de bien-être, pas un dispositif médical"
+5. **Disclaimer** visible : "Kolyb est un outil de bien-être, pas un dispositif médical"
 6. **Aucune revente** de données — jamais
 7. **Opt-in explicite** pour chaque type de notification
 
@@ -400,7 +493,7 @@ SPRINT 5 — Social (Semaine 6-7)
 ├── [ ] Feed communauté
 ├── [ ] Groupes thématiques
 ├── [ ] Profil utilisateur
-└── [ ] Messagerie privée + personnage "Solo"
+└── [ ] Messagerie privée + personnage "Kolyb"
 
 SPRINT 6 — Finitions (Semaine 8)
 ├── [ ] Badges & streaks complets
@@ -435,3 +528,4 @@ SPRINT 6 — Finitions (Semaine 8)
 - **Supabase :** https://cpdwrzqamhxxkedwaifk.supabase.co
 - **Localisation :** France — RGPD obligatoire
 - **Document de référence :** SOLO_PRO_CONCEPT.md (à la racine du projet)
+- **Branding :** dossier `Brands/` à la racine — icône, palette, guidelines officiels

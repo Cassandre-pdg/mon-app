@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "À qui s'adresse kolyb exactement ?",
-    a: "kolyb est conçu pour les entrepreneurs indépendants : freelances, consultants, créateurs de contenu, artisans, solopreneurs. Si tu travailles seul·e et que tu veux avancer avec clarté, progresser avec bienveillance et te connecter à une communauté qui te ressemble — kolyb est pour toi.",
+    a: "kolyb est conçu pour les entrepreneurs indépendants : freelances, consultants, créateurs de contenu, artisans, solopreneurs. Si tu travailles seul·e et que tu veux avancer avec clarté, progresser avec bienveillance et te connecter à une communauté qui te ressemble, kolyb est pour toi.",
   },
   {
     q: "Qu'est-ce qui différencie kolyb d'autres apps de productivité ?",
@@ -31,11 +31,11 @@ const faqs = [
   },
   {
     q: "Que se passe-t-il si je rate un jour de check-in ?",
-    a: "Rien de dramatique — c'est même prévu dans le système. kolyb ne te punit jamais. Si tu rates un jour, tu reçois un message encourageant (jamais culpabilisant). Si tu te relèves dans les 48h, tu gagnes même un bonus de 15 points \"Relevé 💪\". La régularité, pas la perfection.",
+    a: "Rien de dramatique, c'est même prévu dans le système. kolyb ne te punit jamais. Si tu rates un jour, tu reçois un message encourageant (jamais culpabilisant). Si tu te relèves dans les 48h, tu gagnes même un bonus de 15 points \"Relevé 💪\". La régularité, pas la perfection.",
   },
   {
-    q: "Comment fonctionne la communauté Ma Tribu ?",
-    a: "Ma Tribu est organisée en groupes thématiques (freelance créatif, tech, consultant, etc.). Tu peux lire, réagir et poster (3 posts/semaine gratuit). Il n'y a pas de compteur de followers public, pas de liste de contacts, pas de comparaison. Juste des échanges sincères entre indépendants.",
+    q: "Comment fonctionne Le Salon ?",
+    a: "Le Salon est organisé en groupes thématiques (freelance créatif, tech, consultant, etc.). Tu peux lire, réagir et poster (3 posts/semaine gratuit). Il n'y a pas de compteur de followers public, pas de liste de contacts, pas de comparaison. Juste des échanges sincères entre indépendants.",
   },
 ];
 
@@ -55,7 +55,7 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
     >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-5 text-left gap-5 group cursor-pointer"
+        className="faq-btn w-full flex items-center justify-between text-left gap-5 group cursor-pointer"
       >
         <span
           className={`text-[15px] font-medium leading-snug transition-colors ${
@@ -88,7 +88,7 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <p className="px-6 pb-6 text-sm text-[#EDEDFF]/58 leading-relaxed">
+            <p className="px-8 pb-7 text-sm text-[#EDEDFF]/60 leading-relaxed">
               {a}
             </p>
           </motion.div>
@@ -125,7 +125,7 @@ export default function FAQ() {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-col gap-3"
+          className="flex flex-col gap-4"
         >
           {faqs.map((faq, i) => (
             <FAQItem key={faq.q} q={faq.q} a={faq.a} index={i} />

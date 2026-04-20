@@ -12,7 +12,7 @@ const features = [
     label: "Mon Check-in",
     title: "2 minutes le matin, 2 minutes le soir",
     description:
-      "Commence ta journée avec clarté et termine-la avec recul. Ton check-in émotionnel t'aide à repérer tes patterns, célébrer tes petites victoires et prendre soin de toi sans pression.",
+      "Commence ta journée avec clarté et termine-la avec recul. Ton check-in émotionnel t'aide à repérer tes patterns, célébrer les petites victoires et prendre soin de toi sans pression.",
     details: [
       "3 questions simples matin & soir",
       "Suivi de ton humeur dans le temps",
@@ -27,7 +27,7 @@ const features = [
     color: "#00D4C8",
     colorRight: "#6D28D9",
     label: "Ma Journée",
-    title: "3 priorités, un Pomodoro — focus assuré",
+    title: "3 priorités, un Pomodoro : focus assuré",
     description:
       "Arrête de courir après 47 tâches. kolyb t'invite à choisir 3 priorités du jour et te donne un outil Pomodoro intégré pour avancer en douceur, sans te disperser.",
     details: [
@@ -44,7 +44,7 @@ const features = [
     label: "Mon Sommeil",
     title: "Ton sommeil, ton carburant",
     description:
-      "Les indépendants sous-estiment l'impact du sommeil sur leur créativité et leur énergie. kolyb te permet de suivre tes nuits simplement, sans gadget, et de voir les tendances qui font la différence.",
+      "Les indépendants sous-estiment l'impact du sommeil sur leur créativité et leur énergie. Kolyb te permet de suivre tes nuits simplement, sans gadget, et de voir les tendances qui font la différence.",
     details: [
       "Saisie manuelle en quelques secondes",
       "Graphiques de tendance clairs",
@@ -56,10 +56,10 @@ const features = [
     id: "community",
     icon: Users,
     color: "#FF4D6A",
-    label: "Ma Tribu",
+    label: "Le Salon",
     title: "Une communauté qui te ressemble",
     description:
-      "Pas de réseau social anxiogène, pas de compteur de followers. Ma Tribu, c'est des groupes thématiques où les entrepreneurs s'entraident, partagent et progressent ensemble — sans se comparer.",
+      "Pas de réseau social anxiogène, pas de compteur de followers. Le Salon, c'est des groupes thématiques où les entrepreneurs s'entraident, partagent et progressent ensemble, sans se comparer.",
     details: [
       "Groupes thématiques (freelance, créatif, tech…)",
       "Posts & échanges authentiques",
@@ -74,7 +74,7 @@ const features = [
     label: "Mes Badges",
     title: "La régularité récompensée, jamais punie",
     description:
-      "Chaque jour où tu avances compte. kolyb célèbre ta régularité avec des badges et des streaks — et si tu rates un jour, le message est toujours bienveillant. Tu te relèves, kolyb est là.",
+      "Chaque jour où tu avances compte. kolyb célèbre ta régularité avec des badges et des streaks, et si tu rates un jour, le message est toujours bienveillant. Tu te relèves, kolyb est là.",
     details: [
       "Streaks 3j → 7j → 30j → 365j",
       "Niveaux Explorateur à Visionnaire",
@@ -122,7 +122,7 @@ export default function Features() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: i * 0.08 }}
               onClick={() => setActive(i)}
-              className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-2.5 px-[18px] py-[14px] rounded-xl text-sm font-medium transition-all duration-200 ${
                 active === i
                   ? "bg-[#6D28D9] text-white shadow-lg shadow-purple-900/30"
                   : "bg-[#1A1836] text-[#EDEDFF]/55 hover:text-white border border-[#22204A] hover:border-[#6D28D9]/40"

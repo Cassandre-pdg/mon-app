@@ -27,7 +27,7 @@ const problems = [
     bgColor: "rgba(139,127,232,0.1)",
     title: "Le fil de la progression qui se perd",
     description:
-      "Les semaines passent, les projets avancent — mais tu ne vois pas vraiment où tu en es. Aucune satisfaction durable. Juste une to-do list qui grandit.",
+      "Les semaines passent, les projets avancent, mais tu ne vois pas vraiment où tu en es. Aucune satisfaction durable. Juste une to-do list qui grandit.",
   },
 ];
 
@@ -50,8 +50,8 @@ export default function Problem() {
             <span className="text-[#FF4D6A]">seul·e.</span>
           </h2>
           <p className="section-sub">
-            Les entrepreneurs indépendants ont les mêmes besoins que tout le monde —
-            organisation, connexion, progression — sans les outils adaptés à leur réalité.
+            Les entrepreneurs indépendants ont les mêmes besoins que tout le monde :
+            organisation, connexion, progression, sans les outils adaptés à leur réalité.
           </p>
         </motion.div>
 
@@ -93,7 +93,7 @@ export default function Problem() {
           <div className="inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-[#6D28D9]/15 border border-[#6D28D9]/30">
             <span className="text-2xl">💡</span>
             <p className="text-[#C4B5FD] font-medium text-sm sm:text-base">
-              kolyb réunit tout en un — conçu pour ton quotidien d&apos;indépendant·e.
+              kolyb réunit tout en un, conçu pour ton quotidien d&apos;indépendant·e.
             </p>
           </div>
         </motion.div>

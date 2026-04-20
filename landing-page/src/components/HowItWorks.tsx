@@ -27,7 +27,7 @@ const steps = [
     color: "#FFB800",
     title: "Tu avances, jamais seul·e",
     description:
-      "Ma Tribu t'attend : une communauté d'indépendants qui comprennent ta réalité. Tu partages, tu échanges, tu progresses ensemble — à ton rythme.",
+      "Le Salon t'attend : une communauté d'indépendants qui comprennent ta réalité. Tu partages, tu échanges, tu progresses ensemble, à ton rythme.",
   },
 ];
 
@@ -52,7 +52,7 @@ export default function HowItWorks() {
           <h2 className="section-title">Simple comme bonjour</h2>
           <p className="section-sub">
             Pas de onboarding de 45 minutes, pas de formation requise.
-            Tu ouvres l&apos;app — tu avances.
+            Tu ouvres l&apos;app, tu avances.
           </p>
         </motion.div>
 

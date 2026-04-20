@@ -1,0 +1,229 @@
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Manrope:wght@400;500&family=Geist:wght@400;700&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.page { padding: 1rem 0; display: flex; flex-direction: column; gap: 24px; }
+
+/* ── Section header ── */
+.section-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #6D28D9; margin-bottom: 10px;
+}
+
+/* ── Logo candidates ── */
+.logo-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.logo-box {
+  background: #0D0B1E;
+  border: 0.5px solid #22204A;
+  border-radius: 10px;
+  padding: 18px 14px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.logo-box:hover { border-color: #8B7FE8; }
+.logo-box.selected { border-color: #6D28D9; background: #100e25; }
+
+.logo-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #4a4270; margin-bottom: 10px;
+}
+.logo-preview {
+  color: white; line-height: 1;
+  margin-bottom: 8px;
+}
+.logo-spec {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; color: #4a4270; line-height: 1.5;
+}
+
+/* ── Titre options ── */
+.titre-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.titre-box {
+  background: #0D0B1E;
+  border: 0.5px solid #22204A;
+  border-radius: 10px;
+  padding: 18px 16px 16px;
+}
+
+/* ── Corps comparison ── */
+.corps-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.corps-box {
+  background: #1A1836;
+  border: 0.5px solid #22204A;
+  border-radius: 10px;
+  padding: 18px 16px 16px;
+}
+
+/* ── Full system preview ── */
+.system-preview {
+  background: #0D0B1E;
+  border: 0.5px solid #22204A;
+  border-radius: 12px;
+  padding: 28px 24px;
+}
+
+.sep { height: 0.5px; background: #22204A; margin: 20px 0; }
+
+.pill {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; letter-spacing: 0.08em;
+  background: #1A1836; border: 0.5px solid #22204A;
+  border-radius: 20px; padding: 2px 8px;
+  color: #8B7FE8; margin-top: 8px; margin-right: 4px;
+}
+
+.pick-btn {
+  display: block; width: 100%; margin-top: 14px;
+  background: transparent; border: 0.5px solid #22204A;
+  border-radius: 8px; color: #8B7FE8;
+  font-family: 'Inter', sans-serif; font-size: 11px;
+  padding: 8px; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.pick-btn:hover { background: #1A1836; border-color: #6D28D9; }
+
+@media (max-width: 560px) {
+  .logo-row { grid-template-columns: 1fr 1fr; }
+  .titre-row, .corps-row { grid-template-columns: 1fr; }
+}
+</style>
+
+<div class="page">
+
+  <!-- ══ LOGO ══ -->
+  <div>
+    <div class="section-label">01 — Nom de marque · 700 · -0.02em tracking</div>
+    <div class="logo-row">
+
+      <div class="logo-box">
+        <div class="logo-name">Inter</div>
+        <div class="logo-preview" style="font-family:'Inter',sans-serif; font-size:28px; font-weight:700; letter-spacing:-0.02em;">kolyb</div>
+        <div class="logo-spec">Très neutre<br>Ubiquitaire</div>
+      </div>
+
+      <div class="logo-box">
+        <div class="logo-name">DM Sans</div>
+        <div class="logo-preview" style="font-family:'DM Sans',sans-serif; font-size:28px; font-weight:700; letter-spacing:-0.02em;">kolyb</div>
+        <div class="logo-spec">Légère rondeur<br>Moderne</div>
+      </div>
+
+      <div class="logo-box">
+        <div class="logo-name">Figtree</div>
+        <div class="logo-preview" style="font-family:'Figtree',sans-serif; font-size:28px; font-weight:700; letter-spacing:-0.02em;">kolyb</div>
+        <div class="logo-spec">Géométrique<br>Caractère doux</div>
+      </div>
+
+      <div class="logo-box">
+        <div class="logo-name">Plus Jakarta Sans</div>
+        <div class="logo-preview" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:28px; font-weight:700; letter-spacing:-0.02em;">kolyb</div>
+        <div class="logo-spec">Élancée<br>Très propre</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ SLOGAN + SOUS-TITRE ══ -->
+  <div>
+    <div class="section-label">02 — Slogan & sous-titre</div>
+    <div class="titre-row">
+
+      <div class="titre-box">
+        <div class="logo-name">Avec Inter</div>
+        <div style="font-family:'Inter',sans-serif; font-size:15px; font-weight:500; letter-spacing:0.03em; color:#C4B5FD; margin-bottom:10px;">Ton élan, au quotidien.</div>
+        <div style="font-family:'Inter',sans-serif; font-size:10px; font-weight:400; letter-spacing:0.05em; text-transform:uppercase; color:#8B7FE8;">Compagnon des entrepreneurs</div>
+        <div class="logo-spec" style="margin-top:10px;">Très cohérent — tout Inter<br>Risque : peu de hiérarchie</div>
+      </div>
+
+      <div class="titre-box">
+        <div class="logo-name">Avec Figtree</div>
+        <div style="font-family:'Figtree',sans-serif; font-size:15px; font-weight:500; letter-spacing:0.03em; color:#C4B5FD; margin-bottom:10px;">Ton élan, au quotidien.</div>
+        <div style="font-family:'Figtree',sans-serif; font-size:10px; font-weight:400; letter-spacing:0.05em; text-transform:uppercase; color:#8B7FE8;">Compagnon des entrepreneurs</div>
+        <div class="logo-spec" style="margin-top:10px;">Plus de chaleur<br>Meilleure lisibilité caps</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ CORPS ══ -->
+  <div>
+    <div class="section-label">03 — Corps de texte — Inter vs Manrope</div>
+    <div class="corps-row">
+
+      <div class="corps-box">
+        <div class="logo-name" style="margin-bottom:10px;">Inter Regular 400</div>
+        <div style="font-family:'Inter',sans-serif; font-size:13px; font-weight:400; color:#8B7FE8; line-height:1.65;">
+          Rejoins une communauté d'entrepreneurs qui avancent, partagent et se soutiennent — chaque jour.
+        </div>
+        <div style="font-family:'Inter',sans-serif; font-size:12px; font-weight:400; color:#6D28D9; margin-top:12px; line-height:1.6;">
+          Ton profil est à jour. 3 nouvelles connexions t'attendent cette semaine.
+        </div>
+        <div class="logo-spec" style="margin-top:12px;">Invisible, universel<br>Optimal sur iOS + Android<br>Zéro friction lecture</div>
+      </div>
+
+      <div class="corps-box">
+        <div class="logo-name" style="margin-bottom:10px;">Manrope Regular 400</div>
+        <div style="font-family:'Manrope',sans-serif; font-size:13px; font-weight:400; color:#8B7FE8; line-height:1.65;">
+          Rejoins une communauté d'entrepreneurs qui avancent, partagent et se soutiennent — chaque jour.
+        </div>
+        <div style="font-family:'Manrope',sans-serif; font-size:12px; font-weight:400; color:#6D28D9; margin-top:12px; line-height:1.6;">
+          Ton profil est à jour. 3 nouvelles connexions t'attendent cette semaine.
+        </div>
+        <div class="logo-spec" style="margin-top:12px;">Légèrement plus large<br>Un poil plus "designée"<br>Très bien en petite taille</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ SYSTÈME COMPLET ══ -->
+  <div>
+    <div class="section-label">04 — Aperçu système complet</div>
+
+    <div class="system-preview">
+
+      <!-- Logo + slogan -->
+      <div style="margin-bottom:20px;">
+        <div style="font-family:'Figtree',sans-serif; font-size:30px; font-weight:700; letter-spacing:-0.02em; color:white; line-height:1;">kolyb</div>
+        <div style="font-family:'Figtree',sans-serif; font-size:13px; font-weight:500; letter-spacing:0.03em; color:#C4B5FD; margin-top:4px;">Ton élan, au quotidien.</div>
+        <div style="font-family:'Figtree',sans-serif; font-size:9px; font-weight:400; letter-spacing:0.05em; text-transform:uppercase; color:#8B7FE8; margin-top:3px;">Compagnon des entrepreneurs</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- Titre écran -->
+      <div style="font-family:'Figtree',sans-serif; font-size:20px; font-weight:700; letter-spacing:-0.02em; color:#C4B5FD; margin-bottom:8px;">Bienvenue dans<br>ton réseau.</div>
+
+      <!-- Corps Inter -->
+      <div style="font-family:'Inter',sans-serif; font-size:13px; font-weight:400; color:#8B7FE8; line-height:1.65; margin-bottom:16px;">
+        Kolyb identifie les personnes qui peuvent réellement faire avancer ton projet — et les met sur ton chemin.
+      </div>
+
+      <!-- Bouton simulé -->
+      <div style="display:inline-block; background:#6D28D9; border-radius:8px; padding:10px 20px;">
+        <span style="font-family:'Figtree',sans-serif; font-size:13px; font-weight:600; color:white; letter-spacing:0.01em;">Commencer</span>
+      </div>
+
+      <div class="sep"></div>
+
+      <div style="font-family:'Inter',sans-serif; font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:#4a4270;">
+        Logo · Slogan · Sous-titre · Titres : Figtree — Corps : Inter
+      </div>
+
+    </div>
+
+    <button class="pick-btn" onclick="sendPrompt('Valide ce système Figtree + Inter pour Kolyb et génère la brand guidelines typographique complète')">Valider et générer la brand guidelines ↗</button>
+  </div>
+
+</div>

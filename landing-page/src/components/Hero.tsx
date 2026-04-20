@@ -8,7 +8,7 @@ import KolybIcon from "./KolybIcon";
 const features = [
   "Check-in matin & soir",
   "Planificateur 3 priorités",
-  "Communauté Ma Tribu",
+  "Le Salon",
 ];
 
 export default function Hero() {
@@ -74,7 +74,7 @@ export default function Hero() {
         >
           <span className="badge badge-violet">
             <Sparkles size={13} />
-            Beta ouverte — places limitées
+            Beta ouverte, places limitées
           </span>
         </motion.div>
 
@@ -93,7 +93,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-5xl md:text-7xl font-bold text-white leading-tight mb-6"
+          className="text-5xl md:text-7xl font-bold text-white leading-tight mb-8"
           style={{ letterSpacing: "-0.03em" }}
         >
           Ton élan,{" "}
@@ -107,7 +107,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-lg md:text-xl text-[#EDEDFF]/65 leading-relaxed mb-8"
         >
-          kolyb réunit tout ce dont tu as besoin pour avancer — à ton rythme,{" "}
+          kolyb réunit tout ce dont tu as besoin pour avancer, à ton rythme,{" "}
           <span className="text-[#C4B5FD] font-medium">jamais seul·e.</span>
         </motion.p>
 
@@ -116,7 +116,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap justify-center gap-2.5 mb-12"
+          className="flex flex-wrap justify-center gap-2.5 mb-16"
         >
           {features.map((f) => (
             <span
@@ -186,7 +186,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.8 }}
-          className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-10"
+          className="mt-20 flex flex-col sm:flex-row items-center justify-center gap-12"
         >
           {[
             { value: "500+", label: "entrepreneurs inscrits" },
