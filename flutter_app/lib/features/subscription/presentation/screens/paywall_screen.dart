@@ -203,7 +203,7 @@ class _PaywallBodyState extends ConsumerState<_PaywallBody> {
                     onPressed: isLoading ? null : () => context.pop(),
                     child: Text(
                       AppStrings.paywallCtaFree,
-                      style: AppTextStyles.labelMedium.copyWith(
+                      style: AppTextStyles.labelMedium().copyWith(
                         color: widget.isDark
                             ? AppColors.textDarkMuted
                             : AppColors.grey400,
@@ -218,7 +218,7 @@ class _PaywallBodyState extends ConsumerState<_PaywallBody> {
                   onPressed: isLoading ? null : _restore,
                   child: Text(
                     AppStrings.paywallRestoreLink,
-                    style: AppTextStyles.caption.copyWith(
+                    style: AppTextStyles.caption().copyWith(
                       color: AppColors.primaryLight,
                       decoration: TextDecoration.underline,
                       decorationColor: AppColors.primaryLight,
@@ -231,7 +231,7 @@ class _PaywallBodyState extends ConsumerState<_PaywallBody> {
                 // ── Légal ─────────────────────────────────────
                 Text(
                   AppStrings.paywallLegal,
-                  style: AppTextStyles.caption.copyWith(
+                  style: AppTextStyles.caption().copyWith(
                     color: widget.isDark
                         ? AppColors.textDarkMuted
                         : AppColors.grey400,
@@ -295,7 +295,7 @@ class _Header extends StatelessWidget {
           ),
           child: Text(
             'Pro v1 — recommandé',
-            style: AppTextStyles.caption.copyWith(
+            style: AppTextStyles.caption().copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -306,7 +306,7 @@ class _Header extends StatelessWidget {
 
         Text(
           AppStrings.paywallTitle,
-          style: AppTextStyles.displayLarge.copyWith(
+          style: AppTextStyles.displayLarge().copyWith(
             color: isDark ? AppColors.textDark : AppColors.textLight,
           ),
           textAlign: TextAlign.center,
@@ -316,7 +316,7 @@ class _Header extends StatelessWidget {
 
         Text(
           AppStrings.paywallSubtitle,
-          style: AppTextStyles.bodyMedium.copyWith(
+          style: AppTextStyles.bodyMedium().copyWith(
             color: isDark ? AppColors.textDarkMuted : AppColors.grey400,
           ),
           textAlign: TextAlign.center,
@@ -343,7 +343,7 @@ class _SectionTitle extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         label,
-        style: AppTextStyles.headingSmall.copyWith(
+        style: AppTextStyles.headingSmall().copyWith(
           color: highlight
               ? AppColors.primaryLight
               : (isDark ? AppColors.textDarkMuted : AppColors.grey400),
@@ -416,7 +416,7 @@ class _FeatureRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: AppTextStyles.bodyMedium.copyWith(
+              style: AppTextStyles.bodyMedium().copyWith(
                 color: isDark ? AppColors.textDark : AppColors.textLight,
               ),
             ),
@@ -560,7 +560,7 @@ class _PackageCard extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: AppTextStyles.labelMedium.copyWith(
+                    style: AppTextStyles.labelMedium().copyWith(
                       color: isDark ? AppColors.textDark : AppColors.textLight,
                       fontWeight: FontWeight.w600,
                     ),
@@ -568,7 +568,7 @@ class _PackageCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     caption,
-                    style: AppTextStyles.caption.copyWith(
+                    style: AppTextStyles.caption().copyWith(
                       color: isDark
                           ? AppColors.textDarkMuted
                           : AppColors.grey400,
@@ -584,7 +584,7 @@ class _PackageCard extends StatelessWidget {
               children: [
                 Text(
                   price,
-                  style: AppTextStyles.headingSmall.copyWith(
+                  style: AppTextStyles.headingSmall().copyWith(
                     color: selected
                         ? AppColors.primaryLight
                         : (isDark ? AppColors.textDark : AppColors.textLight),
@@ -593,7 +593,7 @@ class _PackageCard extends StatelessWidget {
                 if (pricePerMonth != null)
                   Text(
                     pricePerMonth!,
-                    style: AppTextStyles.caption.copyWith(
+                    style: AppTextStyles.caption().copyWith(
                       color: isDark
                           ? AppColors.textDarkMuted
                           : AppColors.grey400,
@@ -615,7 +615,7 @@ class _PackageCard extends StatelessWidget {
                 ),
                 child: Text(
                   savingBadge!,
-                  style: AppTextStyles.caption.copyWith(
+                  style: AppTextStyles.caption().copyWith(
                     color: AppColors.accent,
                     fontWeight: FontWeight.w700,
                   ),
@@ -669,7 +669,7 @@ class _CtaButton extends StatelessWidget {
               )
             : Text(
                 label,
-                style: AppTextStyles.labelMedium.copyWith(
+                style: AppTextStyles.labelMedium().copyWith(
                   color: Colors.white,
                   fontSize: 15,
                 ),
@@ -708,7 +708,7 @@ class _SuccessBody extends StatelessWidget {
           const SizedBox(height: AppConstants.spacing32),
           Text(
             AppStrings.paywallSuccessTitle,
-            style: AppTextStyles.headingLarge.copyWith(
+            style: AppTextStyles.headingLarge().copyWith(
               color: isDark ? AppColors.textDark : AppColors.textLight,
             ),
             textAlign: TextAlign.center,
@@ -716,7 +716,7 @@ class _SuccessBody extends StatelessWidget {
           const SizedBox(height: AppConstants.spacing16),
           Text(
             AppStrings.paywallSuccessSubtitle,
-            style: AppTextStyles.bodyMedium.copyWith(
+            style: AppTextStyles.bodyMedium().copyWith(
               color: isDark ? AppColors.textDarkMuted : AppColors.grey400,
             ),
             textAlign: TextAlign.center,
@@ -754,14 +754,14 @@ class _ErrorBody extends StatelessWidget {
               size: 48, color: AppColors.grey400),
           const SizedBox(height: AppConstants.spacing16),
           Text(message,
-              style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
+              style: AppTextStyles.bodyMedium(), textAlign: TextAlign.center),
           const SizedBox(height: AppConstants.spacing24),
           TextButton(
             onPressed: onRetry,
             child: Text(
               'Réessayer',
               style:
-                  AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
+                  AppTextStyles.labelMedium().copyWith(color: AppColors.primary),
             ),
           ),
         ],
