@@ -392,29 +392,31 @@ export default function AuditQuiz() {
     setCurrentQ(currentQ - 1);
   }, [currentQ, answers]);
 
-  /* ── Email submit ── */
+  /* ── Email submit — appel direct freewaitlists (site statique, pas d'API route) ── */
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || status === "loading") return;
     setStatus("loading");
     try {
-      const res  = await fetch("/api/subscribe", {
+      const res = await fetch("https://api.freewaitlists.com/waitlists/cmo78oimu08j901png9bqw4xb", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source: "audit-quiz" }),
+        body: JSON.stringify({ email, meta: { source: "audit-quiz" } }),
       });
-      const data = await res.json();
       if (res.ok) {
         setStatus("success");
-        setStatusMsg(data.message ?? "");
+        setPhase("results");
+      } else if (res.status === 409) {
+        // Déjà inscrit : on laisse quand même accéder aux résultats
+        setStatus("success");
         setPhase("results");
       } else {
         setStatus("error");
-        setStatusMsg(data.error ?? "Une erreur est survenue.");
+        setStatusMsg("Une erreur est survenue. Réessaie.");
       }
     } catch {
       setStatus("error");
-      setStatusMsg("Connexion impossible. Réessaie.");
+      setStatusMsg("Connexion impossible. Vérifie ta connexion et réessaie.");
     }
   };
 
