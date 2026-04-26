@@ -12,6 +12,8 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
+const auditLink = { label: "✦ Audit gratuit", href: "/audit" };
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -57,7 +59,21 @@ export default function Navbar() {
           </nav>
 
           {/* CTA */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-3">
+            <a
+              href={auditLink.href}
+              style={{
+                fontSize: 12, fontWeight: 600, letterSpacing: "0.01em",
+                color: "#C4B5FD", textDecoration: "none",
+                padding: "8px 14px", borderRadius: 99,
+                background: "rgba(109,40,217,0.12)",
+                border: "1px solid rgba(109,40,217,0.28)",
+                transition: "background 0.2s, color 0.2s",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {auditLink.label}
+            </a>
             <a href="#hero-form" className="btn btn-primary" style={{ padding: "10px 22px", fontSize: "13px" }}>
               Rejoindre la beta
             </a>
@@ -95,6 +111,14 @@ export default function Navbar() {
                   {link.label}
                 </a>
               ))}
+              <a
+                href={auditLink.href}
+                onClick={() => setMobileOpen(false)}
+                className="text-base font-semibold py-3 border-b border-[#22204A] transition-colors"
+                style={{ color: "#C4B5FD" }}
+              >
+                {auditLink.label}
+              </a>
               <a
                 href="#hero-form"
                 onClick={() => setMobileOpen(false)}
