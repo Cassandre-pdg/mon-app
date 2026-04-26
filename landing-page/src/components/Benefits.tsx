@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Heart, Shield, Zap, Clock, Globe, Lock } from "lucide-react";
 
 const benefits = [
@@ -49,21 +49,38 @@ const benefits = [
   },
 ];
 
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.88, y: 28 },
+  visible: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.55, delay: i * 0.09, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  }),
+};
+
 export default function Benefits() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const glowY = useTransform(scrollYProgress, [0, 1], ["20%", "-20%"]);
+
   return (
-    <section ref={ref} id="benefits" className="section">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-[#6D28D9]/10 rounded-full blur-[100px]" />
-      </div>
+    <section ref={ref} id="benefits" className="section" style={{ position: "relative", overflow: "hidden" }}>
+      <motion.div
+        style={{ y: glowY }}
+        className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
+      >
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#6D28D9]/10 rounded-full blur-[120px]" />
+      </motion.div>
 
       <div className="wrap relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="section-header"
         >
           <p className="eyebrow">Pourquoi kolyb</p>
@@ -82,26 +99,51 @@ export default function Benefits() {
             return (
               <motion.div
                 key={benefit.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+                custom={i}
+                variants={cardVariants}
+                initial="hidden"
+                animate={inView ? "visible" : "hidden"}
+                whileHover={{
+                  y: -8,
+                  scale: 1.02,
+                  boxShadow: `0 20px 56px ${benefit.color}18`,
+                  borderColor: `${benefit.color}35`,
+                }}
+                transition={{ duration: 0.25 }}
                 className="card group"
+                style={{ cursor: "default" }}
               >
-                <div
-                  className="icon-box mb-6 group-hover:scale-110"
+                <motion.div
+                  whileHover={{ rotate: 12, scale: 1.15 }}
+                  transition={{ duration: 0.3 }}
+                  className="icon-box mb-6"
                   style={{
                     background: `${benefit.color}15`,
                     border: `1px solid ${benefit.color}22`,
                   }}
                 >
                   <Icon size={18} style={{ color: benefit.color }} />
-                </div>
+                </motion.div>
                 <h3 className="text-[15px] font-semibold text-white mb-2.5 leading-snug">
                   {benefit.title}
                 </h3>
                 <p className="text-sm text-[#EDEDFF]/50 leading-relaxed">
                   {benefit.description}
                 </p>
+
+                {/* Animated bottom accent */}
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={inView ? { scaleX: 1 } : {}}
+                  transition={{ duration: 0.4, delay: 0.4 + i * 0.08 }}
+                  style={{
+                    transformOrigin: "left",
+                    height: "2px",
+                    background: `linear-gradient(90deg, ${benefit.color}, transparent)`,
+                    marginTop: "16px",
+                    borderRadius: "1px",
+                  }}
+                />
               </motion.div>
             );
           })}

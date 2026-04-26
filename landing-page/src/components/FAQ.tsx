@@ -31,7 +31,7 @@ const faqs = [
   },
   {
     q: "Que se passe-t-il si je rate un jour de check-in ?",
-    a: "Rien de dramatique, c'est même prévu dans le système. kolyb ne te punit jamais. Si tu rates un jour, tu reçois un message encourageant (jamais culpabilisant). Si tu te relèves dans les 48h, tu gagnes même un bonus de 15 points \"Relevé 💪\". La régularité, pas la perfection.",
+    a: "Rien de dramatique, c'est même prévu dans le système. kolyb ne te punit jamais. Si tu rates un jour, tu reçois un message encourageant (jamais culpabilisant). Si tu te relèves dans les 48h, tu gagnes même un bonus de 15 points \"Relevé\". La régularité, pas la perfection.",
   },
   {
     q: "Comment fonctionne Le Salon ?",
@@ -44,9 +44,10 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.4 }}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ delay: index * 0.055, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className={`faq-item rounded-2xl border transition-all duration-300 overflow-hidden ${
         open
           ? "faq-item-open bg-[#1A1836] border-[#6D28D9]/40"
@@ -66,8 +67,10 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
         >
           {q}
         </span>
-        <span
-          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.25 }}
+          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
           style={{
             background: open ? "rgba(109,40,217,0.35)" : "rgba(109,40,217,0.1)",
             border: `1px solid ${open ? "rgba(109,40,217,0.5)" : "rgba(109,40,217,0.2)"}`,
@@ -78,7 +81,7 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
           ) : (
             <Plus size={14} className="text-[#8B7FE8]" />
           )}
-        </span>
+        </motion.span>
       </button>
 
       <AnimatePresence initial={false}>
@@ -87,13 +90,11 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
             <div className="faq-separator" />
-            <p className="faq-answer text-sm text-[#EDEDFF]/65 leading-relaxed">
-              {a}
-            </p>
+            <p className="faq-answer text-sm text-[#EDEDFF]/65 leading-relaxed">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -102,16 +103,25 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
 }
 
 export default function FAQ() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} id="faq" className="section">
-      <div className="wrap-md">
+    <section ref={ref} id="faq" className="section" style={{ position: "relative", overflow: "hidden" }}>
+      {/* Subtle glow */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <motion.div
+          animate={{ scale: [1, 1.15, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#6D28D9]/6 rounded-full blur-[100px]"
+        />
+      </div>
+
+      <div className="wrap-md relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="section-header"
         >
           <p className="eyebrow">FAQ</p>
@@ -124,16 +134,11 @@ export default function FAQ() {
           </p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-col gap-4"
-        >
+        <div className="flex flex-col gap-4">
           {faqs.map((faq, i) => (
             <FAQItem key={faq.q} q={faq.q} a={faq.a} index={i} />
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

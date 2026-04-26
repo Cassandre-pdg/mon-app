@@ -1,38 +1,26 @@
 import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import Problem from "@/components/Problem";
-import Features from "@/components/Features";
+import RocketHero from "@/components/RocketHero";
+import MarqueeStrip from "@/components/MarqueeStrip";
+import HorizontalShowcase from "@/components/HorizontalShowcase";
+import ManifestoSection from "@/components/ManifestoSection";
+import AnimatedStats from "@/components/AnimatedStats";
 import HowItWorks from "@/components/HowItWorks";
-import Benefits from "@/components/Benefits";
-import FAQ from "@/components/FAQ";
-import Contact from "@/components/Contact";
+import ImmersiveCTA from "@/components/ImmersiveCTA";
 import Footer from "@/components/Footer";
-
-function Divider() {
-  return (
-    <div className="w-full px-8">
-      <div className="max-w-6xl mx-auto h-px bg-gradient-to-r from-transparent via-[#22204A] to-transparent" />
-    </div>
-  );
-}
+import ScrollProgress from "@/components/ScrollProgress";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0D0B1E] overflow-x-hidden">
+    <main className="min-h-screen bg-[#0D0B1E] [overflow-x:clip]">
+      <ScrollProgress />
       <Navbar />
-      <Hero />
-      <Divider />
-      <Problem />
-      <Divider />
-      <Features />
-      <Divider />
+      <RocketHero />
+      <MarqueeStrip />
+      <HorizontalShowcase />
+      <ManifestoSection />
+      <AnimatedStats />
       <HowItWorks />
-      <Divider />
-      <Benefits />
-      <Divider />
-      <FAQ />
-      <Divider />
-      <Contact />
+      <ImmersiveCTA />
       <Footer />
     </main>
   );

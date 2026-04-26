@@ -20,7 +20,7 @@ const subjects = [
 ];
 
 export default function Contact() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   const [form, setForm] = useState<FormState>({
@@ -54,23 +54,28 @@ export default function Contact() {
     } catch {}
     await new Promise((r) => setTimeout(r, 1200));
     setStatus("success");
-    setResponseMsg("Message reçu ! On te répond dans les 48h. 🙌");
+    setResponseMsg("Message reçu ! On te répond dans les 48h.");
     setForm({ firstName: "", email: "", subject: subjects[0], message: "" });
   };
 
   return (
-    <section ref={ref} id="contact" className="section overflow-hidden">
+    <section ref={ref} id="contact" className="section" style={{ overflow: "hidden", position: "relative" }}>
       {/* BG */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#6D28D9]/12 rounded-full blur-[100px]" />
-      </div>
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 pointer-events-none overflow-hidden"
+        aria-hidden="true"
+      >
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#6D28D9]/12 rounded-full blur-[110px]" />
+      </motion.div>
 
       <div className="wrap relative z-10">
-        {/* Top CTA — Email capture */}
+        {/* Top CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-28"
         >
           <p className="eyebrow">Rejoindre l&apos;aventure</p>
@@ -86,26 +91,32 @@ export default function Contact() {
         </motion.div>
 
         {/* Separator */}
-        <div className="separator flex items-center gap-4 mb-20">
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={inView ? { scaleX: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="separator flex items-center gap-4 mb-20"
+          style={{ transformOrigin: "center" }}
+        >
           <div className="flex-1 h-px bg-[#22204A]" />
           <span className="text-sm text-[#EDEDFF]/28 font-medium px-4 whitespace-nowrap">
             ou envoie-nous un message
           </span>
           <div className="flex-1 h-px bg-[#22204A]" />
-        </div>
+        </motion.div>
 
         {/* Contact form grid */}
         <div className="grid md:grid-cols-2 gap-12 items-start">
-          {/* Left — info */}
+          {/* Left info */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -32 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col gap-12"
           >
             <div>
               <h3 className="text-2xl font-bold text-white mb-5" style={{ letterSpacing: "-0.02em" }}>
-              Quelque chose manque ? Une idée en tête ? On t'écoute.
+                Quelque chose manque ? Une idée en tête ? On t'écoute.
               </h3>
               <p className="text-[#EDEDFF]/55 leading-relaxed text-sm">
                 Idée de feature, question, feedback, partenariat : toutes les raisons sont bonnes.
@@ -117,10 +128,16 @@ export default function Contact() {
               {[
                 { icon: Mail, label: "Email", value: "hello@kolyb.app" },
                 { icon: MessageCircle, label: "Réponse", value: "Toujours sous 48h" },
-              ].map((item) => {
+              ].map((item, i) => {
                 const Icon = item.icon;
                 return (
-                  <div key={item.label} className="flex items-center gap-4">
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={inView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
+                    className="flex items-center gap-4"
+                  >
                     <div className="w-10 h-10 rounded-xl bg-[#6D28D9]/15 border border-[#6D28D9]/22 flex items-center justify-center flex-shrink-0">
                       <Icon size={17} className="text-[#8B7FE8]" />
                     </div>
@@ -130,40 +147,52 @@ export default function Contact() {
                       </p>
                       <p className="text-sm text-[#EDEDFF]/80 font-medium">{item.value}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
 
-            <div className="announce p-7 rounded-2xl bg-[#1A1836] border border-[#22204A]">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="announce p-7 rounded-2xl bg-[#1A1836] border border-[#22204A]"
+            >
               <p className="text-sm text-[#EDEDFF]/55 leading-relaxed">
                 <span className="text-[#C4B5FD] font-semibold">kolyb</span> est construit par une
                 fondatrice solo qui vit les mêmes défis que toi. Ton retour compte vraiment, il
                 façonne directement l&apos;app.
               </p>
-            </div>
+            </motion.div>
           </motion.div>
 
-          {/* Right — form */}
+          {/* Right form */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 32 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
             {status === "success" ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="flex flex-col items-center justify-center text-center p-12 rounded-2xl bg-[#1A1836] border border-[#22204A]"
               >
-                <div className="text-5xl mb-5">🙌</div>
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="text-5xl mb-5"
+                >
+                  🙌
+                </motion.div>
                 <h4 className="text-xl font-bold text-white mb-3">{responseMsg}</h4>
                 <p className="text-[#EDEDFF]/45 text-sm mb-6">
                   En attendant, rejoins la liste d&apos;attente si ce n&apos;est pas déjà fait !
                 </p>
                 <button
                   onClick={() => setStatus("idle")}
-                  className="text-sm text-[#8B7FE8] hover:text-white transition-colors"
+                  className="text-sm text-[#8B7FE8] hover:text-white transition-colors cursor-pointer"
                 >
                   Envoyer un autre message
                 </button>
