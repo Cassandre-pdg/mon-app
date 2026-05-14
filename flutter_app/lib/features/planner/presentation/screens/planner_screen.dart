@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/constants/app_strings.dart';
+import '../../../../shared/widgets/pill_tab_bar.dart';
 import '../providers/planner_provider.dart';
 import '../../data/planner_model.dart';
 import 'pomodoro_screen.dart';
@@ -24,8 +24,7 @@ class PlannerScreen extends ConsumerWidget {
     return DefaultTabController(
       length: 5,
       child: Scaffold(
-        backgroundColor:
-            isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,40 +39,20 @@ class PlannerScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-              // ── Barre d'onglets scrollable ────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: TabBar(
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerHeight: 0,
-                  labelColor: AppColors.primary,
-                  unselectedLabelColor: AppColors.grey400,
-                  indicatorColor: AppColors.primary,
-                  indicatorWeight: 3,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelStyle: AppTextStyles.labelMedium()
-                      .copyWith(fontWeight: FontWeight.w600),
-                  unselectedLabelStyle: AppTextStyles.labelMedium(),
-                  tabs: const [
-                    Tab(text: '🎯  Priorités'),
-                    Tab(text: '🌊  Flow'),
-                    Tab(text: '🍅  Pomodoro'),
-                    Tab(text: '⚡  Flash'),
-                    Tab(text: '🧭  Matrice'),
-                  ],
-                ),
+              // ── Barre d'onglets pill scrollable ──────────
+              PillTabBar(
+                scrollable: true,
+                tabs: const [
+                  '🎯  Priorités',
+                  '🌊  Flow',
+                  '🍅  Pomodoro',
+                  '⚡  Flash',
+                  '🧭  Matrice',
+                ],
               ),
-
-              // Séparateur sous la barre d'onglets
-              Divider(
-                height: 1,
-                color: isDark
-                    ? AppColors.grey400.withValues(alpha:0.2)
-                    : AppColors.grey200,
-              ),
+              const SizedBox(height: 8),
 
               // ── Contenu des onglets ──────────────────────
               const Expanded(
@@ -99,10 +78,6 @@ class PlannerScreen extends ConsumerWidget {
 class _PrioritesTab extends ConsumerWidget {
   const _PrioritesTab();
 
-  // Routes inline pour éviter un import circulaire avec app_router
-  static const _kanbanRoute      = '/planner/kanban';
-  static const _weeklyReviewRoute = '/planner/weekly-review';
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(plannerProvider);
@@ -110,30 +85,18 @@ class _PrioritesTab extends ConsumerWidget {
 
     return Column(
       children: [
-        // ── Badge méthode MIT ──────────────────────────────
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 14, 24, 0),
-          child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.10),
-              borderRadius:
-                  BorderRadius.circular(AppConstants.radiusPill),
-            ),
-            child: Text(
-              'Méthode MIT : tes 3 tâches les plus importantes du jour',
-              style: AppTextStyles.caption(color: AppColors.primaryLight),
-            ),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+          child: Text(
+            'Tes 3 priorités du jour',
+            style: AppTextStyles.bodyMedium(color: AppColors.grey400),
           ),
         ),
-        const SizedBox(height: AppConstants.spacing12),
 
-        // ── Liste des tâches ───────────────────────────────
+        // Liste des tâches
         Expanded(
           child: tasksAsync.when(
-            loading: () =>
-                const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(
               child: Text(
                 AppStrings.errorGeneric,
@@ -146,120 +109,23 @@ class _PrioritesTab extends ConsumerWidget {
           ),
         ),
 
-        // ── Bouton ajouter / message limite ───────────────
+        // Bouton ajouter (si < 3 tâches)
         tasksAsync.when(
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
-          data: (tasks) => Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-            child: tasks.length < AppConstants.maxDailyTasks
-                ? _AddTaskButton()
-                : Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(
-                          AppConstants.radiusMedium),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('🎉',
-                            style: TextStyle(fontSize: 16)),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Tes 3 priorités sont définies, à toi de jouer !',
-                          style: AppTextStyles.bodySmall(
-                              color: AppColors.success),
-                        ),
-                      ],
-                    ),
-                  ),
-          ),
-        ),
-
-        // ── Liens rapides Kanban + Revue hebdo ────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
-          child: Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => context.push(_kanbanRoute),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.surfaceDark
-                          : AppColors.surfaceLight,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.grey400
-                                .withValues(alpha: 0.15)
-                            : AppColors.grey200,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('🗂️',
-                            style: TextStyle(fontSize: 15)),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Kanban',
-                          style: AppTextStyles.bodySmall(
-                            color: isDark
-                                ? AppColors.textDarkMuted
-                                : AppColors.grey400,
-                          ).copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
+          data: (tasks) => tasks.length < AppConstants.maxDailyTasks
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  child: _AddTaskButton(),
+                )
+              : Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  child: Text(
+                    AppStrings.plannerMaxTasks,
+                    style: AppTextStyles.bodySmall(color: AppColors.grey400),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => context.push(_weeklyReviewRoute),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.surfaceDark
-                          : AppColors.surfaceLight,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.grey400
-                                .withValues(alpha: 0.15)
-                            : AppColors.grey200,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('📋',
-                            style: TextStyle(fontSize: 15)),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Revue hebdo',
-                          style: AppTextStyles.bodySmall(
-                            color: isDark
-                                ? AppColors.textDarkMuted
-                                : AppColors.grey400,
-                          ).copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );
@@ -413,102 +279,124 @@ void _showTaskSheet(
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, setState) => Padding(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isEdit ? 'Modifier la priorité' : 'Nouvelle priorité',
-              style: AppTextStyles.headingMedium(),
-            ),
-            const SizedBox(height: AppConstants.spacing16),
-            TextField(
-              controller: ctrl,
-              autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'Sur quoi tu vas avancer ?',
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacing16),
-            Text('Niveau de priorité', style: AppTextStyles.labelMedium()),
-            const SizedBox(height: 8),
-            Row(
-              children: [1, 2, 3].map((p) {
-                const colors = {
-                  1: AppColors.error,
-                  2: AppColors.warning,
-                  3: AppColors.accent,
-                };
-                const labels = {
-                  1: '🔴 Haute',
-                  2: '🟡 Moyenne',
-                  3: '🟢 Basse',
-                };
-                final c = colors[p]!;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => priority = p),
-                    child: Container(
-                      margin: EdgeInsets.only(right: p < 3 ? 8 : 0),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: priority == p
-                            ? c.withValues(alpha: 0.15)
-                            : Colors.transparent,
-                        border: Border.all(
-                          color: priority == p ? c : AppColors.grey200,
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          AppConstants.radiusMedium,
-                        ),
-                      ),
-                      child: Text(
-                        labels[p]!,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodySmall(
-                          color: priority == p ? c : AppColors.grey400,
-                        ),
-                      ),
-                    ),
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.55),
+    builder: (ctx) {
+      final isDark = Theme.of(ctx).brightness == Brightness.dark;
+      return StatefulBuilder(
+        builder: (ctx, setState) => Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceLight,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 4),
+                  width: 36, height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.grey400.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                );
-              }).toList(),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 24, right: 24, top: 16,
+                    bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isEdit ? 'Modifier la priorité' : 'Nouvelle priorité',
+                        style: AppTextStyles.headingMedium(
+                          color: isDark ? AppColors.textDark : AppColors.textLight,
+                        ),
+                      ),
+                      const SizedBox(height: AppConstants.spacing16),
+                      TextField(
+                        controller: ctrl,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          hintText: 'Sur quoi tu vas avancer ?',
+                        ),
+                      ),
+                      const SizedBox(height: AppConstants.spacing16),
+                      Text('Niveau de priorité',
+                          style: AppTextStyles.labelMedium(
+                              color: AppColors.grey400)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [1, 2, 3].map((p) {
+                          const colors = {
+                            1: AppColors.error,
+                            2: AppColors.warning,
+                            3: AppColors.accent,
+                          };
+                          const labels = {1: '🔴 Haute', 2: '🟡 Moyenne', 3: '🟢 Basse'};
+                          final c = colors[p]!;
+                          return Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => priority = p),
+                              child: AnimatedContainer(
+                                duration: AppConstants.animFast,
+                                margin: EdgeInsets.only(right: p < 3 ? 8 : 0),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: priority == p
+                                      ? c.withValues(alpha: 0.15)
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: priority == p ? c : AppColors.grey400.withValues(alpha: 0.3),
+                                  ),
+                                  borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                                ),
+                                child: Text(
+                                  labels[p]!,
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.bodySmall(
+                                    color: priority == p ? c : AppColors.grey400,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: AppConstants.spacing24),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (ctrl.text.trim().isEmpty) return;
+                          if (isEdit) {
+                            ref.read(plannerProvider.notifier).editTask(
+                                  task.id,
+                                  title: ctrl.text.trim(),
+                                  priority: priority,
+                                );
+                          } else {
+                            ref.read(plannerProvider.notifier).addTask(
+                                  title: ctrl.text.trim(),
+                                  priority: priority,
+                                );
+                          }
+                          Navigator.pop(ctx);
+                        },
+                        child: Text(isEdit ? 'Enregistrer' : 'Ajouter'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppConstants.spacing24),
-            ElevatedButton(
-              onPressed: () {
-                if (ctrl.text.trim().isEmpty) return;
-                if (isEdit) {
-                  ref.read(plannerProvider.notifier).editTask(
-                        task.id,
-                        title: ctrl.text.trim(),
-                        priority: priority,
-                      );
-                } else {
-                  ref.read(plannerProvider.notifier).addTask(
-                        title: ctrl.text.trim(),
-                        priority: priority,
-                      );
-                }
-                Navigator.pop(ctx);
-              },
-              child: Text(isEdit ? 'Enregistrer' : 'Ajouter'),
-            ),
-          ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 

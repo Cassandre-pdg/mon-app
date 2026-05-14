@@ -18,7 +18,7 @@ class SleepScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +28,7 @@ class SleepScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Mon Sommeil',
+                  Text(AppStrings.navSleep,
                       style: AppTextStyles.headingLarge(
                           color: isDark ? AppColors.textDark : AppColors.textLight)),
                   ElevatedButton.icon(
@@ -68,91 +68,149 @@ class SleepScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => Padding(
-          padding: EdgeInsets.only(
-            left: 24, right: 24, top: 24,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Mon sommeil 😴', style: AppTextStyles.headingMedium()),
-              const SizedBox(height: AppConstants.spacing24),
-
-              // Heure coucher / réveil
-              Row(
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.55),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return StatefulBuilder(
+          builder: (ctx, setState) => Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppColors.surfaceElevatedDark
+                  : AppColors.surfaceLight,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: _TimePicker(
-                      label: '🌙 Coucher',
-                      time: bedtime,
-                      onPicked: (t) => setState(() => bedtime = t),
+                  // Handle
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 4),
+                    width: 36, height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.grey400.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _TimePicker(
-                      label: '🌅 Réveil',
-                      time: wakeTime,
-                      onPicked: (t) => setState(() => wakeTime = t),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: 24, right: 24, top: 16,
+                      bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('😴', style: TextStyle(fontSize: 22)),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Mon sommeil',
+                              style: AppTextStyles.headingMedium(
+                                color: isDark
+                                    ? AppColors.textDark
+                                    : AppColors.textLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppConstants.spacing24),
+
+                        // Heure coucher / réveil
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _TimePicker(
+                                label: '🌙 Coucher',
+                                time: bedtime,
+                                onPicked: (t) =>
+                                    setState(() => bedtime = t),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _TimePicker(
+                                label: '🌅 Réveil',
+                                time: wakeTime,
+                                onPicked: (t) =>
+                                    setState(() => wakeTime = t),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppConstants.spacing16),
+
+                        // Qualité
+                        Text(
+                          'Qualité du sommeil',
+                          style: AppTextStyles.labelMedium(
+                              color: AppColors.grey400),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: List.generate(5, (i) {
+                            final emojis = ['😴', '😕', '😐', '🙂', '😄'];
+                            final score = i + 1;
+                            return GestureDetector(
+                              onTap: () =>
+                                  setState(() => quality = score),
+                              child: AnimatedContainer(
+                                duration: AppConstants.animFast,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: quality == score
+                                      ? AppColors.primary
+                                          .withValues(alpha: 0.18)
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: quality == score
+                                        ? AppColors.primary
+                                        : AppColors.grey400
+                                            .withValues(alpha: 0.3),
+                                    width: quality == score ? 1.5 : 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Text(
+                                  emojis[i],
+                                  style: const TextStyle(fontSize: 26),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                        const SizedBox(height: AppConstants.spacing24),
+
+                        ElevatedButton(
+                          onPressed: () {
+                            String fmt(TimeOfDay t) =>
+                                '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+                            ref.read(sleepLogsProvider.notifier).addLog(
+                                  sleepDate: DateTime.now()
+                                      .toIso8601String()
+                                      .split('T')[0],
+                                  bedtime: fmt(bedtime),
+                                  wakeTime: fmt(wakeTime),
+                                  qualityScore: quality,
+                                );
+                            Navigator.pop(ctx);
+                          },
+                          child: const Text('Enregistrer'),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppConstants.spacing16),
-
-              // Qualité
-              Text('Qualité du sommeil', style: AppTextStyles.labelMedium()),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(5, (i) {
-                  final emojis = ['😴', '😕', '😐', '🙂', '😄'];
-                  final score = i + 1;
-                  return GestureDetector(
-                    onTap: () => setState(() => quality = score),
-                    child: AnimatedContainer(
-                      duration: AppConstants.animFast,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: quality == score
-                            ? AppColors.primary.withValues(alpha:0.15)
-                            : Colors.transparent,
-                        border: Border.all(
-                          color: quality == score ? AppColors.primary : AppColors.grey200,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(emojis[i], style: const TextStyle(fontSize: 24)),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: AppConstants.spacing24),
-
-              ElevatedButton(
-                onPressed: () {
-                  String fmt(TimeOfDay t) =>
-                      '${t.hour.toString().padLeft(2,'0')}:${t.minute.toString().padLeft(2,'0')}';
-                  ref.read(sleepLogsProvider.notifier).addLog(
-                        sleepDate: DateTime.now().toIso8601String().split('T')[0],
-                        bedtime: fmt(bedtime),
-                        wakeTime: fmt(wakeTime),
-                        qualityScore: quality,
-                      );
-                  Navigator.pop(ctx);
-                },
-                child: const Text('Enregistrer'),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

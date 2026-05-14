@@ -6,6 +6,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/theme/theme_provider.dart';
 import '../../../../shared/constants/app_constants.dart';
+import '../../../../shared/widgets/share_card.dart';
 import '../../../../shared/constants/app_strings.dart';
 import '../../../../shared/navigation/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -27,8 +28,7 @@ class ProfileScreen extends ConsumerWidget {
     final email = user?.email ?? '';
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async => ref.invalidate(profileStatsProvider),
@@ -106,6 +106,10 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: AppConstants.spacing32),
+
+                // ── Carte partage ───────────────────────────────
+                const ShareCard(),
                 const SizedBox(height: AppConstants.spacing32),
 
                 // ── RGPD + version ──────────────────────────────

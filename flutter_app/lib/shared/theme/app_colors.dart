@@ -5,6 +5,14 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
+  // ─── GRADIENT FOND DARK ────────────────────────────────────
+  /// Fond dark — dégradé noir → bleu-violet profond
+  static const LinearGradient backgroundGradientDark = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF101010), Color(0xFF11044D)],
+  );
+
   // ─── PRIMAIRES ────────────────────────────────────────────────
   /// Violet profond — couleur structurante principale
   static const Color primary      = Color(0xFF6D28D9);
@@ -25,15 +33,12 @@ class AppColors {
   static const Color chartViolet = Color(0xFF8B7FE8); // 2e série, éléments actifs
 
   // ─── FONDS DARK MODE (défaut) ────────────────────────────────
-  /// Fond principal — top du gradient (couleur de fallback)
-  static const Color backgroundDark = Color(0xFF000000);
-  /// Gradient dark : haut → bas, 180°
-  static const Color backgroundDarkGradientStart = Color(0xFF000000); // noir pur
-  static const Color backgroundDarkGradientEnd   = Color(0xFF11044D); // indigo nuit
-  /// Surface des cards — légèrement plus claire pour du volume sur le gradient
-  static const Color surfaceDark    = Color(0xFF160F3A);
-  /// Surface élevée (modals, bottom sheets) — plus présent pour l'effet depth
-  static const Color surfaceElevatedDark = Color(0xFF1E1650);
+  /// Fond principal — #0D0B1E
+  static const Color backgroundDark = Color(0xFF0D0B1E);
+  /// Surface des cards — #1A1836
+  static const Color surfaceDark    = Color(0xFF1A1836);
+  /// Surface élevée (modals, bottom sheets) — #22204A
+  static const Color surfaceElevatedDark = Color(0xFF22204A);
 
   // ─── FONDS LIGHT MODE ─────────────────────────────────────────
   static const Color backgroundLight = Color(0xFFF5F4FF); // blanc cassé violet
@@ -56,34 +61,9 @@ class AppColors {
   static const Color grey600 = Color(0xFF5C5C7A);
   static const Color grey800 = Color(0xFF22204A); // = bordure Kolyb
 
-  // ─── GLASS / LIQUID GLASS ─────────────────────────────────────
-  /// Fond card dark — légèrement remonté pour volume sur gradient
-  static const Color glassDark        = Color(0xFF160F3A);
-  /// Bordure glass — highlight subtil pour l'effet depth Apple
-  static const Color glassBorder      = Color(0xFF2A1E6E);
-  /// Highlight top-edge card (trait de lumière 1px en haut)
-  static const Color glassHighlight   = Color(0x14FFFFFF); // blanc 8%
-  /// Fond glassmorphism blanc 8% (sur fond aurora/coloré)
-  static const Color glassWhite8      = Color(0x14FFFFFF);
-  /// Fond glassmorphism blanc 12%
-  static const Color glassWhite12     = Color(0x1FFFFFFF);
-  /// Bordure glass blanche semi-transparente
-  static const Color glassBorderWhite = Color(0x1AFFFFFF);
-
-  // ─── AURORA (orbes animées background) ────────────────────────
-  static const Color auroraViolet = Color(0x668B7FE8); // primaryLight 40%
-  static const Color auroraPink   = Color(0x66FF4D6A); // secondary 40%
-  static const Color auroraTeal   = Color(0x6600D4C8); // accent 40%
-  static const Color auroraAmber  = Color(0x66FFB800); // chartAmber 40%
-  static const Color auroraCorail = Color(0x66FF4D6A); // = auroraPink
-
-  // ─── GRADIENTS (listes const pour LinearGradient) ────────────
-  /// Gradient principal : violet clair → violet pâle → teal
-  static const List<Color> gradientMain   = [Color(0xFF8B7FE8), Color(0xFFC4B5FD), Color(0xFF00D4C8)];
-  /// Gradient violet : profond → pâle
-  static const List<Color> gradientViolet = [Color(0xFF6D28D9), Color(0xFFC4B5FD)];
-  /// Gradient énergie : corail → amber
-  static const List<Color> gradientEnergy = [Color(0xFFFF4D6A), Color(0xFFFFB800)];
-  /// Gradient dark pour GlassDarkCard : violet semi-transparent
-  static const List<Color> gradientDark   = [Color(0x2A6D28D9), Color(0x1A4A1A9E)];
+  // ─── GLASS (cartes premium) ────────────────────────────────────
+  /// Fond card dark — #1A1836
+  static const Color glassDark   = Color(0xFF1A1836);
+  /// Bordure glass — #22204A
+  static const Color glassBorder = Color(0xFF22204A);
 }

@@ -27,7 +27,7 @@ class PaywallScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+          isDark ? Colors.transparent : AppColors.backgroundLight,
       body: SafeArea(
         child: offeringAsync.when(
           loading: () => const Center(

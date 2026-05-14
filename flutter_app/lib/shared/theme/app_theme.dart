@@ -20,11 +20,10 @@ class AppTheme {
           onSurface: AppColors.textDark,
           onError: Colors.white,
         ),
-        // Transparent : le gradient est injecté par le builder MaterialApp
-        scaffoldBackgroundColor: Colors.transparent,
+        scaffoldBackgroundColor: AppColors.backgroundDark,
         textTheme: _buildTextTheme(AppColors.textDark),
         appBarTheme: _appBarTheme(
-          background: Colors.transparent,
+          background: AppColors.backgroundDark,
           foreground: AppColors.textDark,
         ),
         cardTheme: _cardTheme(AppColors.surfaceDark),
@@ -38,6 +37,7 @@ class AppTheme {
           thickness: 1,
         ),
         tabBarTheme: _tabBarTheme(),
+        navigationBarTheme: _navBarTheme(isDark: true),
       );
 
   // ── LIGHT MODE ──────────────────────────────────────────────
@@ -71,6 +71,7 @@ class AppTheme {
           thickness: 1,
         ),
         tabBarTheme: _tabBarTheme(),
+        navigationBarTheme: _navBarTheme(isDark: false),
       );
 
   // ── COMPOSANTS ──────────────────────────────────────────────
@@ -202,10 +203,8 @@ class AppTheme {
 
   static BottomNavigationBarThemeData _bottomNavTheme({required bool isDark}) =>
       BottomNavigationBarThemeData(
-        // Dark : légèrement opaque sur le gradient pour flottement au-dessus
-        backgroundColor: isDark
-            ? const Color(0xCC0A072E) // #0A072E @ 80% — indigo très sombre semi-transparent
-            : AppColors.surfaceLight,
+        backgroundColor:
+            isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.grey600,
         showUnselectedLabels: true,
@@ -219,6 +218,32 @@ class AppTheme {
           fontWeight: FontWeight.w400,
         ),
         elevation: 0,
+      );
+
+  static NavigationBarThemeData _navBarTheme({required bool isDark}) =>
+      NavigationBarThemeData(
+        height: 68,
+        backgroundColor:
+            isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        indicatorColor: AppColors.primary.withValues(alpha: 0.18),
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: isSelected ? AppColors.primary : AppColors.grey400,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: isSelected ? AppColors.primary : AppColors.grey600,
+            size: isSelected ? 24 : 22,
+          );
+        }),
       );
 
   static TabBarThemeData _tabBarTheme() => TabBarThemeData(
