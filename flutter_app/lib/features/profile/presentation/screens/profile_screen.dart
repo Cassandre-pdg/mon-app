@@ -109,7 +109,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: AppConstants.spacing32),
 
                 // ── Carte partage ───────────────────────────────
-                const ShareCard(),
+                ShareCard(),
                 const SizedBox(height: AppConstants.spacing32),
 
                 // ── RGPD + version ──────────────────────────────

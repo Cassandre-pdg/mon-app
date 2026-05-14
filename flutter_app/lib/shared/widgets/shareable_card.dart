@@ -239,7 +239,7 @@ class ShareSessionSheet extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () async {
-                await ShareService.shareText(shareText ?? 'Mon élan du jour avec Kolyb : kolyb.app');
+                await ShareService.shareText(shareText);
                 if (context.mounted) Navigator.pop(context);
               },
               icon: const Icon(Icons.share_rounded),

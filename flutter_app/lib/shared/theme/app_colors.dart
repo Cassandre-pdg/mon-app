@@ -66,4 +66,35 @@ class AppColors {
   static const Color glassDark   = Color(0xFF1A1836);
   /// Bordure glass — #22204A
   static const Color glassBorder = Color(0xFF22204A);
+  /// Fond glass blanc 8% (champs, inputs)
+  static const Color glassWhite8      = Color(0x14FFFFFF);
+  /// Fond glass blanc 12% (pills, tags)
+  static const Color glassWhite12     = Color(0x1FFFFFFF);
+  /// Bordure glass blanc 10%
+  static const Color glassBorderWhite = Color(0x1AFFFFFF);
+  /// Highlight glass blanc 20%
+  static const Color glassHighlight   = Color(0x33FFFFFF);
+
+  // ─── FOND DARK — points de départ/fin du dégradé app ─────────
+  static const Color backgroundDarkGradientStart = Color(0xFF101010);
+  static const Color backgroundDarkGradientEnd   = Color(0xFF11044D);
+
+  // ─── GRADIENTS DARK (List<Color> pour gradient interne) ───────
+  static const List<Color> gradientDark = [Color(0xFF1A1836), Color(0xFF22204A)];
+
+  // ─── GRADIENTS (List<Color> pour ShaderMask) ──────────────────
+  /// Violet → pale → teal (titres hero)
+  static const List<Color> gradientMain   = [Color(0xFF6D28D9), Color(0xFFC4B5FD), Color(0xFF00D4C8)];
+  /// Corail → amber (CTA, mots d'action)
+  static const List<Color> gradientEnergy = [Color(0xFFFF4D6A), Color(0xFFFFB800)];
+  /// Violet profond → pale (accents doux)
+  static const List<Color> gradientViolet = [Color(0xFF6D28D9), Color(0xFFC4B5FD)];
+
+  // ─── AURORA (orbes animées — Flow / Wellness) ─────────────────
+  // Encodage ARGB : 0xAARRGGBB — const pour permettre les default params
+  static const Color auroraViolet = Color(0x596D28D9); // violet, alpha 35%
+  static const Color auroraTeal   = Color(0x4000D4C8); // teal,   alpha 25%
+  static const Color auroraPink   = Color(0x33FF4D6A); // corail, alpha 20%
+  static const Color auroraCorail = Color(0x40FF4D6A); // corail, alpha 25%
+  static const Color auroraAmber  = Color(0x40FFB800); // amber,  alpha 25%
 }

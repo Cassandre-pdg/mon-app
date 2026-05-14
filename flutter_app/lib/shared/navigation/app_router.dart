@@ -16,6 +16,9 @@ import '../../features/rewards/presentation/screens/rewards_screen.dart';
 import '../../features/profile/presentation/screens/notification_settings_screen.dart';
 import '../../features/subscription/presentation/screens/paywall_screen.dart';
 import '../constants/app_strings.dart';
+import '../theme/app_colors.dart';
+import '../../features/capture/presentation/providers/capture_provider.dart';
+import '../../features/capture/presentation/widgets/capture_bottom_sheet.dart';
 
 class AppRoutes {
   static const String auth       = '/auth';
@@ -129,7 +132,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 // ── Scaffold avec barre de navigation 5 onglets ──────────────
-class _ScaffoldWithNav extends StatelessWidget {
+class _ScaffoldWithNav extends ConsumerWidget {
   const _ScaffoldWithNav({required this.child});
   final Widget child;
 
@@ -142,13 +145,79 @@ class _ScaffoldWithNav extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).uri.toString();
     final currentIndex =
         _routes.indexWhere((r) => location.startsWith(r)).clamp(0, 4);
+    final pendingCount = ref.watch(pendingCapturesCountProvider);
 
     return Scaffold(
-      body: child,
+      body: Stack(
+        children: [
+          child,
+          // ── Bouton capture brain dump (haut droite) ──────
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16, right: 16),
+                child: GestureDetector(
+                  onTap: () => showCaptureSheet(context),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.edit_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                      // Badge rouge si notes en attente
+                      if (pendingCount > 0)
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: const BoxDecoration(
+                              color: AppColors.error,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                pendingCount > 9 ? '9+' : '$pendingCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       bottomNavigationBar: _KolybNavBar(
         currentIndex: currentIndex,
         onTap: (i) => context.go(_routes[i]),

@@ -75,7 +75,7 @@ class _FeedTab extends ConsumerWidget {
     final currentUser = Supabase.instance.client.auth.currentUser;
     final authorName =
         currentUser?.userMetadata?['full_name'] as String? ?? 'Kolyb';
-    final likedIds = ref.watch(likedPostIdsProvider);
+    final reactedPosts = ref.watch(reactedPostsProvider);
 
     return Stack(
       children: [
@@ -122,7 +122,7 @@ class _FeedTab extends ConsumerWidget {
                       post: posts[i],
                       isDark: isDark,
                       isOwnPost: posts[i].userId == currentUser?.id,
-                      isLiked: likedIds.contains(posts[i].id),
+                      isLiked: reactedPosts.containsKey(posts[i].id),
                     ),
                   ),
                 ),
@@ -277,11 +277,11 @@ class _PostCard extends ConsumerWidget {
                 ? null
                 : () async {
                     await ref
-                        .read(likedPostIdsProvider.notifier)
-                        .addLike(post.id);
+                        .read(reactedPostsProvider.notifier)
+                        .addReaction(post.id, ReactionType.utile);
                     ref
                         .read(communityPostsProvider.notifier)
-                        .likePost(post.id);
+                        .reactToPost(post.id, ReactionType.utile);
                   },
             child: Row(
               children: [
@@ -296,7 +296,7 @@ class _PostCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${post.likesCount}',
+                  '${post.totalReactions}',
                   style: AppTextStyles.bodySmall(
                     color: isLiked
                         ? AppColors.secondary
@@ -479,6 +479,7 @@ class _PostFab extends ConsumerWidget {
       await ref.read(communityPostsProvider.notifier).createPost(
             content: content,
             authorName: authorName,
+            postType: PostType.reflexion,
           );
       // Rafraîchit le compteur hebdomadaire
       ref.invalidate(weeklyPostCountProvider);

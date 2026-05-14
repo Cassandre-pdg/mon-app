@@ -10,6 +10,7 @@ class AppStrings {
   static const String navCommunity  = 'Le Salon';
   static const String navProfile    = 'Mon Profil';
   static const String navBadges     = 'Mes Badges';
+  static const String navSleep      = 'Mon Sommeil';
 
   // ── ONBOARDING ──────────────────────────────────────────────
   static const String onboardingTagline =
