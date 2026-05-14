@@ -1,15 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export default function ImmersiveCTA() {
+  const sectionRef = useRef<HTMLElement>(null);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+
+  /* ── Glow curseur ──────────────────────────────────────── */
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+  const smoothX = useSpring(mouseX, { stiffness: 70, damping: 22 });
+  const smoothY = useSpring(mouseY, { stiffness: 70, damping: 22 });
+  const glowLeft = useTransform(smoothX, [0, 1], ["-10%", "110%"]);
+  const glowTop  = useTransform(smoothY, [0, 1], ["-10%", "110%"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    mouseX.set((e.clientX - rect.left) / rect.width);
+    mouseY.set((e.clientY - rect.top) / rect.height);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,13 +52,29 @@ export default function ImmersiveCTA() {
   };
 
   return (
-    <section className="immersive-cta" id="waitlist">
-      {/* Glow layers */}
+    <section
+      ref={sectionRef}
+      className="immersive-cta"
+      id="waitlist"
+      style={{ paddingTop: "clamp(100px, 12vw, 140px)", paddingBottom: "clamp(100px, 12vw, 140px)" }}
+      onMouseMove={handleMouseMove}
+    >
+      {/* Séparateur — diagonal inversé */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute", top: 0, left: 0, right: 0,
+          height: 1,
+          background: "linear-gradient(90deg, transparent 0%, rgba(255,77,106,0.25) 25%, rgba(109,40,217,0.45) 55%, transparent 100%)",
+        }}
+      />
+
+      {/* Glow layers fixes */}
       <div className="cta-glow" aria-hidden="true">
         <div className="cta-glow-main" />
         <div className="cta-glow-ring" />
 
-        {/* Floating orbs */}
+        {/* Orbes flottantes */}
         {[
           { size: 320, top: "10%",  left: "5%",   color: "rgba(109,40,217,0.2)",  delay: "0s",   dur: "9s" },
           { size: 200, top: "60%",  right: "8%",  color: "rgba(0,212,200,0.14)",  delay: "-4s",  dur: "11s" },
@@ -52,8 +84,7 @@ export default function ImmersiveCTA() {
             key={i}
             style={{
               position: "absolute",
-              width: orb.size,
-              height: orb.size,
+              width: orb.size, height: orb.size,
               borderRadius: "50%",
               background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
               filter: "blur(60px)",
@@ -69,18 +100,33 @@ export default function ImmersiveCTA() {
         {/* Grid */}
         <div
           style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage:
-              "linear-gradient(rgba(139,127,232,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(139,127,232,0.04) 1px, transparent 1px)",
+            position: "absolute", inset: 0,
+            backgroundImage: "linear-gradient(rgba(139,127,232,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(139,127,232,0.04) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
-            maskImage:
-              "radial-gradient(ellipse 70% 70% at 50% 50%, black 40%, transparent 100%)",
+            maskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black 40%, transparent 100%)",
           }}
         />
       </div>
 
-      {/* Content */}
+      {/* Glow curseur — suit la souris */}
+      <motion.div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          width: 700, height: 700,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(109,40,217,0.22) 0%, rgba(139,127,232,0.08) 40%, transparent 70%)",
+          filter: "blur(80px)",
+          pointerEvents: "none",
+          left: glowLeft,
+          top: glowTop,
+          x: "-50%",
+          y: "-50%",
+          zIndex: 0,
+        }}
+      />
+
+      {/* Contenu */}
       <div className="wrap-sm" style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
         <motion.div
           initial="hidden"
@@ -112,7 +158,7 @@ export default function ImmersiveCTA() {
           >
             Deviens{" "}
             <span className="gradient-text" style={{ margin: 0, display: "inline" }}>
-            ton propre standard.
+              ton propre standard.
             </span>
           </motion.h2>
 
@@ -138,39 +184,26 @@ export default function ImmersiveCTA() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 style={{
-                  padding: "32px",
-                  borderRadius: 20,
+                  padding: "32px", borderRadius: 20,
                   background: "rgba(0,212,200,0.08)",
                   border: "1px solid rgba(0,212,200,0.25)",
                   textAlign: "center",
                 }}
               >
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🚀</div>
-                <p style={{ color: "#00D4C8", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
-                  {message}
-                </p>
-                <p style={{ color: "rgba(237,237,255,0.45)", fontSize: 14 }}>
-                  On te tient au courant dès l&apos;ouverture de la beta.
-                </p>
+                <p style={{ color: "#00D4C8", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{message}</p>
+                <p style={{ color: "rgba(237,237,255,0.45)", fontSize: 14 }}>On te tient au courant dès l&apos;ouverture de la beta.</p>
               </motion.div>
             ) : (
               <>
                 <form
                   onSubmit={handleSubmit}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 12,
-                    maxWidth: 440,
-                    margin: "0 auto",
-                  }}
+                  style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 440, margin: "0 auto" }}
                 >
                   <input
-                    type="email"
-                    value={email}
+                    type="email" value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ton@email.com"
-                    required
+                    placeholder="ton@email.com" required
                     className="input"
                     style={{ textAlign: "center", fontSize: 15 }}
                   />
@@ -178,35 +211,20 @@ export default function ImmersiveCTA() {
                     type="submit"
                     disabled={status === "loading"}
                     className="btn btn-primary btn-block"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.03, boxShadow: "0 12px 48px rgba(109,40,217,0.45)" }}
+                    whileTap={{ scale: 0.97 }}
                     style={{ fontSize: 15, padding: "16px 32px" }}
                   >
                     {status === "loading" ? (
-                      <span
-                        style={{
-                          display: "inline-block",
-                          width: 16,
-                          height: 16,
-                          border: "2px solid rgba(255,255,255,0.3)",
-                          borderTopColor: "#fff",
-                          borderRadius: "50%",
-                          animation: "spin 0.7s linear infinite",
-                        }}
-                      />
+                      <span style={{ display: "inline-block", width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
                     ) : (
-                      <>
-                        Commencer maintenant
-                        <ArrowRight size={16} />
-                      </>
+                      <>Commencer maintenant <ArrowRight size={16} /></>
                     )}
                   </motion.button>
                 </form>
 
                 {status === "error" && (
-                  <p style={{ color: "#FF4D6A", fontSize: 13, textAlign: "center", marginTop: 12 }}>
-                    {message}
-                  </p>
+                  <p style={{ color: "#FF4D6A", fontSize: 13, textAlign: "center", marginTop: 12 }}>{message}</p>
                 )}
 
                 <p style={{ color: "rgba(237,237,255,0.25)", fontSize: 12, marginTop: 16, textAlign: "center" }}>
@@ -219,22 +237,12 @@ export default function ImmersiveCTA() {
           {/* Trust badges */}
           <motion.div
             variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { delay: 0.4 } } }}
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: 12,
-              marginTop: 48,
-            }}
+            style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12, marginTop: 48 }}
           >
-            {[
-              "🇪🇺 Données en EU",
-              "🔒 RGPD",
-              "✨ Gratuit en beta",
-              "💌 0 spam",
-            ].map((t) => (
-              <span
+            {["🇪🇺 Données en EU", "🔒 RGPD", "✨ Gratuit en beta", "💌 0 spam"].map((t) => (
+              <motion.span
                 key={t}
+                whileHover={{ scale: 1.06, borderColor: "rgba(109,40,217,0.35)" }}
                 style={{
                   fontSize: 12,
                   color: "rgba(237,237,255,0.35)",
@@ -242,10 +250,12 @@ export default function ImmersiveCTA() {
                   borderRadius: 9999,
                   background: "rgba(139,127,232,0.07)",
                   border: "1px solid rgba(139,127,232,0.12)",
+                  cursor: "default",
+                  transition: "border-color 0.2s ease",
                 }}
               >
                 {t}
-              </span>
+              </motion.span>
             ))}
           </motion.div>
         </motion.div>

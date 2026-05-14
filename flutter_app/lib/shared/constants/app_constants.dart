@@ -63,7 +63,6 @@ class AppConstants {
   static const int pointsMorningCheckin = 5;
   static const int pointsEveningCheckin = 5;
   static const int points3Tasks         = 10;
-  static const int pointsSleep          = 3;
   static const int pointsPost           = 2;
   static const int pointsFriend         = 5;
   static const int pointsStreakBonus    = 2;

@@ -96,7 +96,6 @@ class ProfileRepository {
       // Suppression des données utilisateur (RLS garantit que seul le proprio peut)
       await _supabase.from('checkins').delete().eq('user_id', userId);
       await _supabase.from('planner_tasks').delete().eq('user_id', userId);
-      await _supabase.from('sleep_logs').delete().eq('user_id', userId);
       await _supabase.from('profiles').delete().eq('id', userId);
       await _supabase.auth.signOut();
       _logger.i('Compte supprimé pour $userId');

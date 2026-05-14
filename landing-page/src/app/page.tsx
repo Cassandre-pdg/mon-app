@@ -6,6 +6,7 @@ import ManifestoSection from "@/components/ManifestoSection";
 import AnimatedStats from "@/components/AnimatedStats";
 import HowItWorks from "@/components/HowItWorks";
 import ImmersiveCTA from "@/components/ImmersiveCTA";
+import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
 
@@ -21,6 +22,7 @@ export default function Home() {
       <AnimatedStats />
       <HowItWorks />
       <ImmersiveCTA />
+      <FAQ />
       <Footer />
     </main>
   );

@@ -20,10 +20,11 @@ class AppTheme {
           onSurface: AppColors.textDark,
           onError: Colors.white,
         ),
-        scaffoldBackgroundColor: AppColors.backgroundDark,
+        // Transparent : le gradient est injecté par le builder MaterialApp
+        scaffoldBackgroundColor: Colors.transparent,
         textTheme: _buildTextTheme(AppColors.textDark),
         appBarTheme: _appBarTheme(
-          background: AppColors.backgroundDark,
+          background: Colors.transparent,
           foreground: AppColors.textDark,
         ),
         cardTheme: _cardTheme(AppColors.surfaceDark),
@@ -201,8 +202,10 @@ class AppTheme {
 
   static BottomNavigationBarThemeData _bottomNavTheme({required bool isDark}) =>
       BottomNavigationBarThemeData(
-        backgroundColor:
-            isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        // Dark : légèrement opaque sur le gradient pour flottement au-dessus
+        backgroundColor: isDark
+            ? const Color(0xCC0A072E) // #0A072E @ 80% — indigo très sombre semi-transparent
+            : AppColors.surfaceLight,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.grey600,
         showUnselectedLabels: true,

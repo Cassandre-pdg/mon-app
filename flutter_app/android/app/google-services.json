@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "57834978688",
-    "project_id": "solo-pro-cr",
-    "storage_bucket": "solo-pro-cr.firebasestorage.app"
+    "project_number": "772295047562",
+    "project_id": "kolyb-app",
+    "storage_bucket": "kolyb-app.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:57834978688:android:b7f1ecde04a3c73d8ed565",
+        "mobilesdk_app_id": "1:772295047562:android:079c069d2038f983cf7073",
         "android_client_info": {
-          "package_name": "com.solopro.app"
+          "package_name": "com.kolyb.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAWpQ_Kcx4UOnrdGyip8vPoRIMdSUnue2A"
+          "current_key": "AIzaSyAwgp4Ge6kr7HRsmsUBFSmSh0NKtJjSYtY"
         }
       ],
       "services": {

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Couleurs principales
-  static const Color primary = Color(0xFF6C63FF);       // Violet doux
+  static const Color primary = Color(0xFF6C63FF); // Violet doux
   static const Color primaryLight = Color(0xFF9C94FF);
   static const Color primaryDark = Color(0xFF3D35CC);
 
   // Couleurs secondaires
-  static const Color accent = Color(0xFFFF6B6B);        // Corail énergie
-  static const Color accentGreen = Color(0xFF4CAF50);   // Vert succès
-  static const Color accentYellow = Color(0xFFFFD93D);  // Jaune streak
+  static const Color accent = Color(0xFFFF6B6B); // Corail énergie
+  static const Color accentGreen = Color(0xFF4CAF50); // Vert succès
+  static const Color accentYellow = Color(0xFFFFD93D); // Jaune streak
 
   // Fond et surfaces
   static const Color background = Color(0xFFF8F7FF);
@@ -68,18 +68,13 @@ class AppTheme {
             borderRadius: BorderRadius.circular(14),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       textTheme: const TextTheme(
         headlineLarge: TextStyle(

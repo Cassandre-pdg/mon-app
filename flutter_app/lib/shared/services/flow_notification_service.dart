@@ -3,10 +3,13 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 
 /// Service de notifications locales pour les sessions Flow.
+/// Envoie un rappel 15 minutes avant chaque session configurée.
 ///
 /// Setup natif requis :
 ///  iOS  → Info.plist : NSUserNotificationsUsageDescription
 ///  Android → AndroidManifest.xml : SCHEDULE_EXACT_ALARM permission
+///
+/// IDs réservés : 100–103 (4 sessions max)
 class FlowNotificationService {
   FlowNotificationService._();
   static final FlowNotificationService instance = FlowNotificationService._();
@@ -16,9 +19,9 @@ class FlowNotificationService {
 
   static const _channelId   = 'kolyb_flow';
   static const _channelName = 'Sessions Flow';
-  static const _baseId      = 100; // IDs 100–103 réservés aux sessions Flow
+  static const _baseId      = 100;
+  static const _maxSessions = 4;
 
-  /// Initialise le plugin (à appeler dans main.dart)
   Future<void> init() async {
     if (_initialized) return;
     tz.initializeTimeZones();
@@ -36,7 +39,6 @@ class FlowNotificationService {
     _initialized = true;
   }
 
-  /// Demande les permissions (iOS / Android 13+)
   Future<void> requestPermissions() async {
     await _plugin
         .resolvePlatformSpecificImplementation<
@@ -49,30 +51,39 @@ class FlowNotificationService {
         ?.requestNotificationsPermission();
   }
 
-  /// Planifie les notifications quotidiennes selon le nombre de sessions.
-  /// - 1x/jour  → 09:00
-  /// - 4x/jour  → 09:00, 11:30, 14:00, 16:30
-  Future<void> scheduleFlowNotifications(int sessionsPerDay) async {
+  /// Planifie les notifications 15 min avant chaque session.
+  /// [sessionTimes] : liste de chaînes "HH:MM"
+  /// Si vide, utilise les horaires par défaut selon [sessionsPerDay].
+  Future<void> scheduleFlowNotifications(
+    int sessionsPerDay, {
+    List<String>? sessionTimes,
+  }) async {
     await cancelAll();
 
-    final times = sessionsPerDay == 1
-        ? [_TimeOfDaySimple(9, 0)]
-        : [
-            _TimeOfDaySimple(9,  0),
-            _TimeOfDaySimple(11, 30),
-            _TimeOfDaySimple(14, 0),
-            _TimeOfDaySimple(16, 30),
-          ];
+    final times = sessionTimes ?? _defaultTimes(sessionsPerDay);
 
-    for (var i = 0; i < times.length; i++) {
+    for (var i = 0; i < times.length && i < _maxSessions; i++) {
+      final parts  = times[i].split(':');
+      final hour   = int.tryParse(parts.isNotEmpty ? parts[0] : '9') ?? 9;
+      final minute = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+
+      // -15 minutes
+      final totalMinutes = hour * 60 + minute - 15;
+      if (totalMinutes < 0) continue;
+
       await _scheduleDaily(
         id:    _baseId + i,
-        hour:  times[i].hour,
-        min:   times[i].minute,
-        title: '⚡ C\'est l\'heure de ton Flow !',
-        body:  '90 min pour avancer vraiment — à toi de jouer.',
+        hour:  totalMinutes ~/ 60,
+        min:   totalMinutes % 60,
+        title: '⚡ Ton Flow démarre dans 15 min !',
+        body:  'Prépare ton espace — 90 min de focus profond t\'attendent.',
       );
     }
+  }
+
+  List<String> _defaultTimes(int sessionsPerDay) {
+    if (sessionsPerDay == 1) return ['09:00'];
+    return ['09:00', '11:30', '14:00', '16:30'];
   }
 
   Future<void> _scheduleDaily({
@@ -83,8 +94,8 @@ class FlowNotificationService {
     required String body,
   }) async {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, min);
-    // Si l'heure est déjà passée aujourd'hui, planifier demain
+    var scheduled =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, min);
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
@@ -92,12 +103,13 @@ class FlowNotificationService {
     const androidDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
-      channelDescription: 'Rappels pour démarrer une session Flow',
+      channelDescription: 'Rappels 15 min avant tes sessions Flow',
       importance: Importance.high,
-      priority: Priority.high,
+      priority:   Priority.high,
     );
     const iosDetails = DarwinNotificationDetails();
-    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    const details    =
+        NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _plugin.zonedSchedule(
       id,
@@ -106,22 +118,33 @@ class FlowNotificationService {
       scheduled,
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time, // répète chaque jour
+      matchDateTimeComponents: DateTimeComponents.time,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
-  /// Annule toutes les notifications Flow
   Future<void> cancelAll() async {
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < _maxSessions; i++) {
       await _plugin.cancel(_baseId + i);
     }
   }
-}
 
-class _TimeOfDaySimple {
-  final int hour;
-  final int minute;
-  const _TimeOfDaySimple(this.hour, this.minute);
+  /// Calcule l'heure de notification (= heure session - 15 min) pour l'affichage
+  static String notifTimeFor(String sessionTime) {
+    final parts  = sessionTime.split(':');
+    final hour   = int.tryParse(parts.isNotEmpty ? parts[0] : '9') ?? 9;
+    final minute = int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0;
+    final total  = hour * 60 + minute - 15;
+    if (total < 0) return '--:--';
+    final h = total ~/ 60;
+    final m = total % 60;
+    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+  }
+
+  /// Horaires par défaut pour Flow selon sessionsPerDay
+  static List<String> defaultTimes(int sessionsPerDay) {
+    if (sessionsPerDay == 1) return ['09:00'];
+    return ['09:00', '11:30', '14:00', '16:30'];
+  }
 }

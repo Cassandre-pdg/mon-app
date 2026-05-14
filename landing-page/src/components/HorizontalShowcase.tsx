@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   motion,
   useScroll,
@@ -19,7 +19,7 @@ const FEATURES = [
     title: "Tu progresses sans mesure.",
     sub: "Donc tu progresses sans preuve.",
     description:
-      "Tu stagnes sans t’en rendre compte. Reprends le contrôle avec des check-ins rapides. Visualise ta progression mentale et émotionnelle. Comprends ce qui t’aide vraiment à avancer.",
+      "Tu stagnes sans t'en rendre compte. Reprends le contrôle avec des check-ins rapides. Visualise ta progression mentale et émotionnelle. Comprends ce qui t'aide vraiment à avancer.",
     accent: "#8B7FE8",
   },
   {
@@ -27,7 +27,7 @@ const FEATURES = [
     num: "02",
     eyebrow: "Clarté & Focus",
     title: "Focus sur ce qui compte vraiment.",
-    sub: "Ton niveau n’est plus une impression.",
+    sub: "Ton niveau n'est plus une impression.",
     description:
       "Kolyb transforme tes actions en une lecture claire de ta progression réelle.",
     accent: "#00D4C8",
@@ -68,17 +68,30 @@ type Feature = (typeof FEATURES)[number];
 
 /* ─── Phone screens ─────────────────────────────────────────── */
 
+/* Slide 01 — "Tu progresses sans mesure" → le check-in comme solution */
 function CheckinScreen() {
   return (
     <div className="phone-body">
       <p className="ph-header" style={{ color: "#8B7FE8" }}>Mon Check-in · Matin</p>
+
+      {/* Streak + points — la mesure quotidienne */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: "#8B7FE8" }}>🔥 Jour 7</span>
+        <div style={{ flex: 1, height: 3, borderRadius: 2, background: "rgba(139,127,232,0.12)" }}>
+          <div style={{ width: "70%", height: "100%", borderRadius: 2, background: "linear-gradient(90deg,#6D28D9,#8B7FE8)" }} />
+        </div>
+        <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(139,127,232,0.6)" }}>+5 pts</span>
+      </div>
+
       <p className="ph-title">Comment tu vas ce matin ?</p>
       <p className="ph-sub">Choisis ce qui te correspond le mieux</p>
+
       <div className="ph-mood-row">
         {["😤", "😕", "😐", "🙂", "😊"].map((m, i) => (
           <div key={m} className={`ph-mood ${i === 4 ? "selected" : ""}`}>{m}</div>
         ))}
       </div>
+
       <div className="ph-card">
         <p style={{ fontSize: 9, color: "rgba(237,237,255,0.35)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
           Ta pensée du matin
@@ -87,6 +100,7 @@ function CheckinScreen() {
           Aujourd&apos;hui je veux avancer sur mon projet...
         </p>
       </div>
+
       <div style={{ marginTop: 14, padding: "10px 16px", background: "#6D28D9", borderRadius: 9999, fontSize: 11, fontWeight: 700, color: "#fff", textAlign: "center" }}>
         Commencer mon check-in →
       </div>
@@ -94,6 +108,7 @@ function CheckinScreen() {
   );
 }
 
+/* Slide 02 — "Focus sur ce qui compte vraiment" → planner 3 priorités */
 function PlannerScreen() {
   const tasks = [
     { done: true,  text: "Finaliser la présentation client" },
@@ -130,39 +145,72 @@ function PlannerScreen() {
   );
 }
 
-function SleepScreen() {
-  const bars = [40, 65, 55, 75, 50, 80, 70];
-  const days = ["L", "M", "M", "J", "V", "S", "D"];
+/* Slide 03 — "Chaque jour a de la valeur" → score & progression */
+function ScoreScreen() {
+  const bars   = [40, 65, 55, 75, 68, 82, 95];
+  const days   = ["L", "M", "M", "J", "V", "S", "D"];
+
   return (
     <div className="phone-body">
-      <p className="ph-header" style={{ color: "#C4B5FD" }}>Mon Sommeil · Semaine</p>
-      <div className="ph-stat-row">
-        {[{ val: "7.3h", lbl: "Moyenne" }, { val: "22:45", lbl: "Coucher" }, { val: "78%", lbl: "Qualité" }].map((s) => (
-          <div key={s.lbl} className="ph-stat">
-            <span className="ph-stat-val" style={{ color: "#C4B5FD" }}>{s.val}</span>
-            <span className="ph-stat-lbl">{s.lbl}</span>
-          </div>
-        ))}
+      <p className="ph-header" style={{ color: "#C4B5FD" }}>Mon Score · Cette semaine</p>
+
+      {/* Score + niveau */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div>
+          <p style={{ fontSize: 9, color: "rgba(237,237,255,0.3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>
+            Score aujourd&apos;hui
+          </p>
+          <p style={{ fontSize: 34, fontWeight: 800, color: "#C4B5FD", letterSpacing: "-0.04em", lineHeight: 1 }}>247</p>
+        </div>
+        <div style={{ padding: "5px 10px", background: "rgba(196,181,253,0.12)", border: "1px solid rgba(196,181,253,0.25)", borderRadius: 20, marginTop: 4 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#C4B5FD" }}>Indépendant</span>
+        </div>
       </div>
-      <div className="ph-card">
-        <div className="ph-bar-row">
+
+      {/* Histogramme 7 jours */}
+      <div className="ph-card" style={{ marginBottom: 10 }}>
+        <p style={{ fontSize: 9, color: "rgba(237,237,255,0.3)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          Progression · 7 jours
+        </p>
+        <div className="ph-bar-row" style={{ height: 48 }}>
           {bars.map((h, i) => (
-            <div key={i} className="ph-bar" style={{ height: `${h}%`, background: i === 5 ? "linear-gradient(180deg,#C4B5FD,#8B7FE8)" : "rgba(196,181,253,0.25)" }} />
+            <div
+              key={i}
+              className="ph-bar"
+              style={{
+                height: `${h}%`,
+                background: i === 6
+                  ? "linear-gradient(180deg,#C4B5FD,#8B7FE8)"
+                  : "rgba(196,181,253,0.2)",
+              }}
+            />
           ))}
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 6 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 4 }}>
           {days.map((d, i) => (
-            <span key={i} style={{ flex: 1, textAlign: "center", fontSize: 8, color: "rgba(237,237,255,0.3)" }}>{d}</span>
+            <span key={i} style={{ flex: 1, textAlign: "center", fontSize: 8, color: i === 6 ? "#C4B5FD" : "rgba(237,237,255,0.3)" }}>{d}</span>
           ))}
         </div>
       </div>
-      <div style={{ marginTop: 10, padding: 10, background: "rgba(196,181,253,0.08)", border: "1px solid rgba(196,181,253,0.15)", borderRadius: 10, fontSize: 10, color: "rgba(237,237,255,0.5)", lineHeight: 1.5 }}>
-        ✨ Belle semaine. Samedi était ta meilleure nuit.
+
+      {/* Barre XP */}
+      <div className="ph-card">
+        <p style={{ fontSize: 9, color: "rgba(237,237,255,0.3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+          Vers niveau suivant
+        </p>
+        <div className="ph-xp-bar-bg">
+          <div className="ph-xp-bar-fill" style={{ width: "82%", background: "linear-gradient(90deg,#8B7FE8,#C4B5FD)" }} />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+          <span style={{ fontSize: 9, color: "rgba(237,237,255,0.3)" }}>247 pts</span>
+          <span style={{ fontSize: 9, color: "#C4B5FD" }}>→ Entrepreneur (300)</span>
+        </div>
       </div>
     </div>
   );
 }
 
+/* Slide 04 — "Avance, jamais seul·e" → Le Salon (INCHANGÉ) */
 function CommunityScreen() {
   const posts = [
     { initials: "JM", name: "Julie M.", time: "2h", text: "Qui utilise Notion pour ses devis ? J'hésite encore...", likes: 12, comments: 5, grad: "linear-gradient(135deg,#FF4D6A,#FFB800)" },
@@ -194,6 +242,7 @@ function CommunityScreen() {
   );
 }
 
+/* Slide 05 — "La régularité, récompensée" → badges & streaks */
 function BadgesScreen() {
   const badges = [
     { icon: "🔥", label: "7 jours\nde suite" },
@@ -228,12 +277,13 @@ function BadgesScreen() {
   );
 }
 
+/* ─── Mapping feature.id → écran phone ─────────────────────── */
 const SCREENS: Record<string, React.ReactNode> = {
-  checkin:   <CheckinScreen />,
-  planner:   <PlannerScreen />,
-  sleep:     <SleepScreen />,
-  community: <CommunityScreen />,
-  badges:    <BadgesScreen />,
+  "Problématique": <CheckinScreen />,
+  "CLARTÉ":        <PlannerScreen />,
+  "score":         <ScoreScreen />,
+  "community":     <CommunityScreen />,
+  "STATUT":        <BadgesScreen />,
 };
 
 /* ─── Slide ──────────────────────────────────────────────────── */
@@ -242,7 +292,7 @@ function FeatureSlide({ feature }: { feature: Feature }) {
   return (
     <div style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden" }}>
 
-      {/* Background radial glow (right side) */}
+      {/* Background radial glow */}
       <div
         aria-hidden="true"
         style={{
@@ -253,7 +303,7 @@ function FeatureSlide({ feature }: { feature: Feature }) {
         }}
       />
 
-      {/* Subtle grid */}
+      {/* Grid subtil */}
       <div
         aria-hidden="true"
         style={{
@@ -264,7 +314,7 @@ function FeatureSlide({ feature }: { feature: Feature }) {
         }}
       />
 
-      {/* Watermark number */}
+      {/* Numéro filigrane */}
       <div
         aria-hidden="true"
         style={{
@@ -279,7 +329,7 @@ function FeatureSlide({ feature }: { feature: Feature }) {
 
       {/* Content */}
       <div className="h-slide-inner">
-        {/* Left — text */}
+        {/* Gauche — texte */}
         <div className="h-slide-text">
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
@@ -311,7 +361,7 @@ function FeatureSlide({ feature }: { feature: Feature }) {
           </p>
         </div>
 
-        {/* Right — phone */}
+        {/* Droite — phone */}
         <div className="h-slide-phone">
           <motion.div
             animate={{
@@ -343,6 +393,96 @@ function FeatureSlide({ feature }: { feature: Feature }) {
   );
 }
 
+/* ─── Mobile layout — cartes verticales, pas de scroll-jacking ── */
+
+/* Scale = 0.62 → phone 270×540 devient 167×335 */
+const PHONE_SCALE = 0.62;
+const PHONE_W = Math.round(270 * PHONE_SCALE);
+const PHONE_H = Math.round(540 * PHONE_SCALE);
+
+function MobileShowcase() {
+  return (
+    <section id="features" style={{ padding: "72px 16px 60px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 32, maxWidth: 480, margin: "0 auto" }}>
+        {FEATURES.map((f) => (
+          <motion.div
+            key={f.id}
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              background: "#1A1836",
+              border: `1px solid ${f.accent}28`,
+              borderRadius: 24,
+              padding: "24px 20px 28px",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Glow coin supérieur droit */}
+            <div style={{
+              position: "absolute", top: 0, right: 0,
+              width: 160, height: 160,
+              background: `radial-gradient(ellipse at top right, ${f.accent}1A 0%, transparent 70%)`,
+              pointerEvents: "none",
+            }} />
+
+            {/* Badge eyebrow */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "4px 12px", borderRadius: 9999, marginBottom: 14,
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+              background: `${f.accent}18`, border: `1px solid ${f.accent}35`, color: f.accent,
+            }}>
+              <span style={{ opacity: 0.45 }}>{f.num}</span>{f.eyebrow}
+            </div>
+
+            <h3 style={{
+              fontSize: "1.2rem", fontWeight: 800, lineHeight: 1.1,
+              letterSpacing: "-0.03em", color: "#EDEDFF", marginBottom: 8,
+            }}>{f.title}</h3>
+
+            <p style={{ fontSize: 13, fontWeight: 600, color: f.accent, marginBottom: 10, opacity: 0.85 }}>
+              {f.sub}
+            </p>
+
+            <p style={{ fontSize: 13, color: "rgba(237,237,255,0.52)", lineHeight: 1.7, marginBottom: 24 }}>
+              {f.description}
+            </p>
+
+            {/* Phone frame centré et réduit */}
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <motion.div
+                animate={{ y: [0, -6, 0], filter: [`drop-shadow(0 16px 40px ${f.accent}20)`, `drop-shadow(0 16px 56px ${f.accent}40)`, `drop-shadow(0 16px 40px ${f.accent}20)`] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                {/* Wrapper qui absorbe le scale */}
+                <div style={{ width: PHONE_W, height: PHONE_H, overflow: "hidden", borderRadius: Math.round(40 * PHONE_SCALE), flexShrink: 0 }}>
+                  <div style={{ width: 270, height: 540, transform: `scale(${PHONE_SCALE})`, transformOrigin: "top left" }}>
+                    <div
+                      className="phone-frame"
+                      style={{ width: 270, height: 540, borderColor: `${f.accent}38` }}
+                    >
+                      <div className="phone-notch" />
+                      <div className="phone-status">
+                        <span>09:30</span>
+                        <span style={{ letterSpacing: 2 }}>···</span>
+                      </div>
+                      {SCREENS[f.id]}
+                      <div className="phone-home-bar" style={{ background: `${f.accent}45` }} />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /* ─── Main component ─────────────────────────────────────────── */
 
 const N = FEATURES.length;
@@ -350,20 +490,26 @@ const N = FEATURES.length;
 export default function HorizontalShowcase() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
-  /* Horizontal translation */
   const x = useTransform(
     scrollYProgress,
     [0, 1],
     ["0vw", `-${(N - 1) * 100}vw`]
   );
 
-  /* Active slide index */
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     const idx = Math.max(0, Math.min(Math.round(v * (N - 1)), N - 1));
     setActiveIndex(idx);
@@ -371,15 +517,17 @@ export default function HorizontalShowcase() {
 
   const activeFeature = FEATURES[activeIndex];
 
+  if (isMobile) return <MobileShowcase />;
+
   return (
     <section
       ref={containerRef}
-      style={{ height: `${N * 100}vh` }}
+      style={{ height: `${N * 100}dvh` }}
       id="features"
     >
-      <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden" }}>
+      <div style={{ position: "sticky", top: 0, height: "100dvh", overflow: "hidden" }}>
 
-        {/* Top progress bar */}
+        {/* Barre de progression */}
         <motion.div
           style={{
             position: "absolute", top: 0, left: 0, right: 0, height: 2,
@@ -391,7 +539,7 @@ export default function HorizontalShowcase() {
           }}
         />
 
-        {/* Counter top-right */}
+        {/* Compteur */}
         <div style={{
           position: "absolute", top: 28, right: "clamp(20px, 4vw, 48px)",
           zIndex: 10, fontSize: 12, fontWeight: 600,
@@ -403,7 +551,7 @@ export default function HorizontalShowcase() {
           {" / "}{String(N).padStart(2, "0")}
         </div>
 
-        {/* Dot nav bottom */}
+        {/* Dots nav */}
         <div style={{
           position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)",
           display: "flex", gap: 7, zIndex: 10, alignItems: "center",
@@ -422,7 +570,7 @@ export default function HorizontalShowcase() {
           ))}
         </div>
 
-        {/* Scroll hint — first slide */}
+        {/* Scroll hint */}
         <AnimatePresence>
           {activeIndex === 0 && (
             <motion.div
@@ -446,7 +594,7 @@ export default function HorizontalShowcase() {
           )}
         </AnimatePresence>
 
-        {/* Horizontal track */}
+        {/* Track horizontal */}
         <motion.div
           style={{
             display: "flex",

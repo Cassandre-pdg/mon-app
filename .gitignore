@@ -1,6 +1,25 @@
 flutter_app/.dart_tool/
 flutter_app/build/
 flutter_app/*.g.dart
-backend/node_modules/
+node_modules/
 backend/.env
 .DS_Store
+.vercel
+node_modules
+
+# Dossiers internes Claude Code
+.claude/
+.agents/
+.claire/
+landing-page/.claude/
+
+# Dossiers de build
+.next/
+"flutter_app/build 2"
+
+# Fichiers volumineux
+*.MP4
+*.mp4
+
+# Fichiers dupliqués Xcode
+"flutter_app/ios/Podfile 2.lock"

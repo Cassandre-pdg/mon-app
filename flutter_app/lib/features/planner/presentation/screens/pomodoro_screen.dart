@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
+import '../../../../shared/services/focus_audio_service.dart';
 
 enum PomodoroPhase { work, shortBreak }
 
@@ -25,6 +26,7 @@ class _PomodoroContentState extends State<PomodoroContent>
   int _completedPomodoros = 0;
   Timer? _timer;
   late AnimationController _pulseCtrl;
+  FocusAudio _selectedAudio = FocusAudio.silence;
 
   @override
   void initState() {
@@ -42,11 +44,18 @@ class _PomodoroContentState extends State<PomodoroContent>
     super.dispose();
   }
 
+  Future<void> _selectAudio(FocusAudio audio) async {
+    setState(() => _selectedAudio = audio);
+    await FocusAudioService.instance.select(audio);
+  }
+
   void _startPause() {
     if (_isRunning) {
       _timer?.cancel();
       setState(() => _isRunning = false);
+      FocusAudioService.instance.pause();
     } else {
+      final wasPaused = _isRunning == false && _secondsLeft < _workSeconds;
       setState(() => _isRunning = true);
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (_secondsLeft > 0) {
@@ -55,11 +64,17 @@ class _PomodoroContentState extends State<PomodoroContent>
           _onPhaseComplete();
         }
       });
+      if (wasPaused) {
+        FocusAudioService.instance.resume();
+      } else {
+        FocusAudioService.instance.play();
+      }
     }
   }
 
   void _onPhaseComplete() {
     _timer?.cancel();
+    FocusAudioService.instance.stop();
     setState(() {
       _isRunning = false;
       if (_phase == PomodoroPhase.work) {
@@ -75,6 +90,7 @@ class _PomodoroContentState extends State<PomodoroContent>
 
   void _reset() {
     _timer?.cancel();
+    FocusAudioService.instance.stop();
     setState(() {
       _isRunning = false;
       _secondsLeft =
@@ -191,7 +207,23 @@ class _PomodoroContentState extends State<PomodoroContent>
             ],
           ),
 
-          const SizedBox(height: AppConstants.spacing48),
+          const SizedBox(height: AppConstants.spacing32),
+
+          // ── Sélecteur ambiance sonore ────────────────────────
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Ambiance sonore',
+              style: AppTextStyles.labelMedium(color: AppColors.grey400),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _PomodoroAudioPicker(
+            selected: _selectedAudio,
+            onSelect: _selectAudio,
+          ),
+
+          const SizedBox(height: AppConstants.spacing32),
 
           // Boutons contrôle
           Row(
@@ -232,6 +264,60 @@ class _PomodoroContentState extends State<PomodoroContent>
           ),
           const SizedBox(height: AppConstants.spacing24),
         ],
+      ),
+    );
+  }
+}
+
+// ── Sélecteur d'ambiance sonore (Pomodoro) ───────────────────
+class _PomodoroAudioPicker extends StatelessWidget {
+  final FocusAudio selected;
+  final ValueChanged<FocusAudio> onSelect;
+
+  const _PomodoroAudioPicker({required this.selected, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: FocusAudio.values.map((audio) {
+          final isSelected = audio == selected;
+          return GestureDetector(
+            onTap: () => onSelect(audio),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.secondary.withValues(alpha: 0.15)
+                    : Colors.transparent,
+                border: Border.all(
+                  color: isSelected ? AppColors.secondary : AppColors.grey200,
+                  width: isSelected ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(audio.emoji, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(width: 5),
+                  Text(
+                    audio.label,
+                    style: AppTextStyles.caption(
+                      color: isSelected ? AppColors.secondary : AppColors.grey400,
+                    ).copyWith(
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

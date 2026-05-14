@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 /* ── 3D card hook ─────────────────────────────────────────── */
 function use3DCard() {
@@ -26,7 +26,7 @@ function use3DCard() {
   };
 }
 
-/* ── Step 1 visual : toggle ON → dashboard apparaît ─────── */
+/* ── Visuel 1 ─────────────────────────────────────────────── */
 function VisualStart({ live }: { live: boolean }) {
   const [on, setOn] = useState(false);
   const [rows, setRows] = useState(0);
@@ -51,35 +51,21 @@ function VisualStart({ live }: { live: boolean }) {
 
   return (
     <div style={{ height: 128, display: "flex", flexDirection: "column", gap: 10, paddingTop: 4 }}>
-      {/* Toggle row */}
       <div style={{ display: "flex", alignItems: "center" }}>
-        <span style={{
-          fontSize: 10, color: "rgba(237,237,255,0.28)",
-          textTransform: "uppercase", letterSpacing: "0.1em", flexGrow: 1,
-        }}>
-          kolyb
-        </span>
+        <span style={{ fontSize: 10, color: "rgba(237,237,255,0.28)", textTransform: "uppercase", letterSpacing: "0.1em", flexGrow: 1 }}>kolyb</span>
         <motion.div
           animate={{ background: on ? "#6D28D9" : "rgba(139,127,232,0.1)" }}
           transition={{ duration: 0.35 }}
-          style={{
-            width: 36, height: 20, borderRadius: 10,
-            border: "1px solid rgba(139,127,232,0.18)",
-            position: "relative", flexShrink: 0,
-          }}
+          style={{ width: 36, height: 20, borderRadius: 10, border: "1px solid rgba(139,127,232,0.18)", position: "relative", flexShrink: 0 }}
         >
           <motion.div
             animate={{ x: on ? 18 : 2 }}
             transition={{ type: "spring", stiffness: 450, damping: 30 }}
-            style={{
-              position: "absolute", top: 3,
-              width: 14, height: 14, borderRadius: "50%", background: "#fff",
-            }}
+            style={{ position: "absolute", top: 3, width: 14, height: 14, borderRadius: "50%", background: "#fff" }}
           />
         </motion.div>
       </div>
 
-      {/* Dashboard rows appearing */}
       {[
         { label: "Streak", val: "Jour 1 🔥", col: "#6D28D9" },
         { label: "Mon espace", val: "Prêt", col: "#8B7FE8" },
@@ -89,8 +75,7 @@ function VisualStart({ live }: { live: boolean }) {
           animate={{ opacity: rows > i ? 1 : 0, y: rows > i ? 0 : 8 }}
           transition={{ duration: 0.35, ease: EASE }}
           style={{
-            background: "rgba(18,16,42,0.9)",
-            border: "1px solid rgba(139,127,232,0.1)",
+            background: "rgba(18,16,42,0.9)", border: "1px solid rgba(139,127,232,0.1)",
             borderRadius: 10, padding: "8px 14px",
             display: "flex", justifyContent: "space-between",
           }}
@@ -103,11 +88,11 @@ function VisualStart({ live }: { live: boolean }) {
   );
 }
 
-/* ── Step 2 visual : actions qui apparaissent + compteur ─── */
+/* ── Visuel 2 ─────────────────────────────────────────────── */
 const ACTS = [
-  { label: "Check-in matin", pts: "+5 pts", col: "#6D28D9" },
+  { label: "Check-in matin",  pts: "+5 pts",  col: "#6D28D9" },
   { label: "3 tâches cochées", pts: "+10 pts", col: "#00D4C8" },
-  { label: "Sommeil renseigné", pts: "+3 pts", col: "#FFB800" },
+  { label: "Habitude suivie",  pts: "+3 pts",  col: "#FFB800" },
 ];
 
 function VisualAct({ live }: { live: boolean }) {
@@ -144,8 +129,7 @@ function VisualAct({ live }: { live: boolean }) {
           animate={{ opacity: vis > i ? 1 : 0, x: vis > i ? 0 : -14 }}
           transition={{ duration: 0.32, ease: EASE }}
           style={{
-            background: "rgba(18,16,42,0.9)",
-            border: `1px solid ${a.col}18`,
+            background: "rgba(18,16,42,0.9)", border: `1px solid ${a.col}18`,
             borderRadius: 10, padding: "7px 12px",
             display: "flex", justifyContent: "space-between", alignItems: "center",
           }}
@@ -160,11 +144,7 @@ function VisualAct({ live }: { live: boolean }) {
       <motion.div
         animate={{ opacity: sum > 0 ? 1 : 0 }}
         transition={{ duration: 0.3 }}
-        style={{
-          position: "absolute", bottom: -2, right: 0,
-          fontSize: 10, color: "rgba(237,237,255,0.25)",
-          fontVariantNumeric: "tabular-nums",
-        }}
+        style={{ position: "absolute", bottom: -2, right: 0, fontSize: 10, color: "rgba(237,237,255,0.25)", fontVariantNumeric: "tabular-nums" }}
       >
         {sum} pts captés
       </motion.div>
@@ -172,7 +152,7 @@ function VisualAct({ live }: { live: boolean }) {
   );
 }
 
-/* ── Step 3 visual : score monte + glow sur niveau ──────── */
+/* ── Visuel 3 ─────────────────────────────────────────────── */
 function VisualSee({ live }: { live: boolean }) {
   const [score, setScore] = useState(0);
   const [glow, setGlow] = useState(false);
@@ -196,11 +176,7 @@ function VisualSee({ live }: { live: boolean }) {
           raf = requestAnimationFrame(tick);
         } else {
           sched(() => setGlow(true), 200);
-          sched(() => {
-            setScore(0);
-            setGlow(false);
-            sched(() => runScore(0), 400);
-          }, 3600);
+          sched(() => { setScore(0); setGlow(false); sched(() => runScore(0), 400); }, 3600);
         }
       };
       raf = requestAnimationFrame(tick);
@@ -212,32 +188,20 @@ function VisualSee({ live }: { live: boolean }) {
 
   const pct = (score / 300) * 100;
   const level = score >= 101 ? "Indépendant" : "Explorateur";
-  const next = score >= 101 ? "Entrepreneur" : "Indépendant";
+  const next  = score >= 101 ? "Entrepreneur" : "Indépendant";
 
   return (
     <div style={{ height: 128, display: "flex", flexDirection: "column", gap: 12, position: "relative" }}>
-      {/* Score + badge niveau */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{
-            fontSize: 10, color: "rgba(237,237,255,0.28)",
-            textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3,
-          }}>
-            Score
-          </div>
-          <div style={{
-            fontSize: 34, fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1,
-            color: glow ? "#8B7FE8" : "#EDEDFF",
-            transition: "color 0.4s ease",
-          }}>
+          <div style={{ fontSize: 10, color: "rgba(237,237,255,0.28)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Score</div>
+          <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1, color: glow ? "#8B7FE8" : "#EDEDFF", transition: "color 0.4s ease" }}>
             {score}
           </div>
         </div>
         <motion.div
           animate={{
-            boxShadow: glow
-              ? "0 0 0 1px rgba(0,212,200,0.45), 0 0 20px rgba(0,212,200,0.35)"
-              : "0 0 0 1px rgba(139,127,232,0.12)",
+            boxShadow: glow ? "0 0 0 1px rgba(0,212,200,0.45), 0 0 20px rgba(0,212,200,0.35)" : "0 0 0 1px rgba(139,127,232,0.12)",
             color: glow ? "#00D4C8" : "#8B7FE8",
             background: glow ? "rgba(0,212,200,0.1)" : "rgba(139,127,232,0.08)",
           }}
@@ -248,19 +212,12 @@ function VisualSee({ live }: { live: boolean }) {
         </motion.div>
       </div>
 
-      {/* Barre XP */}
       <div>
-        <div style={{
-          background: "rgba(139,127,232,0.1)", borderRadius: 3, height: 4,
-          overflow: "hidden", marginBottom: 5,
-        }}>
+        <div style={{ background: "rgba(139,127,232,0.1)", borderRadius: 3, height: 4, overflow: "hidden", marginBottom: 5 }}>
           <motion.div
             animate={{ width: `${pct}%` }}
             transition={{ duration: 0.06 }}
-            style={{
-              height: "100%", borderRadius: 3,
-              background: "linear-gradient(90deg, #6D28D9, #8B7FE8)",
-            }}
+            style={{ height: "100%", borderRadius: 3, background: "linear-gradient(90deg, #6D28D9, #8B7FE8)" }}
           />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -269,7 +226,6 @@ function VisualSee({ live }: { live: boolean }) {
         </div>
       </div>
 
-      {/* Pulse ring au level-up */}
       {glow && (
         <motion.div
           initial={{ opacity: 0.55, scale: 1 }}
@@ -301,18 +257,18 @@ function StepCard({ step, index, inView }: { step: StepDef; index: number; inVie
   const { ref, rotX, rotY, onMove, onLeave } = use3DCard();
   const { num, accentColor, label, title, micro, Visual } = step;
 
+  /* Entrée depuis la gauche pour renverser la direction des stats (droite) */
   return (
     <motion.div
-      initial={{ opacity: 0, y: 44 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
+      initial={{ opacity: 0, x: -40, y: 20 }}
+      animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
       transition={{ duration: 0.65, delay: 0.2 + index * 0.14, ease: EASE }}
       style={{ perspective: "900px" }}
     >
       <motion.div
         ref={ref}
         style={{
-          rotateX: rotX,
-          rotateY: rotY,
+          rotateX: rotX, rotateY: rotY,
           transformStyle: "preserve-3d",
           background: "rgba(20,18,46,0.72)",
           backdropFilter: "blur(18px)",
@@ -328,65 +284,74 @@ function StepCard({ step, index, inView }: { step: StepDef; index: number; inVie
         }}
         whileHover={{
           borderColor: `${accentColor}70 ${accentColor}22 ${accentColor}22 ${accentColor}22`,
-          boxShadow: `0 20px 60px ${accentColor}14, 0 0 0 1px ${accentColor}12`,
+          boxShadow: `0 20px 60px ${accentColor}18, 0 0 0 1px ${accentColor}14`,
         }}
         transition={{ duration: 0.25 }}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
       >
-        {/* Grand numéro en filigrane */}
-        <div style={{
-          position: "absolute", top: -10, right: 18,
-          fontSize: 100, fontWeight: 800, letterSpacing: "-0.06em",
-          color: `${accentColor}09`, lineHeight: 1,
-          userSelect: "none", pointerEvents: "none",
-        }}>
+        {/* Numéro filigrane */}
+        <div style={{ position: "absolute", top: -10, right: 18, fontSize: 100, fontWeight: 800, letterSpacing: "-0.06em", color: `${accentColor}09`, lineHeight: 1, userSelect: "none", pointerEvents: "none" }}>
           {num}
         </div>
+        {/* Ligne lumineuse */}
+        <div style={{ position: "absolute", top: 0, left: "15%", right: "15%", height: 1, background: `linear-gradient(90deg, transparent, ${accentColor}50, transparent)`, borderRadius: 1 }} />
 
-        {/* Ligne lumineuse en haut */}
-        <div style={{
-          position: "absolute", top: 0, left: "15%", right: "15%", height: 1,
-          background: `linear-gradient(90deg, transparent, ${accentColor}50, transparent)`,
-          borderRadius: 1,
-        }} />
-
-        {/* Visual animé */}
         <div style={{ marginBottom: 22 }}>
           <Visual live={inView} />
         </div>
 
-        {/* Séparateur */}
-        <div style={{
-          height: 1,
-          background: `linear-gradient(90deg, ${accentColor}22, rgba(139,127,232,0.06), transparent)`,
-          marginBottom: 20,
-        }} />
+        <div style={{ height: 1, background: `linear-gradient(90deg, ${accentColor}22, rgba(139,127,232,0.06), transparent)`, marginBottom: 20 }} />
 
-        {/* Badge étape */}
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          fontSize: 10, fontWeight: 700, letterSpacing: "0.1em",
-          textTransform: "uppercase", color: accentColor, marginBottom: 10,
-        }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: accentColor, marginBottom: 10 }}>
           <div style={{ width: 4, height: 4, borderRadius: "50%", background: accentColor }} />
           Étape {num} · {label}
         </div>
 
-        {/* Titre */}
-        <h3 style={{
-          fontSize: 16, fontWeight: 700, color: "#EDEDFF",
-          letterSpacing: "-0.02em", lineHeight: 1.35, marginBottom: 10,
-        }}>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: "#EDEDFF", letterSpacing: "-0.02em", lineHeight: 1.35, marginBottom: 10 }}>
           {title}
         </h3>
-
-        {/* Micro-texte */}
         <p style={{ fontSize: 12, color: "rgba(237,237,255,0.35)", lineHeight: 1.55, margin: 0 }}>
           {micro}
         </p>
       </motion.div>
     </motion.div>
+  );
+}
+
+/* ── Connecteur entre étapes ─────────────────────────────── */
+function StepConnector({ color, inView, delay }: { color: string; inView: boolean; delay: number }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 28 }}>
+      <motion.div
+        initial={{ scaleX: 0, opacity: 0 }}
+        animate={inView ? { scaleX: 1, opacity: 1 } : {}}
+        transition={{ duration: 0.5, delay, ease: EASE }}
+        style={{
+          height: 1,
+          width: "100%",
+          background: `linear-gradient(90deg, ${color}50, rgba(139,127,232,0.15), transparent)`,
+          transformOrigin: "left center",
+          position: "relative",
+        }}
+      >
+        {/* Flèche */}
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.3, delay: delay + 0.4, ease: EASE }}
+          style={{
+            position: "absolute",
+            right: -1, top: "50%",
+            transform: "translateY(-50%)",
+            width: 6, height: 6,
+            border: `1.5px solid ${color}`,
+            borderLeft: "none", borderBottom: "none",
+            rotate: "45deg",
+          }}
+        />
+      </motion.div>
+    </div>
   );
 }
 
@@ -426,37 +391,35 @@ export default function HowItWorks() {
     <section
       ref={sectionRef}
       id="how-it-works"
-      className="section"
-      style={{ position: "relative", overflow: "hidden" }}
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        paddingTop: "clamp(100px, 12vw, 140px)",
+        paddingBottom: "clamp(100px, 12vw, 140px)",
+      }}
     >
-      {/* Ambient glows */}
+      {/* Séparateur — direction inversée (gauche → droite) */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute", top: 0, left: 0, right: 0,
+          height: 1,
+          background: "linear-gradient(270deg, transparent 0%, rgba(109,40,217,0.4) 40%, rgba(255,184,0,0.2) 70%, transparent 100%)",
+        }}
+      />
+
+      {/* Glows */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div style={{
-          position: "absolute", top: "15%", left: "5%",
-          width: 480, height: 480,
-          background: "radial-gradient(circle, rgba(109,40,217,0.09) 0%, transparent 70%)",
-          filter: "blur(70px)",
-        }} />
-        <div style={{
-          position: "absolute", bottom: "10%", right: "5%",
-          width: 380, height: 380,
-          background: "radial-gradient(circle, rgba(0,212,200,0.07) 0%, transparent 70%)",
-          filter: "blur(70px)",
-        }} />
-        <div style={{
-          position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-          width: 600, height: 300,
-          background: "radial-gradient(ellipse, rgba(109,40,217,0.04) 0%, transparent 70%)",
-          filter: "blur(40px)",
-        }} />
+        <div style={{ position: "absolute", top: "15%", left: "5%", width: 480, height: 480, background: "radial-gradient(circle, rgba(109,40,217,0.09) 0%, transparent 70%)", filter: "blur(70px)" }} />
+        <div style={{ position: "absolute", bottom: "10%", right: "5%", width: 380, height: 380, background: "radial-gradient(circle, rgba(0,212,200,0.07) 0%, transparent 70%)", filter: "blur(70px)" }} />
       </div>
 
       <div className="wrap relative z-10">
-        {/* En-tête */}
+        {/* En-tête — vient de la gauche (opposé à AnimatedStats) */}
         <motion.div
           className="section-header"
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0, x: -40 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.7, ease: EASE }}
         >
           <p className="eyebrow">Comment ça marche</p>
@@ -470,12 +433,12 @@ export default function HowItWorks() {
           <p className="section-sub">3 étapes. Ton niveau devient visible.</p>
         </motion.div>
 
-        {/* Grille de cards */}
+        {/* Grille + connecteurs */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 20,
+            gap: "clamp(16px, 2.5vw, 28px)",
             alignItems: "stretch",
           }}
           className="hiw-grid"
@@ -485,19 +448,27 @@ export default function HowItWorks() {
           ))}
         </div>
 
-        {/* Conclusion */}
+        {/* Ligne de progression animée sous les cards */}
+        <motion.div
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={inView ? { opacity: 1, scaleX: 1 } : {}}
+          transition={{ duration: 1.1, delay: 0.7, ease: EASE }}
+          style={{
+            marginTop: 36,
+            height: 2,
+            maxWidth: 600,
+            margin: "36px auto 0",
+            background: "linear-gradient(90deg, #6D28D9, #00D4C8, #FFB800)",
+            borderRadius: 1,
+            transformOrigin: "left center",
+          }}
+        />
+
         <motion.p
           initial={{ opacity: 0, y: 14 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.75, ease: EASE }}
-          style={{
-            textAlign: "center",
-            marginTop: 52,
-            fontSize: 16,
-            color: "rgba(237,237,255,0.32)",
-            fontWeight: 400,
-            letterSpacing: "-0.01em",
-          }}
+          transition={{ duration: 0.6, delay: 0.85, ease: EASE }}
+          style={{ textAlign: "center", marginTop: 28, fontSize: 16, color: "rgba(237,237,255,0.32)", fontWeight: 400, letterSpacing: "-0.01em" }}
         >
           C&apos;est tout.{" "}
           <span style={{ color: "rgba(237,237,255,0.58)", fontWeight: 600 }}>

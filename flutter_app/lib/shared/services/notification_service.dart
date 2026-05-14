@@ -15,7 +15,7 @@ Future<void> firebaseBackgroundMessageHandler(RemoteMessage message) async {
 ///
 /// Gère :
 ///   - FCM (Firebase Cloud Messaging) — push server-side
-///   - Notifications locales planifiées — check-in matin/soir, sommeil, streak
+///   - Notifications locales planifiées — check-in matin/soir, streak
 ///
 /// Setup natif requis :
 ///   Android → POST_NOTIFICATIONS permission + SCHEDULE_EXACT_ALARM dans AndroidManifest.xml
@@ -35,12 +35,6 @@ class NotificationService {
     description: 'Rappels pour tes check-ins matin et soir',
     importance: Importance.high,
   );
-  static const _channelSleep = AndroidNotificationChannel(
-    'kolyb_sleep',
-    'Rappel sommeil',
-    description: 'Rappels pour renseigner ton sommeil',
-    importance: Importance.defaultImportance,
-  );
   static const _channelStreak = AndroidNotificationChannel(
     'kolyb_streak',
     'Alertes streak',
@@ -51,7 +45,6 @@ class NotificationService {
   // ── IDs réservés (Flow = 100-103 dans FlowNotificationService) ──
   static const int _idMorningCheckin = 1;
   static const int _idEveningCheckin = 2;
-  static const int _idSleepReminder  = 3;
   static const int _idStreakAlert    = 4;
 
   /// Initialise Firebase Messaging + le plugin local.
@@ -65,7 +58,6 @@ class NotificationService {
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(_channelCheckin);
-    await androidPlugin?.createNotificationChannel(_channelSleep);
     await androidPlugin?.createNotificationChannel(_channelStreak);
 
     // Init plugin local — permissions demandées séparément via requestPermissions()
@@ -134,7 +126,7 @@ class NotificationService {
       hour: _parseHour(time),
       minute: _parseMinute(time),
       title: 'Bonjour ! ☀️ Comment tu démarres ?',
-      body: 'Prends 2 min pour ton check-in du matin — à ton rythme.',
+      body: 'Prends 2 min pour ton check-in du matin, à ton rythme.',
     );
   }
 
@@ -148,23 +140,8 @@ class NotificationService {
       channelName: _channelCheckin.name,
       hour: _parseHour(time),
       minute: _parseMinute(time),
-      title: 'Fin de journée 🌙 — comment ça s\'est passé ?',
-      body: 'Ton check-in du soir t\'attend — 2 min pour faire le point.',
-    );
-  }
-
-  /// Planifie (ou annule) le rappel de suivi sommeil.
-  Future<void> scheduleSleepReminder(bool enabled, String time) async {
-    await _localPlugin.cancel(_idSleepReminder);
-    if (!enabled) return;
-    await _scheduleDaily(
-      id: _idSleepReminder,
-      channelId: _channelSleep.id,
-      channelName: _channelSleep.name,
-      hour: _parseHour(time),
-      minute: _parseMinute(time),
-      title: 'Bonne nuit 😴',
-      body: 'N\'oublie pas de renseigner ton sommeil avant de dormir.',
+      title: 'Fin de journée 🌙 : comment ça s\'est passé ?',
+      body: 'Ton check-in du soir t\'attend, 2 min pour faire le point.',
     );
   }
 
@@ -173,7 +150,7 @@ class NotificationService {
     await _localPlugin.show(
       _idStreakAlert,
       'Ton streak est en danger 🔥',
-      'Tu n\'as pas encore fait ton check-in aujourd\'hui — reprends vite !',
+      'Tu n\'as pas encore fait ton check-in aujourd\'hui. Reprends vite !',
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'kolyb_streak',
@@ -190,7 +167,6 @@ class NotificationService {
   Future<void> cancelAll() async {
     await _localPlugin.cancel(_idMorningCheckin);
     await _localPlugin.cancel(_idEveningCheckin);
-    await _localPlugin.cancel(_idSleepReminder);
     await _localPlugin.cancel(_idStreakAlert);
   }
 

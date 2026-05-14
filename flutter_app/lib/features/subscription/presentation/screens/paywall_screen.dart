@@ -179,8 +179,7 @@ class _PaywallBodyState extends ConsumerState<_PaywallBody> {
                 if (hasError) ...[
                   Text(
                     AppStrings.paywallErrorGeneric,
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.error),
+                    style: AppTextStyles.bodyMedium(color: AppColors.error),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppConstants.spacing16),

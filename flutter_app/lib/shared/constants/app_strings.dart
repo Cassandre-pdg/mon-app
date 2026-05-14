@@ -4,12 +4,12 @@ class AppStrings {
   AppStrings._();
 
   // ── NAVIGATION ──────────────────────────────────────────────
-  static const String navHome      = 'Mon Espace';
-  static const String navPlanner   = 'Ma Journée';
-  static const String navCommunity = 'Le Salon';
-  static const String navSleep     = 'Mon Sommeil';
-  static const String navProfile   = 'Mon Profil';
-  static const String navBadges    = 'Mes Badges';
+  static const String navHome       = 'Mon Espace';
+  static const String navObjectives = 'Objectifs';
+  static const String navPlanner    = 'Ma Journée';
+  static const String navCommunity  = 'Le Salon';
+  static const String navProfile    = 'Mon Profil';
+  static const String navBadges     = 'Mes Badges';
 
   // ── ONBOARDING ──────────────────────────────────────────────
   static const String onboardingTagline =
@@ -23,7 +23,7 @@ class AppStrings {
   static const String checkinDone           = 'Belle avancée ! ✅';
 
   // Questions check-in matin
-  static const String morningQ1 = 'Comment tu te sens ce matin ?';
+  static const String morningQ1 = 'Comment vas-tu ce matin ?';
   static const String morningQ2 = 'Quel est ton niveau d\'énergie ?';
   static const String morningQ3 = 'Sur quoi tu vas te concentrer aujourd\'hui ?';
 

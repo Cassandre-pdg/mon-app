@@ -5,10 +5,10 @@
 class NotificationSettings {
   final bool morningCheckinEnabled;
   final bool eveningCheckinEnabled;
-  final bool sleepReminderEnabled;
   final bool streakAlertEnabled;
   final bool flowSessionEnabled;
   final bool communityEnabled;
+  final bool sleepReminderEnabled;
 
   /// Format HH:MM — ex. "07:30"
   final String morningTime;
@@ -21,10 +21,10 @@ class NotificationSettings {
   const NotificationSettings({
     this.morningCheckinEnabled = true,
     this.eveningCheckinEnabled = true,
-    this.sleepReminderEnabled = true,
     this.streakAlertEnabled = true,
     this.flowSessionEnabled = true,
     this.communityEnabled = true,
+    this.sleepReminderEnabled = false,
     this.morningTime = '07:30',
     this.eveningTime = '18:30',
     this.sleepTime = '22:00',
@@ -40,14 +40,14 @@ class NotificationSettings {
             json['morning_checkin_enabled'] as bool? ?? true,
         eveningCheckinEnabled:
             json['evening_checkin_enabled'] as bool? ?? true,
-        sleepReminderEnabled:
-            json['sleep_reminder_enabled'] as bool? ?? true,
         streakAlertEnabled:
             json['streak_alert_enabled'] as bool? ?? true,
         flowSessionEnabled:
             json['flow_session_enabled'] as bool? ?? true,
         communityEnabled:
             json['community_enabled'] as bool? ?? true,
+        sleepReminderEnabled:
+            json['sleep_reminder_enabled'] as bool? ?? false,
         morningTime: json['morning_time'] as String? ?? '07:30',
         eveningTime: json['evening_time'] as String? ?? '18:30',
         sleepTime:   json['sleep_time']   as String? ?? '22:00',
@@ -57,10 +57,10 @@ class NotificationSettings {
   Map<String, dynamic> toJson() => {
         'morning_checkin_enabled': morningCheckinEnabled,
         'evening_checkin_enabled': eveningCheckinEnabled,
-        'sleep_reminder_enabled':  sleepReminderEnabled,
         'streak_alert_enabled':    streakAlertEnabled,
         'flow_session_enabled':    flowSessionEnabled,
         'community_enabled':       communityEnabled,
+        'sleep_reminder_enabled':  sleepReminderEnabled,
         'morning_time': morningTime,
         'evening_time': eveningTime,
         'sleep_time':   sleepTime,
@@ -70,10 +70,10 @@ class NotificationSettings {
   NotificationSettings copyWith({
     bool? morningCheckinEnabled,
     bool? eveningCheckinEnabled,
-    bool? sleepReminderEnabled,
     bool? streakAlertEnabled,
     bool? flowSessionEnabled,
     bool? communityEnabled,
+    bool? sleepReminderEnabled,
     String? morningTime,
     String? eveningTime,
     String? sleepTime,
@@ -84,11 +84,10 @@ class NotificationSettings {
             morningCheckinEnabled ?? this.morningCheckinEnabled,
         eveningCheckinEnabled:
             eveningCheckinEnabled ?? this.eveningCheckinEnabled,
-        sleepReminderEnabled:
-            sleepReminderEnabled ?? this.sleepReminderEnabled,
         streakAlertEnabled:  streakAlertEnabled ?? this.streakAlertEnabled,
         flowSessionEnabled:  flowSessionEnabled  ?? this.flowSessionEnabled,
         communityEnabled:    communityEnabled    ?? this.communityEnabled,
+        sleepReminderEnabled: sleepReminderEnabled ?? this.sleepReminderEnabled,
         morningTime: morningTime ?? this.morningTime,
         eveningTime: eveningTime ?? this.eveningTime,
         sleepTime:   sleepTime   ?? this.sleepTime,

@@ -512,7 +512,7 @@ export default function AuditQuiz() {
                   marginBottom: 40,
                 }}
               >
-                9 questions. Un profil psychoproductif précis. Les blocages invisibles qui te coûtent des heures — identifiés.
+                9 questions. Un profil psychoproductif précis. Les blocages invisibles qui te coûtent des heures sont identifiés.
               </motion.p>
 
               {/* 3 pillars preview */}

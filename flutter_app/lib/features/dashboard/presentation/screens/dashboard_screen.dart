@@ -94,11 +94,21 @@ class _DashboardContent extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Carte streak ──────────────────────────────────
-          _StreakCard(data: data),
+          _GlowPulse(
+            color: AppColors.primary,
+            maxAlpha: 0.22,
+            blurRadius: 36,
+            child: _StreakCard(data: data),
+          ),
           const SizedBox(height: AppConstants.spacing16),
 
           // ── Suivi général (anneaux) ───────────────────────
-          _OverviewCard(data: data),
+          _GlowPulse(
+            color: AppColors.accent,
+            maxAlpha: 0.10,
+            blurRadius: 24,
+            child: _OverviewCard(data: data),
+          ),
           const SizedBox(height: AppConstants.spacing24),
 
           // ── Check-ins du jour ─────────────────────────────
@@ -133,7 +143,12 @@ class _DashboardContent extends ConsumerWidget {
           const SizedBox(height: AppConstants.spacing24),
 
           // ── Niveau ───────────────────────────────────────
-          _LevelCard(data: data),
+          _GlowPulse(
+            color: AppColors.primaryLight,
+            maxAlpha: 0.10,
+            blurRadius: 20,
+            child: _LevelCard(data: data),
+          ),
           const SizedBox(height: AppConstants.spacing24),
 
           // ── Message bienveillant ─────────────────────────
@@ -743,6 +758,73 @@ class _RingsPainter extends CustomPainter {
       old.focusProgress  != focusProgress  ||
       old.habitsProgress != habitsProgress ||
       old.sleepProgress  != sleepProgress;
+}
+
+// ── Halo ambiant animé — respire lentement autour des cards ──
+class _GlowPulse extends StatefulWidget {
+  final Widget child;
+  final Color color;
+  final double maxAlpha;
+  final double blurRadius;
+
+  const _GlowPulse({
+    required this.child,
+    required this.color,
+    this.maxAlpha = 0.18,
+    this.blurRadius = 28,
+  });
+
+  @override
+  State<_GlowPulse> createState() => _GlowPulseState();
+}
+
+class _GlowPulseState extends State<_GlowPulse>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+    _anim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, child) {
+        final alpha = 0.06 + (widget.maxAlpha - 0.06) * _anim.value;
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(alpha: alpha),
+                blurRadius: widget.blurRadius,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
+  }
 }
 
 // ── État d'erreur ────────────────────────────────────────────

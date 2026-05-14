@@ -309,6 +309,7 @@ class _QuadrantCard extends ConsumerWidget {
             TextField(
               controller: ctrl,
               autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
                 hintText: 'Quelle tâche tu veux placer ici ?',
                 focusedBorder: OutlineInputBorder(

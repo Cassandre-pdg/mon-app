@@ -9,7 +9,7 @@ const navLinks = [
   { label: "Fonctionnalités", href: "#features" },
   { label: "Comment ça marche", href: "#how-it-works" },
   { label: "FAQ", href: "#faq" },
-  { label: "Contact", href: "#contact" },
+  { label: "Contact", href: "#waitlist" },
 ];
 
 const auditLink = { label: "✦ Audit gratuit", href: "/audit" };
@@ -106,7 +106,8 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-base font-medium text-[#EDEDFF]/75 hover:text-white py-3 border-b border-[#22204A] last:border-0 transition-colors"
+                  className="text-base font-medium text-[#EDEDFF]/75 hover:text-white border-b border-[#22204A] last:border-0 transition-colors"
+                  style={{ padding: "16px 6px" }}
                 >
                   {link.label}
                 </a>
@@ -114,15 +115,16 @@ export default function Navbar() {
               <a
                 href={auditLink.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-base font-semibold py-3 border-b border-[#22204A] transition-colors"
-                style={{ color: "#C4B5FD" }}
+                className="text-base font-semibold border-b border-[#22204A] transition-colors"
+                style={{ color: "#C4B5FD", padding: "16px 6px" }}
               >
                 {auditLink.label}
               </a>
               <a
                 href="#hero-form"
                 onClick={() => setMobileOpen(false)}
-                className="btn btn-primary mt-4 mx-auto"
+                className="btn btn-primary mx-auto"
+                style={{ marginTop: 18, marginBottom: 6, fontSize: 13, padding: "9px 20px" }}
               >
                 Rejoindre la beta
               </a>

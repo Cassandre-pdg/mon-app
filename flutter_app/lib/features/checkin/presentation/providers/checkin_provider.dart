@@ -13,6 +13,17 @@ final todayCheckinsProvider =
   return ref.watch(checkinRepositoryProvider).getTodayCheckins();
 });
 
+/// Note "demain" du check-in soir d'hier — pense-bête affiché dans l'intro matin
+final lastEveningNoteProvider = FutureProvider<String?>((ref) async {
+  return ref.watch(checkinRepositoryProvider).getLastEveningTomorrowNote();
+});
+
+/// Check-ins des 14 derniers jours (graphique bien-être)
+final recentCheckinsProvider =
+    FutureProvider<List<CheckinModel>>((ref) async {
+  return ref.watch(checkinRepositoryProvider).getRecentCheckins(limit: 14);
+});
+
 /// Notifier pour créer un check-in
 final checkinNotifierProvider =
     StateNotifierProvider<CheckinNotifier, AsyncValue<CheckinModel?>>((ref) {
@@ -29,8 +40,15 @@ class CheckinNotifier extends StateNotifier<AsyncValue<CheckinModel?>> {
     required String type,
     required int moodScore,
     required int energyScore,
-    required int focusScore,
+    int focusScore = 3,
     String? notes,
+    String? wellbeingNote,
+    String? focusProjectId,
+    String? dailyIntention,
+    String? dailySuccess,
+    String? dailyVictory,
+    String? dailyLearning,
+    String? tomorrowIntention,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -40,9 +58,15 @@ class CheckinNotifier extends StateNotifier<AsyncValue<CheckinModel?>> {
         energyScore: energyScore,
         focusScore: focusScore,
         notes: notes,
+        wellbeingNote: wellbeingNote,
+        focusProjectId: focusProjectId,
+        dailyIntention: dailyIntention,
+        dailySuccess: dailySuccess,
+        dailyVictory: dailyVictory,
+        dailyLearning: dailyLearning,
+        tomorrowIntention: tomorrowIntention,
       );
       state = AsyncValue.data(checkin);
-      // Rafraîchit les check-ins du jour
       _ref.invalidate(todayCheckinsProvider);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

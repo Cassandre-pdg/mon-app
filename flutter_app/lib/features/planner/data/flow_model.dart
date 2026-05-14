@@ -1,5 +1,9 @@
 // Modèle de données pour l'onglet Flow (sessions de travail profond 90 min)
 
+import '../../../../shared/services/focus_audio_service.dart';
+
+export '../../../../shared/services/focus_audio_service.dart' show FocusAudio;
+
 enum FlowTimerState { idle, running, paused, completed }
 
 class FlowState {
@@ -21,12 +25,16 @@ class FlowState {
   /// Total de minutes de focus accumulées aujourd'hui
   final int totalFocusMinutesToday;
 
+  /// Ambiance sonore sélectionnée
+  final FocusAudio selectedAudio;
+
   const FlowState({
     this.sessionsPerDay = 1,
     this.completedToday = 0,
     this.timerState = FlowTimerState.idle,
     this.secondsLeft = sessionDurationSeconds,
     this.totalFocusMinutesToday = 0,
+    this.selectedAudio = FocusAudio.silence,
   });
 
   FlowState copyWith({
@@ -35,6 +43,7 @@ class FlowState {
     FlowTimerState? timerState,
     int? secondsLeft,
     int? totalFocusMinutesToday,
+    FocusAudio? selectedAudio,
   }) =>
       FlowState(
         sessionsPerDay: sessionsPerDay ?? this.sessionsPerDay,
@@ -43,6 +52,7 @@ class FlowState {
         secondsLeft: secondsLeft ?? this.secondsLeft,
         totalFocusMinutesToday:
             totalFocusMinutesToday ?? this.totalFocusMinutesToday,
+        selectedAudio: selectedAudio ?? this.selectedAudio,
       );
 
   /// Progression de la session (0.0 → 1.0)

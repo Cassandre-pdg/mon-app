@@ -11,7 +11,7 @@ final themeModeProvider =
 });
 
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
-  ThemeModeNotifier() : super(ThemeMode.system) {
+  ThemeModeNotifier() : super(ThemeMode.dark) {
     _loadTheme();
   }
 
@@ -23,7 +23,7 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     } else if (value == 'light') {
       state = ThemeMode.light;
     } else {
-      state = ThemeMode.system;
+      state = ThemeMode.dark;
     }
   }
 

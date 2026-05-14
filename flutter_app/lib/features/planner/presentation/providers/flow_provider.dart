@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/flow_model.dart';
 import '../../../../shared/services/flow_notification_service.dart';
+import '../../../../shared/services/focus_audio_service.dart';
 
 // ── Clés SharedPreferences ─────────────────────────────────────
 const _kSessionsPerDay        = 'flow_sessions_per_day';
@@ -65,14 +66,22 @@ class FlowNotifier extends Notifier<FlowState> {
     if (state.timerState == FlowTimerState.running) {
       _timer?.cancel();
       state = state.copyWith(timerState: FlowTimerState.paused);
+      FocusAudioService.instance.pause();
     } else {
+      final wasPaused = state.timerState == FlowTimerState.paused;
       state = state.copyWith(timerState: FlowTimerState.running);
       _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+      if (wasPaused) {
+        FocusAudioService.instance.resume();
+      } else {
+        FocusAudioService.instance.play();
+      }
     }
   }
 
   void reset() {
     _timer?.cancel();
+    FocusAudioService.instance.stop();
     state = state.copyWith(
       timerState: FlowTimerState.idle,
       secondsLeft: FlowState.sessionDurationSeconds,
@@ -80,10 +89,16 @@ class FlowNotifier extends Notifier<FlowState> {
   }
 
   void dismissCompletion() {
+    FocusAudioService.instance.stop();
     state = state.copyWith(
       timerState: FlowTimerState.idle,
       secondsLeft: FlowState.sessionDurationSeconds,
     );
+  }
+
+  Future<void> selectAudio(FocusAudio audio) async {
+    state = state.copyWith(selectedAudio: audio);
+    await FocusAudioService.instance.select(audio);
   }
 
   void _tick() {
@@ -99,6 +114,8 @@ class FlowNotifier extends Notifier<FlowState> {
     final newCompleted     = state.completedToday + 1;
     final addedMinutes     = FlowState.sessionDurationSeconds ~/ 60;
     final newFocusMinutes  = state.totalFocusMinutesToday + addedMinutes;
+
+    FocusAudioService.instance.stop();
 
     state = state.copyWith(
       timerState:            FlowTimerState.completed,

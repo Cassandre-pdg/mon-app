@@ -66,10 +66,10 @@ class NotificationSettingsNotifier
   Future<void> toggle({
     bool? morningCheckin,
     bool? eveningCheckin,
-    bool? sleepReminder,
     bool? streakAlert,
     bool? flowSession,
     bool? community,
+    bool? sleepReminder,
   }) async {
     final current = state.valueOrNull;
     if (current == null) return;
@@ -77,10 +77,10 @@ class NotificationSettingsNotifier
     await update(current.copyWith(
       morningCheckinEnabled: morningCheckin,
       eveningCheckinEnabled: eveningCheckin,
-      sleepReminderEnabled: sleepReminder,
       streakAlertEnabled: streakAlert,
       flowSessionEnabled: flowSession,
       communityEnabled: community,
+      sleepReminderEnabled: sleepReminder,
     ));
   }
 
@@ -106,6 +106,5 @@ class NotificationSettingsNotifier
     final svc = NotificationService.instance;
     await svc.scheduleMorningCheckin(s.morningCheckinEnabled, s.morningTime);
     await svc.scheduleEveningCheckin(s.eveningCheckinEnabled, s.eveningTime);
-    await svc.scheduleSleepReminder(s.sleepReminderEnabled, s.sleepTime);
   }
 }

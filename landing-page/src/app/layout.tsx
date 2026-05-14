@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description:
     "kolyb réunit check-in émotionnel, planificateur, suivi sommeil et communauté dans une seule app pour entrepreneurs indépendants. Avance à ton rythme, jamais seul.",
   keywords: [
-    "entrepreneurs indépendants",
+    "entrepreneurs & indépendants",
     "bien-être",
     "productivité",
     "communauté",
@@ -25,10 +25,9 @@ export const metadata: Metadata = {
   creator: "Kolyb",
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/kolyb_icon.svg", type: "image/svg+xml" },
+      { url: "/kolyb_icon.png", type: "image/png", sizes: "512x512" },
     ],
-    apple: "/kolyb_icon.svg",
+    apple: "/kolyb_icon.png",
   },
   openGraph: {
     type: "website",
@@ -39,19 +38,19 @@ export const metadata: Metadata = {
     siteName: "kolyb",
     images: [
       {
-        url: "/kolyb_icon.svg",
-        width: 1024,
-        height: 1024,
-        alt: "kolyb — Ton élan, au quotidien.",
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "kolyb : Ton élan, au quotidien.",
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "kolyb : Ton élan, au quotidien.",
     description:
       "L'app compagnon des entrepreneurs indépendants. Avance à ton rythme, jamais seul.",
-    images: ["/kolyb_icon.svg"],
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,

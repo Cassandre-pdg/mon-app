@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
+import '../../../../shared/services/focus_audio_service.dart';
 import '../../data/flow_model.dart';
 import '../providers/flow_provider.dart';
 
@@ -353,6 +354,20 @@ class _FlowConfig extends ConsumerWidget {
 
           const SizedBox(height: AppConstants.spacing16),
 
+          // ── Sélecteur d'ambiance sonore ──────────────────────
+          Text(
+            'Ambiance sonore',
+            style: AppTextStyles.labelMedium(color: AppColors.grey400),
+          ),
+          const SizedBox(height: 8),
+          _AudioPicker(
+            selected: flow.selectedAudio,
+            onSelect: (audio) =>
+                ref.read(flowProvider.notifier).selectAudio(audio),
+          ),
+
+          const SizedBox(height: AppConstants.spacing16),
+
           // Notifications planifiées
           Row(
             children: [
@@ -368,6 +383,58 @@ class _FlowConfig extends ConsumerWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Sélecteur d'ambiance sonore (partagé Flow + Pomodoro) ────────
+class _AudioPicker extends StatelessWidget {
+  final FocusAudio selected;
+  final ValueChanged<FocusAudio> onSelect;
+
+  const _AudioPicker({required this.selected, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: FocusAudio.values.map((audio) {
+          final isSelected = audio == selected;
+          return GestureDetector(
+            onTap: () => onSelect(audio),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.18)
+                    : Colors.transparent,
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : AppColors.grey200,
+                  width: isSelected ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(audio.emoji, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(width: 5),
+                  Text(
+                    audio.label,
+                    style: AppTextStyles.caption(
+                      color: isSelected ? AppColors.primary : AppColors.grey400,
+                    ).copyWith(fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

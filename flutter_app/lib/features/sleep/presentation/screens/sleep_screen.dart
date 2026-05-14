@@ -28,7 +28,7 @@ class SleepScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppStrings.navSleep,
+                  Text('Mon Sommeil',
                       style: AppTextStyles.headingLarge(
                           color: isDark ? AppColors.textDark : AppColors.textLight)),
                   ElevatedButton.icon(

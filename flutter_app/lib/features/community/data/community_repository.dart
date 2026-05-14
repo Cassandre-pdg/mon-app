@@ -2,6 +2,51 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logger/logger.dart';
 import 'community_model.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MIGRATION SUPABASE — à exécuter dans l'éditeur SQL de Supabase avant deploy
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS post_type         TEXT    DEFAULT 'partage';
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS post_tag          TEXT;
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS replies_count     INTEGER DEFAULT 0;
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS reports_count     INTEGER DEFAULT 0;
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_flagged        BOOLEAN DEFAULT FALSE;
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS reactions_utile      INTEGER DEFAULT 0;
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS reactions_inspirant  INTEGER DEFAULT 0;
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS reactions_merci      INTEGER DEFAULT 0;
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS reactions_bravo      INTEGER DEFAULT 0;
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS poll_options TEXT[];
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS poll_votes   INTEGER[];
+//
+// CREATE TABLE IF NOT EXISTS post_reports (
+//   id          UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+//   post_id     UUID        REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
+//   reporter_id UUID        NOT NULL,
+//   reason      TEXT        NOT NULL,
+//   created_at  TIMESTAMPTZ DEFAULT NOW()
+// );
+// ALTER TABLE post_reports ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "insert_own_reports" ON post_reports
+//   FOR INSERT WITH CHECK (auth.uid() = reporter_id);
+// CREATE POLICY "select_own_reports" ON post_reports
+//   FOR SELECT USING (auth.uid() = reporter_id);
+//
+// -- Auto-masquage à 3 signalements (trigger optionnel)
+// CREATE OR REPLACE FUNCTION auto_flag_post() RETURNS TRIGGER AS $$
+// BEGIN
+//   UPDATE posts SET is_flagged = TRUE, reports_count = reports_count + 1
+//   WHERE id = NEW.post_id;
+//   IF (SELECT reports_count FROM posts WHERE id = NEW.post_id) >= 3 THEN
+//     UPDATE posts SET is_flagged = TRUE WHERE id = NEW.post_id;
+//   END IF;
+//   RETURN NEW;
+// END;
+// $$ LANGUAGE plpgsql SECURITY DEFINER;
+// CREATE TRIGGER on_report_insert
+//   AFTER INSERT ON post_reports
+//   FOR EACH ROW EXECUTE FUNCTION auto_flag_post();
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// Repository Communauté — jamais appelé directement depuis un widget
 class CommunityRepository {
   final SupabaseClient _supabase;
@@ -13,12 +58,13 @@ class CommunityRepository {
 
   // ── Feed ──────────────────────────────────────────────────────
 
-  /// Charge les 50 derniers posts du feed global
+  /// Charge les 50 derniers posts (tous les champs, ordre anti-chronologique)
   Future<List<CommunityPost>> getPosts() async {
     try {
       final data = await _supabase
           .from('posts')
-          .select('id, user_id, author_name, content, likes_count, created_at')
+          .select()
+          .eq('is_flagged', false)
           .order('created_at', ascending: false)
           .limit(50);
 
@@ -31,19 +77,26 @@ class CommunityRepository {
     }
   }
 
-  /// Crée un nouveau post
+  /// Crée un nouveau post avec type, tag et options de sondage optionnels
   Future<CommunityPost> createPost({
     required String content,
     required String authorName,
+    required PostType postType,
+    String? postTag,
+    List<String>? pollOptions,
   }) async {
     try {
       final data = await _supabase
           .from('posts')
           .insert({
-            'user_id': _userId,
+            'user_id':     _userId,
             'author_name': authorName,
-            'content': content,
-            'likes_count': 0,
+            'content':     content,
+            'post_type':   postType.dbValue,
+            if (postTag != null) 'post_tag': postTag,
+            if (pollOptions != null) 'poll_options': pollOptions,
+            if (pollOptions != null)
+              'poll_votes': List.filled(pollOptions.length, 0),
           })
           .select()
           .single();
@@ -76,15 +129,49 @@ class CommunityRepository {
     }
   }
 
-  /// Incrémente le like d'un post (optimiste côté client)
-  Future<void> likePost(String postId, int currentLikes) async {
+  /// Ajoute une réaction (optimiste côté client, rollback si erreur)
+  Future<void> reactToPost(String postId, ReactionType reaction, int currentCount) async {
     try {
       await _supabase
           .from('posts')
-          .update({'likes_count': currentLikes + 1})
+          .update({reaction.dbColumn: currentCount + 1})
           .eq('id', postId);
     } catch (e) {
-      _logger.e('Erreur like post : $e');
+      _logger.e('Erreur réaction post : $e');
+      rethrow;
+    }
+  }
+
+  /// Vote sur une option de sondage (mise à jour optimiste du tableau)
+  Future<void> votePoll(
+    String postId,
+    int optionIndex,
+    List<int> currentVotes,
+  ) async {
+    try {
+      final newVotes = List<int>.from(currentVotes);
+      newVotes[optionIndex]++;
+      await _supabase
+          .from('posts')
+          .update({'poll_votes': newVotes})
+          .eq('id', postId);
+    } catch (e) {
+      _logger.e('Erreur vote sondage : $e');
+      rethrow;
+    }
+  }
+
+  /// Signale un post (3 signalements = masquage automatique via trigger)
+  Future<void> reportPost(String postId, String reason) async {
+    try {
+      await _supabase.from('post_reports').insert({
+        'post_id':     postId,
+        'reporter_id': _userId,
+        'reason':      reason,
+      });
+      _logger.i('Post signalé : $postId');
+    } catch (e) {
+      _logger.e('Erreur signalement post : $e');
       rethrow;
     }
   }

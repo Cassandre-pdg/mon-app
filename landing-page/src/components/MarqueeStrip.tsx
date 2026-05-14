@@ -7,7 +7,7 @@ const ITEMS = [
   "Clarté mentale",
   "Routine intelligente",
   "Système de discipline",
-  "Focus extrême",
+  "Focus & calme",
   "Environnement adaptatif",
 ];
 

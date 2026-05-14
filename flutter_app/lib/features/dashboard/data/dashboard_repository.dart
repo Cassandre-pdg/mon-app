@@ -14,8 +14,9 @@ class DashboardData {
   final int focusGoalMinutes;    // objectif focus du jour (défaut 120 min)
   final int habitsCompleted;     // tâches complétées aujourd'hui
   final int habitsTotalToday;    // total tâches du jour
-  final int? sleepQualityScore;  // qualité sommeil dernière nuit (1–5)
-  final int sleepDurationMinutes; // durée sommeil dernière nuit
+  // Sommeil (optionnel — non implémenté en V1)
+  final int? sleepQualityScore;  // 1-5
+  final int sleepDurationMinutes;
 
   const DashboardData({
     required this.currentStreak,
@@ -34,18 +35,18 @@ class DashboardData {
   });
 
   DashboardData copyWith({int? focusMinutes}) => DashboardData(
-        currentStreak:        currentStreak,
-        longestStreak:        longestStreak,
-        totalPoints:          totalPoints,
-        level:                level,
-        levelLabel:           levelLabel,
-        morningDone:          morningDone,
-        eveningDone:          eveningDone,
-        focusMinutes:         focusMinutes ?? this.focusMinutes,
-        focusGoalMinutes:     focusGoalMinutes,
-        habitsCompleted:      habitsCompleted,
-        habitsTotalToday:     habitsTotalToday,
-        sleepQualityScore:    sleepQualityScore,
+        currentStreak:    currentStreak,
+        longestStreak:    longestStreak,
+        totalPoints:      totalPoints,
+        level:            level,
+        levelLabel:       levelLabel,
+        morningDone:      morningDone,
+        eveningDone:      eveningDone,
+        focusMinutes:        focusMinutes ?? this.focusMinutes,
+        focusGoalMinutes:    focusGoalMinutes,
+        habitsCompleted:     habitsCompleted,
+        habitsTotalToday:    habitsTotalToday,
+        sleepQualityScore:   sleepQualityScore,
         sleepDurationMinutes: sleepDurationMinutes,
       );
 }
@@ -71,76 +72,65 @@ class DashboardRepository {
         .single();
     final checkinsFuture = _getTodayCheckinStatus(userId);
     final tasksFuture    = _getTodayTasksStats(userId);
-    final sleepFuture    = _getLastNightSleep(userId);
 
     final profile  = await profileFuture;
     final checkins = await checkinsFuture;
     final tasks    = await tasksFuture;
-    final sleep    = await sleepFuture;
     final level    = (profile['level'] as int?) ?? 1;
 
     return DashboardData(
-      currentStreak:      (profile['current_streak'] as int?) ?? 0,
-      longestStreak:      (profile['longest_streak'] as int?) ?? 0,
-      totalPoints:        (profile['total_points'] as int?) ?? 0,
-      level:              level,
-      levelLabel:         _levelLabels[level] ?? 'Explorateur',
-      morningDone:        checkins['morning'] ?? false,
-      eveningDone:        checkins['evening'] ?? false,
-      focusMinutes:       0, // connecté à l'onglet Flow (V1 — placeholder)
-      focusGoalMinutes:   120,
-      habitsCompleted:    tasks['completed'] ?? 0,
-      habitsTotalToday:   tasks['total'] ?? 0,
-      sleepQualityScore:  sleep['quality'] as int?,
-      sleepDurationMinutes: (sleep['duration'] as int?) ?? 0,
+      currentStreak:    (profile['current_streak'] as int?) ?? 0,
+      longestStreak:    (profile['longest_streak'] as int?) ?? 0,
+      totalPoints:      (profile['total_points'] as int?) ?? 0,
+      level:            level,
+      levelLabel:       _levelLabels[level] ?? 'Explorateur',
+      morningDone:      checkins['morning'] ?? false,
+      eveningDone:      checkins['evening'] ?? false,
+      focusMinutes:     0,
+      focusGoalMinutes: 120,
+      habitsCompleted:  tasks['completed'] ?? 0,
+      habitsTotalToday: tasks['total'] ?? 0,
     );
   }
 
-  /// Tâches du jour : complétées / total
+  /// Habitudes du jour : complétées / dues aujourd'hui
   Future<Map<String, int>> _getTodayTasksStats(String userId) async {
     final today = DateTime.now();
     final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final weekday = today.weekday; // 1=Lun … 7=Dim
 
     try {
-      final rows = await _supabase
-          .from('planner_tasks')
-          .select('is_completed')
-          .eq('user_id', userId)
-          .eq('task_date', todayStr);
+      final habits = await _supabase
+          .from('habits')
+          .select('id, frequency, days_of_week')
+          .eq('user_id', userId);
 
-      final list = rows as List;
-      final completed = list.where((r) => r['is_completed'] == true).length;
-      return {'completed': completed, 'total': list.length};
+      final completions = await _supabase
+          .from('habit_completions')
+          .select('habit_id')
+          .eq('user_id', userId)
+          .eq('completed_date', todayStr);
+
+      final completedIds = (completions as List)
+          .map((c) => c['habit_id'] as String)
+          .toSet();
+
+      int total = 0;
+      int completed = 0;
+      for (final h in habits as List) {
+        final freq = h['frequency'] as String? ?? 'daily';
+        final days = (h['days_of_week'] as List?)?.cast<int>() ?? [];
+        final isDue = freq == 'daily' ||
+            (freq == 'weekly' && days.contains(weekday)) ||
+            (freq == 'custom' && days.contains(weekday));
+        if (isDue) {
+          total++;
+          if (completedIds.contains(h['id'] as String)) completed++;
+        }
+      }
+      return {'completed': completed, 'total': total};
     } catch (_) {
       return {'completed': 0, 'total': 0};
-    }
-  }
-
-  /// Sommeil de la dernière nuit
-  Future<Map<String, dynamic>> _getLastNightSleep(String userId) async {
-    try {
-      final today = DateTime.now();
-      final yesterday = today.subtract(const Duration(days: 1));
-      final yStr = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
-      final tStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-
-      final rows = await _supabase
-          .from('sleep_logs')
-          .select('quality_score, duration_minutes')
-          .eq('user_id', userId)
-          .gte('sleep_date', yStr)
-          .lte('sleep_date', tStr)
-          .order('created_at', ascending: false)
-          .limit(1);
-
-      final list = rows as List;
-      if (list.isEmpty) return {'quality': null, 'duration': null};
-      return {
-        'quality':  list[0]['quality_score'],
-        'duration': list[0]['duration_minutes'],
-      };
-    } catch (_) {
-      return {'quality': null, 'duration': null};
     }
   }
 

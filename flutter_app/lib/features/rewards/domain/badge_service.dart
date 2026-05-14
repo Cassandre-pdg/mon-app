@@ -11,6 +11,7 @@ class BadgeService {
     required int currentStreak,
     required int totalPoints,
     required int level,
+    bool isFounder = true, // V1 : tous les premiers utilisateurs sont fondateurs
   }) {
     // On utilise le meilleur des deux pour le streak (actuel ou record)
     final bestStreak = longestStreak > currentStreak ? longestStreak : currentStreak;
@@ -21,7 +22,7 @@ class BadgeService {
         id: 'streak_3',
         emoji: '🔥',
         name: '3 jours de suite',
-        description: 'Tu avances à ton rythme — continue !',
+        description: 'Tu avances à ton rythme, continue !',
         category: BadgeCategory.streak,
         isUnlocked: bestStreak >= 3,
       ),
@@ -45,7 +46,7 @@ class BadgeService {
         id: 'streak_30',
         emoji: '🏆',
         name: '1 mois',
-        description: 'Un mois complet — impressionnant !',
+        description: 'Un mois complet, impressionnant !',
         category: BadgeCategory.streak,
         isUnlocked: bestStreak >= 30,
       ),
@@ -53,7 +54,7 @@ class BadgeService {
         id: 'streak_100',
         emoji: '💎',
         name: '100 jours',
-        description: '100 jours — tu es un exemple pour la tribu.',
+        description: '100 jours : tu es un exemple pour la tribu.',
         category: BadgeCategory.streak,
         isUnlocked: bestStreak >= 100,
       ),
@@ -61,7 +62,7 @@ class BadgeService {
         id: 'streak_365',
         emoji: '👑',
         name: '1 an',
-        description: 'Un an ensemble — respect total.',
+        description: 'Un an ensemble, respect total.',
         category: BadgeCategory.streak,
         isUnlocked: bestStreak >= 365,
       ),
@@ -108,12 +109,22 @@ class BadgeService {
         isUnlocked: level >= 5,
       ),
 
+      // ── Badge Fondateur ────────────────────────────────────
+      AppBadge(
+        id: 'founder',
+        emoji: '🎖️',
+        name: 'Membre Fondateur',
+        description: 'Tu fais partie des premiers à rejoindre Kolyb. Merci de croire en nous.',
+        category: BadgeCategory.founder,
+        isUnlocked: isFounder,
+      ),
+
       // ── Badges Spéciaux ────────────────────────────────────
       AppBadge(
         id: 'first_step',
         emoji: '👟',
         name: 'Premier pas',
-        description: 'Tu as démarré — c\'est le plus dur.',
+        description: 'Tu as démarré, c\'est le plus dur.',
         category: BadgeCategory.special,
         isUnlocked: totalPoints >= 1,
       ),
@@ -121,7 +132,7 @@ class BadgeService {
         id: 'momentum',
         emoji: '⚡',
         name: 'Momentum',
-        description: 'Tu accumules de l\'élan — ça se sent !',
+        description: 'Tu accumules de l\'élan, ça se sent !',
         category: BadgeCategory.special,
         isUnlocked: totalPoints >= 50,
       ),
@@ -129,7 +140,7 @@ class BadgeService {
         id: 'comeback',
         emoji: '💪',
         name: 'Relevé !',
-        description: 'Tu t\'es relevé après une pause — respect.',
+        description: 'Tu t\'es relevé après une pause, respect.',
         category: BadgeCategory.special,
         // Débloqué si tu as accumulé des points "comeback" (bonus bienveillance)
         // Pour V1 : débloqué si tu as >= 15 pts (seuil du bonus comeback)

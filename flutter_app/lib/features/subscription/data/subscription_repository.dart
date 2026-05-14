@@ -91,7 +91,7 @@ class SubscriptionRepository {
   /// Retourne le nouveau statut ou lance une exception en cas d'erreur
   Future<SubscriptionStatus> purchase(Package package) async {
     try {
-      final result = await Purchases.purchasePackage(package);
+      final result = await Purchases.purchase(PurchaseParams.package(package));
       _log.i('[RevenueCat] achat réussi: ${package.identifier}');
       return _mapToStatus(result.customerInfo);
     } on PurchasesErrorCode catch (e) {

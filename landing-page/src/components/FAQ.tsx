@@ -4,18 +4,20 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Plus, Minus } from "lucide-react";
 
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
 const faqs = [
   {
     q: "kolyb est-il vraiment gratuit ?",
-    a: "Oui, entièrement. En V1, toutes les fonctionnalités essentielles sont gratuites : check-in, planificateur, Pomodoro, tracker sommeil, communauté (lecture + 3 posts/semaine), badges et streaks. Le plan Pro (fonctionnalités avancées) arrivera en V2, sans toucher aux fonctions de base.",
+    a: "Oui, entièrement. En V1, toutes les fonctionnalités essentielles sont gratuites : check-in, planificateur, Pomodoro, communauté (lecture + 3 posts/semaine), badges et streaks. Le plan Pro (fonctionnalités avancées) arrivera en V2, sans toucher aux fonctions de base.",
   },
   {
     q: "Sur quels appareils puis-je utiliser kolyb ?",
-    a: "kolyb est disponible sur iOS (iPhone) et Android. Une version web est prévue pour la V2. Les fonctionnalités essentielles (check-in, planificateur, sommeil) fonctionnent même hors connexion.",
+    a: "kolyb est disponible sur iOS (iPhone) et Android. Une version web est prévue pour la V2. Les fonctionnalités essentielles (check-in, planificateur) fonctionnent même hors connexion.",
   },
   {
     q: "Mes données sont-elles en sécurité ?",
-    a: "La confidentialité est au cœur de kolyb. Tes données sont hébergées en France (EU Frankfurt), conformément au RGPD. Les données sensibles (check-ins émotionnels, sommeil) sont chiffrées. Nous n'avons jamais revendu et ne revendrons jamais tes données. Tu peux demander la suppression totale de ton compte à tout moment.",
+    a: "La confidentialité est au cœur de kolyb. Tes données sont hébergées en EU (Frankfurt), conformément au RGPD. Les données sensibles (check-ins émotionnels) sont chiffrées. Nous n'avons jamais revendu et ne revendrons jamais tes données. Tu peux demander la suppression totale de ton compte à tout moment.",
   },
   {
     q: "À qui s'adresse kolyb exactement ?",
@@ -39,44 +41,45 @@ const faqs = [
   },
 ];
 
-function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
-  const [open, setOpen] = useState(false);
+function FAQItem({ q, a, index, isOpen, onToggle }: { q: string; a: string; index: number; isOpen: boolean; onToggle: () => void }) {
+  /* Entrée alternée gauche / droite */
+  const fromLeft = index % 2 === 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, x: fromLeft ? -32 : 32, y: 8 }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ delay: index * 0.055, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: index * 0.045, duration: 0.55, ease: EASE }}
       className={`faq-item rounded-2xl border transition-all duration-300 overflow-hidden ${
-        open
+        isOpen
           ? "faq-item-open bg-[#1A1836] border-[#6D28D9]/40"
           : "bg-[#1A1836]/50 border-[#22204A] hover:border-[#6D28D9]/20"
       }`}
-      style={open ? { boxShadow: "0 0 40px rgba(109,40,217,0.07)" } : {}}
+      style={isOpen ? { boxShadow: "0 0 40px rgba(109,40,217,0.07)" } : {}}
     >
       <button
-        onClick={() => setOpen(!open)}
+        onClick={onToggle}
         className="faq-btn w-full flex items-center gap-5 text-left group cursor-pointer"
       >
         <span className="faq-index">{String(index + 1).padStart(2, "0")}</span>
         <span
           className={`flex-1 text-[15px] font-medium leading-snug transition-colors ${
-            open ? "text-white" : "text-[#EDEDFF]/75 group-hover:text-white"
+            isOpen ? "text-white" : "text-[#EDEDFF]/75 group-hover:text-white"
           }`}
         >
           {q}
         </span>
         <motion.span
-          animate={{ rotate: open ? 180 : 0 }}
+          animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.25 }}
           className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
           style={{
-            background: open ? "rgba(109,40,217,0.35)" : "rgba(109,40,217,0.1)",
-            border: `1px solid ${open ? "rgba(109,40,217,0.5)" : "rgba(109,40,217,0.2)"}`,
+            background: isOpen ? "rgba(109,40,217,0.35)" : "rgba(109,40,217,0.1)",
+            border: `1px solid ${isOpen ? "rgba(109,40,217,0.5)" : "rgba(109,40,217,0.2)"}`,
           }}
         >
-          {open ? (
+          {isOpen ? (
             <Minus size={14} className="text-[#C4B5FD]" />
           ) : (
             <Plus size={14} className="text-[#8B7FE8]" />
@@ -85,7 +88,7 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
       </button>
 
       <AnimatePresence initial={false}>
-        {open && (
+        {isOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -105,25 +108,71 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
 export default function FAQ() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section ref={ref} id="faq" className="section" style={{ position: "relative", overflow: "hidden" }}>
-      {/* Subtle glow */}
+    <section
+      ref={ref}
+      id="faq"
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        paddingTop: "clamp(100px, 12vw, 140px)",
+        paddingBottom: "clamp(100px, 12vw, 140px)",
+      }}
+    >
+      {/* Séparateur — direction inversée encore une fois */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute", top: 0, left: 0, right: 0,
+          height: 1,
+          background: "linear-gradient(90deg, transparent 0%, rgba(0,212,200,0.2) 20%, rgba(109,40,217,0.4) 60%, transparent 100%)",
+        }}
+      />
+
+      {/* Glow pulsé */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.5, 1, 0.5] }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.85, 0.4] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#6D28D9]/6 rounded-full blur-[100px]"
+          style={{
+            position: "absolute", top: "50%", left: "50%",
+            transform: "translate(-50%,-50%)",
+            width: 700, height: 350,
+            background: "radial-gradient(ellipse, rgba(109,40,217,0.06) 0%, transparent 70%)",
+            filter: "blur(80px)",
+          }}
         />
       </div>
 
       <div className="wrap-md relative z-10">
+        {/* En-tête — depuis le centre (centré = pas de direction, effet de centrage) */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, ease: EASE }}
           className="section-header"
         >
+          {/* Compteur visuel */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+            <div
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                padding: "8px 20px", borderRadius: 9999,
+                background: "rgba(109,40,217,0.1)",
+                border: "1px solid rgba(109,40,217,0.25)",
+              }}
+            >
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#8B7FE8", letterSpacing: "-0.04em" }}>
+                {faqs.length}
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(139,127,232,0.6)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                questions
+              </span>
+            </div>
+          </div>
+
           <p className="eyebrow">FAQ</p>
           <h2 className="section-title">
             Tes questions,{" "}
@@ -136,7 +185,14 @@ export default function FAQ() {
 
         <div className="flex flex-col gap-4">
           {faqs.map((faq, i) => (
-            <FAQItem key={faq.q} q={faq.q} a={faq.a} index={i} />
+            <FAQItem
+              key={faq.q}
+              q={faq.q}
+              a={faq.a}
+              index={i}
+              isOpen={openIndex === i}
+              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+            />
           ))}
         </div>
       </div>

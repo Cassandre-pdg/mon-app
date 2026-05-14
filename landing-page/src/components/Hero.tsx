@@ -198,7 +198,7 @@ export default function Hero() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="p-8 rounded-2xl bg-[#00D4C8]/10 border border-[#00D4C8]/30 text-center"
               >
-                <div className="text-4xl mb-4">🚀</div>
+                <div className="text-4xl mb-4">✨</div>
                 <p className="text-[#00D4C8] font-semibold text-lg mb-2">{message}</p>
                 <p className="text-[#EDEDFF]/55 text-sm">
                   On te tient au courant dès l&apos;ouverture de la beta.

@@ -7,9 +7,9 @@ import '../../features/auth/presentation/screens/auth_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/objectives/presentation/screens/objectives_screen.dart';
 import '../../features/planner/presentation/screens/planner_screen.dart';
 import '../../features/community/presentation/screens/community_screen.dart';
-import '../../features/sleep/presentation/screens/sleep_screen.dart';
 import '../../features/checkin/presentation/screens/checkin_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/rewards/presentation/screens/rewards_screen.dart';
@@ -21,12 +21,12 @@ class AppRoutes {
   static const String auth       = '/auth';
   static const String onboarding = '/onboarding';
   static const String home       = '/home';
+  static const String objectives = '/objectives';
   static const String planner    = '/planner';
   static const String community  = '/community';
-  static const String sleep      = '/sleep';
   static const String profile    = '/profile';
-  static const String checkinMorning = '/checkin/morning';
-  static const String checkinEvening = '/checkin/evening';
+  static const String checkinMorning        = '/checkin/morning';
+  static const String checkinEvening        = '/checkin/evening';
   static const String settings              = '/settings';
   static const String notificationSettings  = '/settings/notifications';
   static const String rewards               = '/rewards';
@@ -34,12 +34,10 @@ class AppRoutes {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Écoute les changements d'état Auth pour rediriger
   final authNotifier = ValueNotifier<bool>(
     Supabase.instance.client.auth.currentUser != null,
   );
 
-  // Met à jour quand l'état change
   ref.listen(authStateProvider, (_, next) {
     next.whenData((state) {
       authNotifier.value = state.session != null;
@@ -52,46 +50,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         : AppRoutes.auth,
     refreshListenable: authNotifier,
 
-    // Redirection automatique selon l'état Auth
     redirect: (context, state) {
       final isLoggedIn = Supabase.instance.client.auth.currentUser != null;
       final isOnAuth = state.matchedLocation == AppRoutes.auth;
-
-      // Pas connecté → page Auth
       if (!isLoggedIn && !isOnAuth) return AppRoutes.auth;
-      // Connecté sur Auth → Home
       if (isLoggedIn && isOnAuth) return AppRoutes.home;
-
-      return null; // pas de redirection
+      return null;
     },
 
     routes: [
-      // Auth
       GoRoute(
         path: AppRoutes.auth,
         builder: (context, state) => const AuthScreen(),
       ),
-
-      // Onboarding
       GoRoute(
         path: AppRoutes.onboarding,
         builder: (context, state) => const OnboardingScreen(),
       ),
-
-      // Badges (sans barre de navigation)
       GoRoute(
         path: AppRoutes.rewards,
         builder: (context, state) => const RewardsScreen(),
       ),
-
-      // Paramètres notifications (sans barre de navigation)
       GoRoute(
         path: AppRoutes.notificationSettings,
         builder: (context, state) => const NotificationSettingsScreen(),
       ),
-
-      // Paywall Pro (sans barre de navigation)
-      // Paramètre optionnel : ?dismissible=false pour bloquer la fermeture
       GoRoute(
         path: AppRoutes.paywall,
         builder: (context, state) {
@@ -100,8 +83,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           return PaywallScreen(isDismissible: dismissible);
         },
       ),
-
-      // Check-ins (sans barre de navigation)
       GoRoute(
         path: AppRoutes.checkinMorning,
         builder: (context, state) => const CheckinScreen(type: 'morning'),
@@ -111,7 +92,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CheckinScreen(type: 'evening'),
       ),
 
-      // App principale avec barre de navigation
+      // ── App principale : 5 onglets ───────────────────────
+      // [ Mon Espace ] [ Objectifs ] [ Ma Journée ] [ Le Salon ] [ Mon Profil ]
       ShellRoute(
         builder: (context, state, child) => _ScaffoldWithNav(child: child),
         routes: [
@@ -119,6 +101,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.home,
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: DashboardScreen()),
+          ),
+          GoRoute(
+            path: AppRoutes.objectives,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ObjectivesScreen()),
           ),
           GoRoute(
             path: AppRoutes.planner,
@@ -129,11 +116,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.community,
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: CommunityScreen()),
-          ),
-          GoRoute(
-            path: AppRoutes.sleep,
-            pageBuilder: (context, state) =>
-                const NoTransitionPage(child: SleepScreen()),
           ),
           GoRoute(
             path: AppRoutes.profile,
@@ -153,9 +135,9 @@ class _ScaffoldWithNav extends StatelessWidget {
 
   static const _routes = [
     AppRoutes.home,
+    AppRoutes.objectives,
     AppRoutes.planner,
     AppRoutes.community,
-    AppRoutes.sleep,
     AppRoutes.profile,
   ];
 
@@ -167,32 +149,138 @@ class _ScaffoldWithNav extends StatelessWidget {
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: _KolybNavBar(
         currentIndex: currentIndex,
-        onTap: (index) => context.go(_routes[index]),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: AppStrings.navHome,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.check_circle_rounded),
-            label: AppStrings.navPlanner,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people_rounded),
-            label: AppStrings.navCommunity,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bedtime_rounded),
-            label: AppStrings.navSleep,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_rounded),
-            label: AppStrings.navProfile,
-          ),
-        ],
+        onTap: (i) => context.go(_routes[i]),
       ),
+    );
+  }
+}
+
+// ── Tab bar flottante glass ────────────────────────────────────
+class _KolybNavBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  const _KolybNavBar({required this.currentIndex, required this.onTap});
+
+  static const _items = [
+    (Icons.home_rounded,          AppStrings.navHome),
+    (Icons.flag_rounded,          AppStrings.navObjectives),
+    (Icons.check_circle_rounded,  AppStrings.navPlanner),
+    (Icons.people_rounded,        AppStrings.navCommunity),
+    (Icons.person_rounded,        AppStrings.navProfile),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark     = Theme.of(context).brightness == Brightness.dark;
+    final bottomPad  = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      color: Colors.transparent,
+      padding: EdgeInsets.fromLTRB(16, 6, 16, bottomPad + 10),
+      child: Container(
+        height: 64,
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xF20A0B1A)
+              : const Color(0xF5FFFFFF),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: isDark
+                ? const Color(0x18FFFFFF)
+                : const Color(0x14000000),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6D28D9).withValues(alpha: 0.14),
+              blurRadius: 24,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: List.generate(_items.length, (i) {
+            final (icon, label) = _items[i];
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => onTap(i),
+                behavior: HitTestBehavior.opaque,
+                child: _NavItem(
+                  icon: icon,
+                  label: label,
+                  isActive: i == currentIndex,
+                  isDark: isDark,
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Item de la tab bar ────────────────────────────────────────
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final bool isDark;
+
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final activeColor   = const Color(0xFF6D28D9);
+    final inactiveColor = isDark
+        ? const Color(0xFFEDEDFF).withValues(alpha: 0.35)
+        : const Color(0xFF12122A).withValues(alpha: 0.35);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeInOut,
+          padding: EdgeInsets.symmetric(
+            horizontal: isActive ? 14 : 10,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: isActive ? activeColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Icon(
+            icon,
+            size: 22,
+            color: isActive ? Colors.white : inactiveColor,
+          ),
+        ),
+        const SizedBox(height: 2),
+        AnimatedOpacity(
+          opacity: isActive ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 180),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: isDark
+                  ? const Color(0xFFEDEDFF)
+                  : const Color(0xFF12122A),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

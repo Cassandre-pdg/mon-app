@@ -15,6 +15,13 @@ class CheckinRepository {
     required int energyScore,
     required int focusScore,
     String? notes,
+    String? wellbeingNote,
+    String? focusProjectId,
+    String? dailyIntention,
+    String? dailySuccess,
+    String? dailyVictory,
+    String? dailyLearning,
+    String? tomorrowIntention,
   }) async {
     try {
       final data = await _supabase
@@ -26,6 +33,19 @@ class CheckinRepository {
             'energy_score': energyScore,
             'focus_score': focusScore,
             if (notes != null && notes.isNotEmpty) 'notes': notes,
+            if (wellbeingNote != null && wellbeingNote.isNotEmpty)
+              'wellbeing_note': wellbeingNote,
+            if (focusProjectId != null) 'focus_project_id': focusProjectId,
+            if (dailyIntention != null && dailyIntention.isNotEmpty)
+              'daily_intention': dailyIntention,
+            if (dailySuccess != null && dailySuccess.isNotEmpty)
+              'daily_success': dailySuccess,
+            if (dailyVictory != null && dailyVictory.isNotEmpty)
+              'daily_victory': dailyVictory,
+            if (dailyLearning != null && dailyLearning.isNotEmpty)
+              'daily_learning': dailyLearning,
+            if (tomorrowIntention != null && tomorrowIntention.isNotEmpty)
+              'tomorrow_intention': tomorrowIntention,
           })
           .select()
           .single();
@@ -55,6 +75,34 @@ class CheckinRepository {
       'morning': checkins.where((c) => c.type == 'morning').firstOrNull,
       'evening': checkins.where((c) => c.type == 'evening').firstOrNull,
     };
+  }
+
+  /// Récupérer la note "demain" du check-in soir d'hier (pense-bête matin)
+  Future<String?> getLastEveningTomorrowNote() async {
+    try {
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      final start = DateTime(yesterday.year, yesterday.month, yesterday.day)
+          .toIso8601String();
+      final end = DateTime(
+              yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
+          .toIso8601String();
+
+      final data = await _supabase
+          .from('checkins')
+          .select('tomorrow_intention')
+          .eq('user_id', _supabase.auth.currentUser!.id)
+          .eq('type', 'evening')
+          .gte('created_at', start)
+          .lte('created_at', end)
+          .limit(1)
+          .maybeSingle();
+
+      final note = data?['tomorrow_intention'] as String?;
+      return (note != null && note.isNotEmpty) ? note : null;
+    } catch (e) {
+      _logger.e('Erreur récupération note soir : $e');
+      return null;
+    }
   }
 
   /// Récupérer les derniers N check-ins

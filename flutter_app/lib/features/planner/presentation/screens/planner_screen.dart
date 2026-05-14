@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -98,6 +99,10 @@ class PlannerScreen extends ConsumerWidget {
 class _PrioritesTab extends ConsumerWidget {
   const _PrioritesTab();
 
+  // Routes inline pour éviter un import circulaire avec app_router
+  static const _kanbanRoute      = '/planner/kanban';
+  static const _weeklyReviewRoute = '/planner/weekly-review';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(plannerProvider);
@@ -105,18 +110,30 @@ class _PrioritesTab extends ConsumerWidget {
 
     return Column(
       children: [
+        // ── Badge méthode MIT ──────────────────────────────
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-          child: Text(
-            'Tes 3 priorités du jour',
-            style: AppTextStyles.bodyMedium(color: AppColors.grey400),
+          padding: const EdgeInsets.fromLTRB(24, 14, 24, 0),
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius:
+                  BorderRadius.circular(AppConstants.radiusPill),
+            ),
+            child: Text(
+              'Méthode MIT : tes 3 tâches les plus importantes du jour',
+              style: AppTextStyles.caption(color: AppColors.primaryLight),
+            ),
           ),
         ),
+        const SizedBox(height: AppConstants.spacing12),
 
-        // Liste des tâches
+        // ── Liste des tâches ───────────────────────────────
         Expanded(
           child: tasksAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () =>
+                const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(
               child: Text(
                 AppStrings.errorGeneric,
@@ -129,23 +146,120 @@ class _PrioritesTab extends ConsumerWidget {
           ),
         ),
 
-        // Bouton ajouter (si < 3 tâches)
+        // ── Bouton ajouter / message limite ───────────────
         tasksAsync.when(
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
-          data: (tasks) => tasks.length < AppConstants.maxDailyTasks
-              ? Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                  child: _AddTaskButton(),
-                )
-              : Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                  child: Text(
-                    AppStrings.plannerMaxTasks,
-                    style: AppTextStyles.bodySmall(color: AppColors.grey400),
-                    textAlign: TextAlign.center,
+          data: (tasks) => Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+            child: tasks.length < AppConstants.maxDailyTasks
+                ? _AddTaskButton()
+                : Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(
+                          AppConstants.radiusMedium),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('🎉',
+                            style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Tes 3 priorités sont définies, à toi de jouer !',
+                          style: AppTextStyles.bodySmall(
+                              color: AppColors.success),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+
+        // ── Liens rapides Kanban + Revue hebdo ────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => context.push(_kanbanRoute),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.surfaceDark
+                          : AppColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.grey400
+                                .withValues(alpha: 0.15)
+                            : AppColors.grey200,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('🗂️',
+                            style: TextStyle(fontSize: 15)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Kanban',
+                          style: AppTextStyles.bodySmall(
+                            color: isDark
+                                ? AppColors.textDarkMuted
+                                : AppColors.grey400,
+                          ).copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => context.push(_weeklyReviewRoute),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.surfaceDark
+                          : AppColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.grey400
+                                .withValues(alpha: 0.15)
+                            : AppColors.grey200,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('📋',
+                            style: TextStyle(fontSize: 15)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Revue hebdo',
+                          style: AppTextStyles.bodySmall(
+                            color: isDark
+                                ? AppColors.textDarkMuted
+                                : AppColors.grey400,
+                          ).copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
