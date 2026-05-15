@@ -90,6 +90,10 @@ class _DashboardContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final focusProject = ref.watch(focusProjectProvider);
+    final hour = DateTime.now().hour;
+    // Avant 13h : matin est plus grand (3:2) ; après 17h : soir est plus grand (2:3)
+    final morningFlex = hour < 13 ? 3 : 2;
+    final eveningFlex = hour >= 17 ? 3 : 2;
 
     return Padding(
       padding: const EdgeInsets.all(AppConstants.spacing24),
@@ -105,6 +109,15 @@ class _DashboardContent extends ConsumerWidget {
           ),
           const SizedBox(height: AppConstants.spacing16),
 
+          // ── Suivi du jour (anneaux) — juste sous le streak ─
+          _GlowPulse(
+            color: AppColors.accent,
+            maxAlpha: 0.12,
+            blurRadius: 28,
+            child: _OverviewCard(data: data),
+          ),
+          const SizedBox(height: AppConstants.spacing24),
+
           // ── Check-ins du jour ─────────────────────────────
           Text(
             'Mon Check-in',
@@ -114,22 +127,25 @@ class _DashboardContent extends ConsumerWidget {
           ),
           const SizedBox(height: AppConstants.spacing12),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
+                flex: morningFlex,
                 child: _CheckinCard(
-                  emoji: '🌅',
-                  label: 'Matin',
+                  isMorning: true,
                   isDone: data.morningDone,
                   route: AppRoutes.checkinMorning,
+                  isBig: hour < 13,
                 ),
               ),
               const SizedBox(width: AppConstants.spacing12),
               Expanded(
+                flex: eveningFlex,
                 child: _CheckinCard(
-                  emoji: '🌙',
-                  label: 'Soir',
+                  isMorning: false,
                   isDone: data.eveningDone,
                   route: AppRoutes.checkinEvening,
+                  isBig: hour >= 17,
                 ),
               ),
             ],
@@ -161,15 +177,6 @@ class _DashboardContent extends ConsumerWidget {
           ),
           const SizedBox(height: AppConstants.spacing12),
           const _WellnessSection(),
-          const SizedBox(height: AppConstants.spacing24),
-
-          // ── Suivi général (anneaux) ───────────────────────
-          _GlowPulse(
-            color: AppColors.accent,
-            maxAlpha: 0.10,
-            blurRadius: 24,
-            child: _OverviewCard(data: data),
-          ),
           const SizedBox(height: AppConstants.spacing24),
 
           // ── Niveau ───────────────────────────────────────
@@ -293,63 +300,110 @@ class _StreakCard extends StatelessWidget {
   }
 }
 
-// ── Carte Check-in ──────────────────────────────────────────
+// ── Carte Check-in — gradient contextuel + taille dynamique ─
 class _CheckinCard extends StatelessWidget {
-  final String emoji;
-  final String label;
+  final bool isMorning;
   final bool isDone;
   final String route;
+  final bool isBig;
 
   const _CheckinCard({
-    required this.emoji,
-    required this.label,
+    required this.isMorning,
     required this.isDone,
     required this.route,
+    required this.isBig,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final emoji      = isMorning ? '🌅' : '🌙';
+    final label      = isMorning ? 'Matin' : 'Soir';
+    final accentColor = isMorning ? AppColors.chartAmber : AppColors.primaryLight;
+
+    final List<Color> gradient = isDone
+        ? [const Color(0xFF00241E), const Color(0xFF003D32)]
+        : isMorning
+            ? [const Color(0xFF1E0E00), const Color(0xFF3D2000)]
+            : [const Color(0xFF0A0620), const Color(0xFF18094A)];
+
+    final borderColor = isDone
+        ? AppColors.accent.withValues(alpha: 0.55)
+        : isMorning
+            ? AppColors.chartAmber.withValues(alpha: 0.35)
+            : AppColors.primary.withValues(alpha: 0.35);
+
+    final double pad         = isBig ? 20.0 : 14.0;
+    final double emojiSmall  = isBig ? 28.0 : 22.0;
+    final double emojiBg     = isBig ? 66.0 : 50.0;
 
     return GestureDetector(
       onTap: isDone ? null : () => context.push(route),
-      child: AnimatedContainer(
-        duration: AppConstants.animFast,
-        padding: const EdgeInsets.all(AppConstants.spacing16),
+      child: Container(
+        padding: EdgeInsets.all(pad),
         decoration: BoxDecoration(
-          color: isDone
-              ? AppColors.success.withValues(alpha:0.12)
-              : isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-          border: Border.all(
-            color: isDone ? AppColors.success : AppColors.grey200,
-            width: isDone ? 2 : 1,
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          border: Border.all(color: borderColor, width: 1.5),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Emoji géant en fond semi-transparent
+            Positioned(
+              right: -8,
+              bottom: -10,
+              child: Opacity(
+                opacity: 0.11,
+                child: Text(emoji, style: TextStyle(fontSize: emojiBg)),
+              ),
+            ),
+            // Contenu
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(emoji, style: const TextStyle(fontSize: 28)),
                 if (isDone)
                   const Icon(Icons.check_circle_rounded,
-                      color: AppColors.success, size: 20),
+                      color: AppColors.accent, size: 22)
+                else
+                  Text(emoji, style: TextStyle(fontSize: emojiSmall)),
+                SizedBox(height: isBig ? 14.0 : 10.0),
+                Text(
+                  label,
+                  style: AppTextStyles.headingSmall(color: AppColors.textDark)
+                      .copyWith(fontSize: isBig ? 16.0 : 14.0),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  isDone ? 'Fait ✓' : 'À faire',
+                  style: AppTextStyles.bodySmall(
+                    color: isDone
+                        ? AppColors.accent
+                        : accentColor.withValues(alpha: 0.7),
+                  ),
+                ),
+                if (isBig && !isDone) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.18),
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusPill),
+                      border: Border.all(
+                          color: accentColor.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      'Commencer',
+                      style: AppTextStyles.caption(color: accentColor),
+                    ),
+                  ),
+                ],
               ],
-            ),
-            const SizedBox(height: AppConstants.spacing8),
-            Text(
-              label,
-              style: AppTextStyles.headingSmall(
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
-            ),
-            Text(
-              isDone ? 'Fait ✅' : 'À faire',
-              style: AppTextStyles.bodySmall(
-                color: isDone ? AppColors.success : AppColors.grey400,
-              ),
             ),
           ],
         ),
@@ -989,30 +1043,32 @@ class _OverviewCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Progression de chaque anneau (0.0 → 1.0)
-    final focusProgress  = data.focusGoalMinutes > 0
+    final focusProgress   = data.focusGoalMinutes > 0
         ? (data.focusMinutes / data.focusGoalMinutes).clamp(0.0, 1.0)
         : 0.0;
-    final habitsProgress = data.habitsTotalToday > 0
+    final habitsProgress  = data.habitsTotalToday > 0
         ? (data.habitsCompleted / data.habitsTotalToday).clamp(0.0, 1.0)
         : 0.0;
-    final sleepProgress  = data.sleepQualityScore != null
-        ? (data.sleepQualityScore! / 5.0).clamp(0.0, 1.0)
-        : 0.0;
+    // Anneau 3 : check-ins du jour (matin + soir = 2 maximum)
+    final checkinsDone    = (data.morningDone ? 1 : 0) + (data.eveningDone ? 1 : 0);
+    final checkinsProgress = checkinsDone / 2.0;
 
-    // Label durée focus
+    // Labels
     final fH = data.focusMinutes ~/ 60;
     final fM = data.focusMinutes % 60;
-    final focusLabel = fH > 0 ? '${fH}h${fM.toString().padLeft(2, '0')}' : '${fM}min';
+    final focusLabel = fH > 0
+        ? '${fH}h${fM.toString().padLeft(2, '0')}'
+        : '${fM}min';
 
-    // Label sommeil
-    final sH = data.sleepDurationMinutes ~/ 60;
-    final sM = data.sleepDurationMinutes % 60;
-    final sleepLabel = data.sleepDurationMinutes > 0
-        ? '${sH}h${sM.toString().padLeft(2, '0')}'
-        : '--';
-    final sleepQualityLabel = data.sleepQualityScore != null
-        ? _sleepQualityText(data.sleepQualityScore!)
-        : 'Non renseigné';
+    final checkinsLabel   = '$checkinsDone/2';
+    final checkinsSub     = checkinsDone == 2
+        ? 'les deux faits ✓'
+        : checkinsDone == 1
+            ? 'un sur deux'
+            : 'à faire aujourd\'hui';
+
+    // Score global (moyenne des 3 anneaux)
+    final avgScore = ((focusProgress + habitsProgress + checkinsProgress) / 3 * 100).round();
 
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacing16),
@@ -1021,14 +1077,13 @@ class _OverviewCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: Border.all(
           color: isDark
-              ? const Color(0x0FFFFFFF)
+              ? const Color(0x14FFFFFF)
               : const Color(0x14000000),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Titre section
           Text(
             'Suivi du jour',
             style: AppTextStyles.headingSmall(
@@ -1040,26 +1095,26 @@ class _OverviewCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ── Anneaux ──────────────────────────────────
+              // ── Anneaux Apple Watch ───────────────────────
               SizedBox(
-                width: 130,
-                height: 130,
+                width: 136,
+                height: 136,
                 child: _ActivityRings(
-                  focusProgress: focusProgress,
-                  habitsProgress: habitsProgress,
-                  sleepProgress: sleepProgress,
+                  focusProgress:    focusProgress,
+                  habitsProgress:   habitsProgress,
+                  checkinsProgress: checkinsProgress,
+                  avgScore:         avgScore,
                 ),
               ),
               const SizedBox(width: AppConstants.spacing24),
 
-              // ── Légende ───────────────────────────────────
+              // ── Légende enrichie ──────────────────────────
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _RingLegendItem(
                       color: AppColors.primary,
-                      icon: Icons.bolt_rounded,
                       label: 'Focus',
                       value: focusLabel,
                       subtitle: 'objectif ${data.focusGoalMinutes ~/ 60}h',
@@ -1068,20 +1123,20 @@ class _OverviewCard extends StatelessWidget {
                     const SizedBox(height: AppConstants.spacing12),
                     _RingLegendItem(
                       color: AppColors.accent,
-                      icon: Icons.check_circle_outline_rounded,
                       label: 'Habitudes',
                       value: '${data.habitsCompleted}/${data.habitsTotalToday}',
-                      subtitle: data.habitsTotalToday == 0 ? 'aucune planifiée' : 'tâches',
+                      subtitle: data.habitsTotalToday == 0
+                          ? 'aucune planifiée'
+                          : 'complétées',
                       progress: habitsProgress,
                     ),
                     const SizedBox(height: AppConstants.spacing12),
                     _RingLegendItem(
                       color: AppColors.chartAmber,
-                      icon: Icons.bedtime_outlined,
-                      label: 'Sommeil',
-                      value: sleepLabel,
-                      subtitle: sleepQualityLabel,
-                      progress: sleepProgress,
+                      label: 'Check-ins',
+                      value: checkinsLabel,
+                      subtitle: checkinsSub,
+                      progress: checkinsProgress,
                     ),
                   ],
                 ),
@@ -1092,23 +1147,11 @@ class _OverviewCard extends StatelessWidget {
       ),
     );
   }
-
-  String _sleepQualityText(int score) {
-    switch (score) {
-      case 1: return 'Difficile';
-      case 2: return 'Agité';
-      case 3: return 'Correct';
-      case 4: return 'Bon';
-      case 5: return 'Excellent';
-      default: return '--';
-    }
-  }
 }
 
 // ── Item légende ─────────────────────────────────────────────
 class _RingLegendItem extends StatelessWidget {
   final Color color;
-  final IconData icon;
   final String label;
   final String value;
   final String subtitle;
@@ -1116,7 +1159,6 @@ class _RingLegendItem extends StatelessWidget {
 
   const _RingLegendItem({
     required this.color,
-    required this.icon,
     required this.label,
     required this.value,
     required this.subtitle,
@@ -1183,12 +1225,14 @@ class _RingLegendItem extends StatelessWidget {
 class _ActivityRings extends StatefulWidget {
   final double focusProgress;
   final double habitsProgress;
-  final double sleepProgress;
+  final double checkinsProgress;
+  final int avgScore;
 
   const _ActivityRings({
     required this.focusProgress,
     required this.habitsProgress,
-    required this.sleepProgress,
+    required this.checkinsProgress,
+    required this.avgScore,
   });
 
   @override
@@ -1196,120 +1240,187 @@ class _ActivityRings extends StatefulWidget {
 }
 
 class _ActivityRingsState extends State<_ActivityRings>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _anim;
+    with TickerProviderStateMixin {
+  late AnimationController _entryCtrl;
+  late AnimationController _pulseCtrl;
+  late Animation<double> _entryAnim;
+  late Animation<double> _pulseAnim;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
+    // Animation d'entrée : 0 → valeur en 1.2s avec légère élasticité
+    _entryCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1200),
     );
-    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
-    _ctrl.forward();
+    _entryAnim = CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic);
+    _entryCtrl.forward();
+
+    // Animation de pulse : respiration du tip (boucle infinie)
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+    _pulseAnim = CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut);
   }
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _entryCtrl.dispose();
+    _pulseCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _anim,
-      builder: (_, __) => CustomPaint(
-        painter: _RingsPainter(
-          focusProgress:  widget.focusProgress  * _anim.value,
-          habitsProgress: widget.habitsProgress * _anim.value,
-          sleepProgress:  widget.sleepProgress  * _anim.value,
-        ),
-      ),
+      animation: Listenable.merge([_entryAnim, _pulseAnim]),
+      builder: (_, __) {
+        final t = _entryAnim.value;
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            CustomPaint(
+              size: const Size(136, 136),
+              painter: _RingsPainter(
+                focusProgress:    widget.focusProgress    * t,
+                habitsProgress:   widget.habitsProgress   * t,
+                checkinsProgress: widget.checkinsProgress * t,
+                pulseValue:       _pulseAnim.value,
+              ),
+            ),
+            // Score central
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${(widget.avgScore * t).round()}%',
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textDark,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'score',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDarkMuted,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
-// ── Peintre des anneaux ───────────────────────────────────────
+// ── Peintre des anneaux — Apple Watch style ───────────────────
 class _RingsPainter extends CustomPainter {
   final double focusProgress;
   final double habitsProgress;
-  final double sleepProgress;
+  final double checkinsProgress;
+  final double pulseValue;
 
   _RingsPainter({
     required this.focusProgress,
     required this.habitsProgress,
-    required this.sleepProgress,
+    required this.checkinsProgress,
+    required this.pulseValue,
   });
 
-  static const _strokeWidth = 12.0;
-  static const _gap         = 7.0;  // espace entre les anneaux
+  static const _strokeWidth = 13.0;
+  static const _gap         = 6.0;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final maxR   = math.min(size.width, size.height) / 2 - 2;
 
-    // Anneau extérieur : Focus (violet)
-    _drawRing(canvas, center, maxR, focusProgress, AppColors.primary);
-    // Anneau milieu : Habitudes (teal)
-    _drawRing(canvas, center, maxR - _strokeWidth - _gap, habitsProgress, AppColors.accent);
-    // Anneau intérieur : Sommeil (amber)
-    _drawRing(canvas, center, maxR - (_strokeWidth + _gap) * 2, sleepProgress, AppColors.chartAmber);
+    _drawRing(canvas, center, maxR,
+        focusProgress, AppColors.primary);
+    _drawRing(canvas, center, maxR - _strokeWidth - _gap,
+        habitsProgress, AppColors.accent);
+    _drawRing(canvas, center, maxR - (_strokeWidth + _gap) * 2,
+        checkinsProgress, AppColors.chartAmber);
   }
 
-  void _drawRing(Canvas canvas, Offset center, double radius, double progress, Color color) {
-    final rect = Rect.fromCircle(center: center, radius: radius);
-
-    // Fond (piste)
-    final trackPaint = Paint()
-      ..color = color.withValues(alpha: 0.15)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = _strokeWidth
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(center, radius, trackPaint);
+  void _drawRing(Canvas canvas, Offset center, double radius,
+      double progress, Color color) {
+    // ── Piste (fond) ─────────────────────────────────────────
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = color.withValues(alpha: 0.22)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _strokeWidth
+        ..strokeCap = StrokeCap.round,
+    );
 
     if (progress <= 0) return;
 
-    // Progression
-    final progressPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = _strokeWidth
-      ..strokeCap = StrokeCap.round;
+    final rect    = Rect.fromCircle(center: center, radius: radius);
+    final startA  = -math.pi / 2;
+    final sweepA  = 2 * math.pi * progress;
 
-    // Départ : 12h (−π/2), sens horaire
+    // ── Halo extérieur (glow large) ───────────────────────────
     canvas.drawArc(
-      rect,
-      -math.pi / 2,
-      2 * math.pi * progress,
-      false,
-      progressPaint,
+      rect, startA, sweepA, false,
+      Paint()
+        ..color = color.withValues(alpha: 0.18)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _strokeWidth + 6
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
 
-    // Halo lumineux (glow)
-    final glowPaint = Paint()
-      ..color = color.withValues(alpha: 0.25)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = _strokeWidth + 4
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    // ── Arc principal ─────────────────────────────────────────
     canvas.drawArc(
-      rect,
-      -math.pi / 2,
-      2 * math.pi * progress,
-      false,
-      glowPaint,
+      rect, startA, sweepA, false,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _strokeWidth
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // ── Tip lumineux animé (pulse) ────────────────────────────
+    final tipAngle = startA + sweepA;
+    final tipX     = center.dx + radius * math.cos(tipAngle);
+    final tipY     = center.dy + radius * math.sin(tipAngle);
+    final tipOffset = Offset(tipX, tipY);
+    final tipR     = _strokeWidth / 2;
+    final glowR    = tipR + 2 + 2 * pulseValue; // respire 2→4px
+
+    // Halo du tip
+    canvas.drawCircle(
+      tipOffset, glowR,
+      Paint()
+        ..color = color.withValues(alpha: 0.45 + 0.25 * pulseValue)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    // Point blanc brillant au centre du tip
+    canvas.drawCircle(
+      tipOffset, tipR - 1,
+      Paint()..color = Colors.white.withValues(alpha: 0.92),
     );
   }
 
   @override
   bool shouldRepaint(_RingsPainter old) =>
-      old.focusProgress  != focusProgress  ||
-      old.habitsProgress != habitsProgress ||
-      old.sleepProgress  != sleepProgress;
+      old.focusProgress    != focusProgress    ||
+      old.habitsProgress   != habitsProgress   ||
+      old.checkinsProgress != checkinsProgress ||
+      old.pulseValue       != pulseValue;
 }
 
 // ── Halo ambiant animé — respire lentement autour des cards ──
