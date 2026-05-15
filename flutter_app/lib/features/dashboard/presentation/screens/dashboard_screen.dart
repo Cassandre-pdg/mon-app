@@ -12,6 +12,8 @@ import '../../../../shared/navigation/app_router.dart';
 import '../providers/dashboard_provider.dart';
 import '../../data/dashboard_repository.dart';
 import '../../../planner/presentation/providers/flow_provider.dart';
+import '../../../planner/presentation/providers/kanban_provider.dart';
+import '../../../planner/data/kanban_model.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -87,6 +89,7 @@ class _DashboardContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final focusProject = ref.watch(focusProjectProvider);
 
     return Padding(
       padding: const EdgeInsets.all(AppConstants.spacing24),
@@ -101,15 +104,6 @@ class _DashboardContent extends ConsumerWidget {
             child: _StreakCard(data: data),
           ),
           const SizedBox(height: AppConstants.spacing16),
-
-          // ── Suivi général (anneaux) ───────────────────────
-          _GlowPulse(
-            color: AppColors.accent,
-            maxAlpha: 0.10,
-            blurRadius: 24,
-            child: _OverviewCard(data: data),
-          ),
-          const SizedBox(height: AppConstants.spacing24),
 
           // ── Check-ins du jour ─────────────────────────────
           Text(
@@ -142,6 +136,42 @@ class _DashboardContent extends ConsumerWidget {
           ),
           const SizedBox(height: AppConstants.spacing24),
 
+          // ── Mon Projet en cours ───────────────────────────
+          Text(
+            'Mon Projet en cours',
+            style: AppTextStyles.headingSmall(
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacing12),
+          _GlowPulse(
+            color: AppColors.primary,
+            maxAlpha: 0.18,
+            blurRadius: 32,
+            child: _FocusProjectCard(project: focusProject),
+          ),
+          const SizedBox(height: AppConstants.spacing24),
+
+          // ── Prendre soin de moi ───────────────────────────
+          Text(
+            'Prendre soin de moi',
+            style: AppTextStyles.headingSmall(
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacing12),
+          const _WellnessSection(),
+          const SizedBox(height: AppConstants.spacing24),
+
+          // ── Suivi général (anneaux) ───────────────────────
+          _GlowPulse(
+            color: AppColors.accent,
+            maxAlpha: 0.10,
+            blurRadius: 24,
+            child: _OverviewCard(data: data),
+          ),
+          const SizedBox(height: AppConstants.spacing24),
+
           // ── Niveau ───────────────────────────────────────
           _GlowPulse(
             color: AppColors.primaryLight,
@@ -153,6 +183,7 @@ class _DashboardContent extends ConsumerWidget {
 
           // ── Message bienveillant ─────────────────────────
           _MotivationBanner(data: data),
+          const SizedBox(height: AppConstants.spacing16),
         ],
       ),
     );
@@ -421,6 +452,527 @@ class _MotivationBanner extends StatelessWidget {
         message,
         style: AppTextStyles.bodyMedium(
           color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Card Projet en cours ─────────────────────────────────────
+class _FocusProjectCard extends StatelessWidget {
+  final KanbanProject? project;
+  const _FocusProjectCard({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    if (project == null) return _EmptyProjectCard();
+    return _FilledProjectCard(project: project!);
+  }
+}
+
+class _EmptyProjectCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/planner/kanban'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.spacing24,
+          vertical: AppConstants.spacing32,
+        ),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0A0820), Color(0xFF140F30)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          children: [
+            const Text('🎯', style: TextStyle(fontSize: 36)),
+            const SizedBox(height: AppConstants.spacing12),
+            Text(
+              'Aucun projet épinglé',
+              style: AppTextStyles.headingSmall(color: AppColors.textDark),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Épingle un projet dans Mes Objectifs pour le suivre ici',
+              style: AppTextStyles.bodySmall(color: AppColors.textDarkMuted),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppConstants.spacing16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(AppConstants.radiusPill),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+              ),
+              child: Text(
+                'Voir mes projets',
+                style: AppTextStyles.labelMedium(color: AppColors.primaryLight),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FilledProjectCard extends StatelessWidget {
+  final KanbanProject project;
+  const _FilledProjectCard({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (project.progressPercent * 100).round();
+    final daysLeft = project.daysLeft;
+    final isOverdue = project.isOverdue;
+
+    return GestureDetector(
+      onTap: () => context.push('/planner/kanban'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0A0820), Color(0xFF140F30)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.45),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              blurRadius: 24,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── En-tête : nom + badge statut ──────────────
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${project.projectStatus.emoji} ${project.projectStatus.label}',
+                          style: AppTextStyles.caption(color: AppColors.primaryLight),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        project.name,
+                        style: AppTextStyles.headingMedium(color: AppColors.textDark),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppConstants.spacing12),
+                // ── % progression ───────────────────────
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                      width: 2,
+                    ),
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$pct%',
+                      style: AppTextStyles.headingSmall(color: AppColors.primaryLight)
+                          .copyWith(fontSize: 15, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // ── Pourquoi (ancre motivation) ───────────────
+            if (project.why != null && project.why!.isNotEmpty) ...[
+              const SizedBox(height: AppConstants.spacing12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacing12,
+                  vertical: AppConstants.spacing8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1040),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '💡',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        project.why!,
+                        style: AppTextStyles.bodySmall(color: AppColors.textDarkMuted)
+                            .copyWith(fontStyle: FontStyle.italic),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            const SizedBox(height: AppConstants.spacing16),
+
+            // ── Barre de progression ──────────────────────
+            Row(
+              children: [
+                Text(
+                  'Avancement',
+                  style: AppTextStyles.caption(color: AppColors.textDarkMuted),
+                ),
+                const Spacer(),
+                Text(
+                  project.progressLabel,
+                  style: AppTextStyles.caption(color: AppColors.primaryLight),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: project.progressPercent,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                minHeight: 7,
+              ),
+            ),
+
+            const SizedBox(height: AppConstants.spacing16),
+
+            // ── Footer : stats tâches + jours restants ────
+            Row(
+              children: [
+                _TaskPill(
+                  label: '${project.todoCount} à faire',
+                  color: AppColors.textDarkMuted,
+                ),
+                const SizedBox(width: 8),
+                _TaskPill(
+                  label: '${project.inProgressCount} en cours',
+                  color: AppColors.chartAmber,
+                ),
+                const SizedBox(width: 8),
+                _TaskPill(
+                  label: '${project.doneCount} ✓',
+                  color: AppColors.accent,
+                ),
+                const Spacer(),
+                if (daysLeft != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isOverdue
+                          ? AppColors.secondary.withValues(alpha: 0.15)
+                          : AppColors.accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      isOverdue
+                          ? '${(-daysLeft).abs()}j de retard'
+                          : 'J-$daysLeft',
+                      style: AppTextStyles.caption(
+                        color: isOverdue ? AppColors.secondary : AppColors.accent,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TaskPill extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _TaskPill({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(label, style: AppTextStyles.caption(color: color)),
+    );
+  }
+}
+
+// ── Section Bien-être ─────────────────────────────────────────
+class _WellnessSection extends StatelessWidget {
+  const _WellnessSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Méditation + Respiration côte à côte
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _WellnessCard(
+                  route: '/wellness/meditation',
+                  emoji: '🧘',
+                  title: 'Méditer',
+                  subtitle: 'Prendre du recul',
+                  gradientColors: const [Color(0xFF004D47), Color(0xFF00A89A)],
+                  glowColor: AppColors.accent,
+                  shimmerColor: const Color(0xFF00D4C8),
+                ),
+              ),
+              const SizedBox(width: AppConstants.spacing12),
+              Expanded(
+                child: _WellnessCard(
+                  route: '/wellness/breathing',
+                  emoji: '🌬️',
+                  title: 'Respirer',
+                  subtitle: 'Recentre-toi',
+                  gradientColors: const [Color(0xFF2A0A6B), Color(0xFF6D28D9)],
+                  glowColor: AppColors.primary,
+                  shimmerColor: AppColors.primaryLight,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppConstants.spacing12),
+        // Revue hebdo — pleine largeur
+        _WeeklyReviewCard(),
+      ],
+    );
+  }
+}
+
+class _WellnessCard extends StatefulWidget {
+  final String route;
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final List<Color> gradientColors;
+  final Color glowColor;
+  final Color shimmerColor;
+
+  const _WellnessCard({
+    required this.route,
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.gradientColors,
+    required this.glowColor,
+    required this.shimmerColor,
+  });
+
+  @override
+  State<_WellnessCard> createState() => _WellnessCardState();
+}
+
+class _WellnessCardState extends State<_WellnessCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(widget.route),
+      child: AnimatedBuilder(
+        animation: _anim,
+        builder: (_, child) => DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+            boxShadow: [
+              BoxShadow(
+                color: widget.glowColor.withValues(
+                  alpha: 0.10 + 0.22 * _anim.value,
+                ),
+                blurRadius: 28 + 12 * _anim.value,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: child,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: widget.gradientColors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+            border: Border.all(
+              color: widget.shimmerColor.withValues(alpha: 0.35),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(widget.emoji, style: const TextStyle(fontSize: 34)),
+              const SizedBox(height: AppConstants.spacing12),
+              Text(
+                widget.title,
+                style: AppTextStyles.headingSmall(color: Colors.white)
+                    .copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                widget.subtitle,
+                style: AppTextStyles.bodySmall(
+                  color: Colors.white.withValues(alpha: 0.75),
+                ),
+              ),
+              const SizedBox(height: AppConstants.spacing12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusPill),
+                ),
+                child: Text(
+                  'Commencer',
+                  style: AppTextStyles.caption(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WeeklyReviewCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final now = DateTime.now();
+    final isWeekend = now.weekday >= 5; // vendredi, samedi, dimanche
+
+    return GestureDetector(
+      onTap: () => context.push('/planner/weekly-review'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20.0,
+          vertical: AppConstants.spacing16,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.chartAmber.withValues(alpha: isDark ? 0.10 : 0.08),
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          border: Border.all(
+            color: AppColors.chartAmber.withValues(alpha: 0.35),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              isWeekend ? '📋' : '📝',
+              style: const TextStyle(fontSize: 28),
+            ),
+            const SizedBox(width: AppConstants.spacing16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Revue de semaine',
+                    style: AppTextStyles.headingSmall(
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    isWeekend
+                        ? 'C\'est le bon moment, fais le point'
+                        : 'Fais le point, ajuste, avance',
+                    style: AppTextStyles.bodySmall(color: AppColors.grey400),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.chartAmber.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(AppConstants.radiusPill),
+              ),
+              child: Text(
+                'Ouvrir',
+                style: AppTextStyles.labelMedium(color: AppColors.chartAmber),
+              ),
+            ),
+          ],
         ),
       ),
     );
