@@ -129,8 +129,10 @@ flutter_app/lib/
 │   │       │   ├── habits_provider.dart
 │   │       │   └── objectives_provider.dart
 │   │       └── screens/
-│   │           └── objectives_screen.dart    ← fl_chart LineChart, ProjectHubCard→Kanban,
-│   │                                            suivi d'habitudes, lien objectifs↔tâches
+│   │           └── objectives_screen.dart    ← sections : Objectifs → Projets → Habitudes → Mon Suivi
+│   │                                            _ProjectConfigSheet (créer/éditer projet : nom, pourquoi,
+│   │                                            vision, date cible, critères de réussite, focus toggle)
+│   │                                            fond plat #0D0B1E (sans aurora), glassmorphism cards
 │   │
 │   ├── onboarding/
 │   │   └── presentation/
@@ -140,7 +142,7 @@ flutter_app/lib/
 │   ├── planner/                              ← "Ma Journée" — onglet 3
 │   │   ├── data/
 │   │   │   ├── flow_model.dart               ← FlowState, FlowTimerState
-│   │   │   ├── kanban_model.dart             ← KanbanCard {objectiveId}, ProjectStatus
+│   │   │   ├── kanban_model.dart             ← KanbanProject {name, why, vision, successCriteria, targetDate, objectiveId, isFocusProject}, ProjectStatus
 │   │   │   ├── kanban_repository.dart
 │   │   │   ├── planner_model.dart            ← PlannerTask
 │   │   │   └── planner_repository.dart
@@ -300,6 +302,11 @@ groups                 → groupes thématiques communauté
 posts                  → posts du forum (PostType, réactions x4, sondage)
 relations              → liens entre utilisateurs (amis, mentors)
 notification_settings  → préférences notifications
+captures               → notes brain dump (destination, is_processed)
+kanban_projects        → projets Kanban (name, why, vision, success_criteria TEXT[],
+                         target_date, status, objective_id, is_focus_project)
+                         Migrations : 003 (création) + enrichissement + 005 (vision/criteria)
+kanban_tasks           → tâches Kanban (project_id, title, status, completed_at)
 ```
 
 **Règle RGPD absolue :** Row Level Security activé sur TOUTES les tables. Ne jamais créer une table sans activer RLS immédiatement.
@@ -451,13 +458,14 @@ Récompenses  → "Mes Badges"
 | Onboarding | `onboarding_screen.dart` | 4 écrans |
 | Check-in matin/soir | `checkin_screen.dart` | 3 questions + animation |
 | Dashboard | `dashboard_screen.dart` | Streak · Anneaux suivi (Focus/Habitudes/Check-ins) · Check-ins gradient · Card projet · Bien-être · Niveau |
-| Objectifs | `objectives_screen.dart` | fl_chart, habitudes, lien Kanban |
+| Objectifs | `objectives_screen.dart` | sections Objectifs/Projets/Habitudes/Suivi, _ProjectConfigSheet, glassmorphism |
 | Planner — Priorités | `planner_screen.dart` | MIT badge, 3 tâches, Kanban/Revue links |
 | Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90min, overlay, config |
 | Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5, notifications |
 | Planner — Flash | `flash_screen.dart` | Micro-tâches < 5min, par catégorie |
 | Planner — Matrice | `eisenhower_screen.dart` | Eisenhower 4 quadrants |
-| Kanban | `kanban_screen.dart` | Colonnes, lien objectifs (objectiveId) |
+| Kanban | `kanban_screen.dart` | Colonnes todo/en cours/terminé, lien objectifs (objectiveId) |
+| Config projet | `objectives_screen.dart` (`_ProjectConfigSheet`) | nom, pourquoi, vision, date cible, critères de réussite (5 max), focus |
 | Revue hebdo | `weekly_review_screen.dart` | Questions bilan |
 | Le Salon — Feed | `community_screen.dart` | Filtres 6 types, tri, question semaine |
 | Le Salon — PostCard | `community_screen.dart` | Badge type, tag, 4 réactions, sondage |
