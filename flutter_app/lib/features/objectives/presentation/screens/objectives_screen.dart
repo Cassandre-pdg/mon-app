@@ -891,22 +891,20 @@ class _MiniStat extends StatelessWidget {
   }
 }
 
-class _ProjectRow extends StatelessWidget {
+class _ProjectRow extends ConsumerWidget {
   const _ProjectRow({
     required this.project,
     required this.isDark,
     this.onTap,
   });
-  final dynamic project;
+  final KanbanProject project;
   final bool isDark;
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final progress = (project.progressPercent as double).clamp(0.0, 1.0);
-    final totalTasks = (project.todoCount as int) +
-        (project.inProgressCount as int) +
-        (project.doneCount as int);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final progress = project.progressPercent.clamp(0.0, 1.0);
+    final totalTasks = project.todoCount + project.inProgressCount + project.doneCount;
 
     Color progressColor;
     if (progress >= 1.0) {
@@ -936,9 +934,32 @@ class _ProjectRow extends StatelessWidget {
           children: [
             Row(
               children: [
+                // ── Épingler au dashboard ──────────────────────
+                GestureDetector(
+                  onTap: () async {
+                    if (project.isFocusProject) {
+                      await ref.read(kanbanProvider.notifier).clearFocusProject();
+                    } else {
+                      await ref.read(kanbanProvider.notifier).setFocusProject(project.id);
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Icon(
+                      project.isFocusProject
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      size: 16,
+                      color: project.isFocusProject
+                          ? AppColors.chartAmber
+                          : AppColors.grey400,
+                    ),
+                  ),
+                ),
+                // ── Nom du projet ──────────────────────────────
                 Expanded(
                   child: Text(
-                    project.name as String,
+                    project.name,
                     style: AppTextStyles.labelMedium(
                       color: isDark ? AppColors.textDark : AppColors.textLight,
                     ),
@@ -946,14 +967,29 @@ class _ProjectRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
+                // ── Stats tâches ───────────────────────────────
                 Text(
                   totalTasks == 0 ? '—' : '${project.doneCount}/$totalTasks',
                   style: AppTextStyles.caption(
                     color: progress >= 1.0 ? AppColors.success : AppColors.grey400,
                   ),
                 ),
+                // ── Ouvrir le Kanban ───────────────────────────
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => context.push('/planner/kanban'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(
+                      Icons.view_kanban_outlined,
+                      size: 16,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                ),
+                // ── Ouvrir la config ───────────────────────────
                 if (onTap != null) ...[
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 2),
                   Icon(Icons.chevron_right_rounded,
                       size: 16, color: AppColors.grey400),
                 ],
@@ -2318,102 +2354,6 @@ class _ProjectConfigSheetState extends ConsumerState<_ProjectConfigSheet> {
                     ),
 
                     const SizedBox(height: 28),
-
-                    // ── Actions projet (mode édition) ─────
-                    if (_isEdit) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Row(
-                          children: [
-                            // Épingler au dashboard
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () async {
-                                  final nav = Navigator.of(context);
-                                  if (widget.project!.isFocusProject) {
-                                    await ref
-                                        .read(kanbanProvider.notifier)
-                                        .clearFocusProject();
-                                  } else {
-                                    await ref
-                                        .read(kanbanProvider.notifier)
-                                        .setFocusProject(widget.project!.id);
-                                  }
-                                  if (mounted) nav.pop();
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: widget.project!.isFocusProject
-                                        ? AppColors.chartAmber.withValues(alpha: 0.15)
-                                        : AppColors.surfaceElevatedDark
-                                            .withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: widget.project!.isFocusProject
-                                          ? AppColors.chartAmber.withValues(alpha: 0.4)
-                                          : AppColors.grey400.withValues(alpha: 0.2),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        widget.project!.isFocusProject ? '⭐' : '☆',
-                                        style: const TextStyle(fontSize: 20),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        widget.project!.isFocusProject
-                                            ? 'Épinglé'
-                                            : 'Épingler',
-                                        style: AppTextStyles.caption(
-                                          color: widget.project!.isFocusProject
-                                              ? AppColors.chartAmber
-                                              : AppColors.grey400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            // Ouvrir le Kanban
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  final router = GoRouter.of(context);
-                                  Navigator.pop(context);
-                                  router.push('/planner/kanban');
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.accent.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                        color: AppColors.accent.withValues(alpha: 0.3)),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      const Text('📋',
-                                          style: TextStyle(fontSize: 20)),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Kanban',
-                                        style: AppTextStyles.caption(
-                                            color: AppColors.accent),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
 
                     // ── Bouton principal Enregistrer ──────
                     Padding(
