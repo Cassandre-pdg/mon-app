@@ -49,18 +49,22 @@ class KanbanRepository {
   Future<KanbanProject> createProject({
     required String name,
     String? why,
+    String? vision,
+    List<String> successCriteria = const [],
     DateTime? targetDate,
     String? objectiveId,
   }) async {
     final data = await _supabase
         .from('kanban_projects')
         .insert({
-          'user_id':      _userId,
-          'name':         name.trim(),
-          'why':          why?.trim(),
-          'target_date':  targetDate?.toIso8601String().split('T')[0],
-          'objective_id': objectiveId,
-          'status':       'active',
+          'user_id':           _userId,
+          'name':              name.trim(),
+          'why':               why?.trim(),
+          'vision':            vision?.trim(),
+          'success_criteria':  successCriteria.isEmpty ? null : successCriteria,
+          'target_date':       targetDate?.toIso8601String().split('T')[0],
+          'objective_id':      objectiveId,
+          'status':            'active',
         })
         .select()
         .single();
@@ -71,18 +75,34 @@ class KanbanRepository {
     required String id,
     String? name,
     String? why,
+    String? vision,
+    List<String>? successCriteria,
     DateTime? targetDate,
     ProjectStatus? projectStatus,
     String? objectiveId,
     bool? isFocusProject,
+    // Flags pour mise à null explicite
+    bool clearWhy = false,
+    bool clearVision = false,
+    bool clearTargetDate = false,
   }) async {
     final updates = <String, dynamic>{};
-    if (name != null)          updates['name']              = name.trim();
-    if (why != null)           updates['why']               = why.trim();
-    if (targetDate != null)    updates['target_date']       = targetDate.toIso8601String().split('T')[0];
-    if (projectStatus != null) updates['status']            = projectStatus.dbValue;
-    if (objectiveId != null)   updates['objective_id']      = objectiveId;
-    if (isFocusProject != null) updates['is_focus_project'] = isFocusProject;
+    if (name != null) { updates['name'] = name.trim(); }
+    if (clearWhy) { updates['why'] = null; }
+    else if (why != null) { updates['why'] = why.trim(); }
+    if (clearVision) { updates['vision'] = null; }
+    else if (vision != null) { updates['vision'] = vision.trim(); }
+    if (successCriteria != null) {
+      updates['success_criteria'] =
+          successCriteria.isEmpty ? null : successCriteria;
+    }
+    if (clearTargetDate) { updates['target_date'] = null; }
+    else if (targetDate != null) {
+      updates['target_date'] = targetDate.toIso8601String().split('T')[0];
+    }
+    if (projectStatus != null) { updates['status'] = projectStatus.dbValue; }
+    if (objectiveId != null) { updates['objective_id'] = objectiveId; }
+    if (isFocusProject != null) { updates['is_focus_project'] = isFocusProject; }
 
     final data = await _supabase
         .from('kanban_projects')

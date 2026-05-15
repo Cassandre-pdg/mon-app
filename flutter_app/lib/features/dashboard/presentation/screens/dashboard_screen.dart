@@ -708,6 +708,64 @@ class _FilledProjectCard extends StatelessWidget {
               ),
             ],
 
+            // ── Vision "Où on va ?" ───────────────────────
+            if (project.vision != null && project.vision!.isNotEmpty) ...[
+              const SizedBox(height: AppConstants.spacing8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacing12,
+                  vertical: AppConstants.spacing8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                  border: Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('🎯', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        project.vision!,
+                        style: AppTextStyles.bodySmall(color: AppColors.textDarkMuted),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            // ── Critères de réussite (premiers 3 max) ────
+            if (project.successCriteria.isNotEmpty) ...[
+              const SizedBox(height: AppConstants.spacing8),
+              ...project.successCriteria.take(3).map((c) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.check_circle_outline_rounded,
+                        size: 13, color: AppColors.primaryPale),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        c,
+                        style: AppTextStyles.caption(
+                            color: AppColors.textDarkMuted),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+            ],
+
             const SizedBox(height: AppConstants.spacing16),
 
             // ── Barre de progression ──────────────────────

@@ -21,6 +21,8 @@ class KanbanNotifier extends AsyncNotifier<List<KanbanProject>> {
   Future<void> addProject({
     required String name,
     String? why,
+    String? vision,
+    List<String> successCriteria = const [],
     DateTime? targetDate,
     String? objectiveId,
   }) async {
@@ -28,6 +30,8 @@ class KanbanNotifier extends AsyncNotifier<List<KanbanProject>> {
     final created = await repo.createProject(
       name: name,
       why: why,
+      vision: vision,
+      successCriteria: successCriteria,
       targetDate: targetDate,
       objectiveId: objectiveId,
     );
@@ -38,19 +42,29 @@ class KanbanNotifier extends AsyncNotifier<List<KanbanProject>> {
     required String projectId,
     String? name,
     String? why,
+    String? vision,
+    List<String>? successCriteria,
     DateTime? targetDate,
     ProjectStatus? projectStatus,
     String? objectiveId,
     bool? isFocusProject,
+    bool clearWhy = false,
+    bool clearVision = false,
+    bool clearTargetDate = false,
   }) async {
     final updated = await ref.read(kanbanRepositoryProvider).updateProject(
       id: projectId,
       name: name,
       why: why,
+      vision: vision,
+      successCriteria: successCriteria,
       targetDate: targetDate,
       projectStatus: projectStatus,
       objectiveId: objectiveId,
       isFocusProject: isFocusProject,
+      clearWhy: clearWhy,
+      clearVision: clearVision,
+      clearTargetDate: clearTargetDate,
     );
     state = AsyncData(
       state.value!.map((p) => p.id == projectId ? updated : p).toList(),

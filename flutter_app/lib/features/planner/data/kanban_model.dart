@@ -116,11 +116,13 @@ class KanbanProject {
   final String id;
   final String userId;
   final String name;
-  final String? why;           // Ancrage motivationnel
-  final DateTime? targetDate;  // Date cible
+  final String? why;                    // Ancrage motivationnel
+  final String? vision;                 // "Où on va ?" — vision en 1 phrase
+  final List<String> successCriteria;   // Critères de réussite (jusqu'à 5)
+  final DateTime? targetDate;           // Date cible
   final ProjectStatus projectStatus;
-  final String? objectiveId;   // Objectif parent lié
-  final bool isFocusProject;   // Projet mis en avant sur le dashboard
+  final String? objectiveId;            // Objectif parent lié
+  final bool isFocusProject;            // Projet mis en avant sur le dashboard
   final List<KanbanTask> tasks;
   final DateTime createdAt;
 
@@ -129,6 +131,8 @@ class KanbanProject {
     required this.userId,
     required this.name,
     this.why,
+    this.vision,
+    this.successCriteria = const [],
     this.targetDate,
     required this.projectStatus,
     this.objectiveId,
@@ -146,6 +150,11 @@ class KanbanProject {
         userId: json['user_id'] as String,
         name: json['name'] as String,
         why: json['why'] as String?,
+        vision: json['vision'] as String?,
+        successCriteria: (json['success_criteria'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            [],
         targetDate: json['target_date'] != null
             ? DateTime.parse(json['target_date'] as String)
             : null,
@@ -159,18 +168,26 @@ class KanbanProject {
   KanbanProject copyWith({
     String? name,
     String? why,
+    String? vision,
+    List<String>? successCriteria,
     DateTime? targetDate,
     ProjectStatus? projectStatus,
     String? objectiveId,
     bool? isFocusProject,
     List<KanbanTask>? tasks,
+    // sentinelles pour permettre la mise à null explicite
+    bool clearWhy = false,
+    bool clearVision = false,
+    bool clearTargetDate = false,
   }) =>
       KanbanProject(
         id: id,
         userId: userId,
         name: name ?? this.name,
-        why: why ?? this.why,
-        targetDate: targetDate ?? this.targetDate,
+        why: clearWhy ? null : (why ?? this.why),
+        vision: clearVision ? null : (vision ?? this.vision),
+        successCriteria: successCriteria ?? this.successCriteria,
+        targetDate: clearTargetDate ? null : (targetDate ?? this.targetDate),
         projectStatus: projectStatus ?? this.projectStatus,
         objectiveId: objectiveId ?? this.objectiveId,
         isFocusProject: isFocusProject ?? this.isFocusProject,
@@ -205,8 +222,12 @@ class KanbanProject {
   bool get isCompleted => projectStatus == ProjectStatus.done;
   bool get isActive    => projectStatus == ProjectStatus.active;
 
-  static KanbanProject create(String userId, String name, {
+  static KanbanProject create(
+    String userId,
+    String name, {
     String? why,
+    String? vision,
+    List<String> successCriteria = const [],
     DateTime? targetDate,
     String? objectiveId,
   }) =>
@@ -215,6 +236,8 @@ class KanbanProject {
         userId: userId,
         name: name.trim(),
         why: why?.trim(),
+        vision: vision?.trim(),
+        successCriteria: successCriteria,
         targetDate: targetDate,
         projectStatus: ProjectStatus.active,
         objectiveId: objectiveId,

@@ -10,14 +10,13 @@ import 'package:intl/intl.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
-import '../../../../shared/navigation/app_router.dart';
-import '../../../../shared/widgets/aurora_background.dart';
 import '../../../../shared/widgets/kolyb_loader.dart';
 import '../../data/objective_model.dart';
 import '../../data/habit_model.dart';
 import '../providers/objectives_provider.dart';
 import '../providers/habits_provider.dart';
 import '../../../planner/presentation/providers/kanban_provider.dart';
+import '../../../planner/data/kanban_model.dart';
 
 class ObjectivesScreen extends ConsumerWidget {
   const ObjectivesScreen({super.key});
@@ -29,58 +28,51 @@ class ObjectivesScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: AuroraBackgroundPaint(
-        orb1Color: AppColors.auroraViolet,
-        orb2Color: const Color(0x3300D4C8),
-        orb3Color: const Color(0x26FFB800),
-        baseColor:
-            isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-        child: SafeArea(
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Pull-to-refresh
-              CupertinoSliverRefreshControl(
-                onRefresh: () async {
-                  ref.invalidate(objectivesProvider);
-                  ref.invalidate(habitsProvider);
-                  await Future.delayed(const Duration(milliseconds: 400));
-                },
-                builder: (context, mode, pulledExtent, triggerDist, _) {
-                  final progress =
-                      (pulledExtent / triggerDist).clamp(0.0, 1.0);
-                  return Opacity(
-                    opacity: progress,
-                    child: Center(
-                      child: Transform.scale(
-                        scale: 0.6 + 0.4 * progress,
-                        child: const Icon(Icons.my_location_rounded,
-                            color: AppColors.primary, size: 26),
-                      ),
+      body: SafeArea(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // Pull-to-refresh
+            CupertinoSliverRefreshControl(
+              onRefresh: () async {
+                ref.invalidate(objectivesProvider);
+                ref.invalidate(habitsProvider);
+                await Future.delayed(const Duration(milliseconds: 400));
+              },
+              builder: (context, mode, pulledExtent, triggerDist, _) {
+                final progress =
+                    (pulledExtent / triggerDist).clamp(0.0, 1.0);
+                return Opacity(
+                  opacity: progress,
+                  child: Center(
+                    child: Transform.scale(
+                      scale: 0.6 + 0.4 * progress,
+                      child: const Icon(Icons.my_location_rounded,
+                          color: AppColors.primary, size: 26),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
+            ),
 
-              // En-tête
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
-                  child: _Header(isDark: isDark),
-                ),
+            // En-tête
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                child: _Header(isDark: isDark),
               ),
+            ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 28)),
+            const SliverToBoxAdapter(child: SizedBox(height: 28)),
 
-              // Contenu
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _ObjectivesContent(isDark: isDark),
-                ),
+            // Contenu
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _ObjectivesContent(isDark: isDark),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -158,19 +150,9 @@ class _ObjectivesContent extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── 0. Graphique momentum ──────────────────────────────
-        habitsAsync.when(
-          loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
-          data: (habits) => _MomentumLineChart(habits: habits, isDark: isDark),
-        ),
-
-        const SizedBox(height: 24),
-
-        // ── 1. Objectifs ──────────────────────────────────────
+        // ── 1. Mes Objectifs ──────────────────────────────────
         _SectionLabel('Mes Objectifs', isDark: isDark),
         const SizedBox(height: 12),
-
         objectivesAsync.when(
           loading: () => const _LoadingCard(),
           error: (e, _) => _ErrorCard(
@@ -181,31 +163,16 @@ class _ObjectivesContent extends ConsumerWidget {
 
         const SizedBox(height: 28),
 
-        // ── 1b. Graphique streaks habitudes ──────────────────
-        habitsAsync.when(
-          loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
-          data: (habits) => habits.isEmpty
-              ? const SizedBox.shrink()
-              : _HabitStreakChart(habits: habits, isDark: isDark),
-        ),
-
-        const SizedBox(height: 28),
-
-        // ── 2. Fiches Projet ──────────────────────────────────
+        // ── 2. Mes Projets ────────────────────────────────────
         _SectionLabel('Mes Projets', isDark: isDark),
         const SizedBox(height: 12),
-        _ProjectHubCard(
-          isDark: isDark,
-          onTap: () => context.go(AppRoutes.planner),
-        ),
+        _ProjectHubCard(isDark: isDark),
 
         const SizedBox(height: 28),
 
-        // ── 3. Habitudes ──────────────────────────────────────
+        // ── 3. Mes Habitudes ──────────────────────────────────
         _SectionLabel('Mes Habitudes', isDark: isDark),
         const SizedBox(height: 12),
-
         habitsAsync.when(
           loading: () => const _LoadingCard(),
           error: (e, _) => _ErrorCard(
@@ -215,10 +182,27 @@ class _ObjectivesContent extends ConsumerWidget {
               ? _HabitsEmptyCard(isDark: isDark)
               : _HabitsList(habits: habits, isDark: isDark),
         ),
-
-        // Bouton ajout habitude (toujours visible)
         const SizedBox(height: 12),
         _AddHabitButton(isDark: isDark),
+
+        const SizedBox(height: 28),
+
+        // ── 4. Mon Suivi ──────────────────────────────────────
+        _SectionLabel('Mon Suivi', isDark: isDark),
+        const SizedBox(height: 12),
+        habitsAsync.when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+          data: (habits) => _MomentumLineChart(habits: habits, isDark: isDark),
+        ),
+        const SizedBox(height: 12),
+        habitsAsync.when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+          data: (habits) => habits.isEmpty
+              ? const SizedBox.shrink()
+              : _HabitStreakChart(habits: habits, isDark: isDark),
+        ),
 
         const SizedBox(height: 40),
       ],
@@ -365,23 +349,40 @@ class _HorizonCardState extends State<_HorizonCard>
         animation: _scale,
         builder: (_, child) =>
             Transform.scale(scale: _scale.value, child: child),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              height: 148,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: widget.isDark
-                    ? AppColors.surfaceDark.withValues(alpha: 0.80)
-                    : AppColors.surfaceLight.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-                border: Border.all(
-                  color: _color.withValues(alpha: 0.28),
-                  width: 1,
-                ),
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: _color.withValues(alpha: 0.16),
+                blurRadius: 20,
+                spreadRadius: 0,
+                offset: const Offset(0, 8),
               ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.22),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Container(
+                height: 148,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: widget.isDark
+                      ? AppColors.surfaceDark.withValues(alpha: 0.85)
+                      : AppColors.surfaceLight.withValues(alpha: 0.90),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+                  border: Border.all(
+                    color: _color.withValues(alpha: 0.32),
+                    width: 1,
+                  ),
+                ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -441,10 +442,11 @@ class _HorizonCardState extends State<_HorizonCard>
                   ),
                 ],
               ),
-            ),
-          ),
-        ),
-      ),
+              ),      // Container 148
+            ),        // BackdropFilter
+          ),          // ClipRRect inner
+        ),            // Container outer (shadow)
+      ),              // AnimatedBuilder
     );
   }
 }
@@ -502,24 +504,41 @@ class _HorizonCardWideState extends State<_HorizonCardWide>
         animation: _scale,
         builder: (_, child) =>
             Transform.scale(scale: _scale.value, child: child),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 20, vertical: 18),
-              decoration: BoxDecoration(
-                color: widget.isDark
-                    ? AppColors.surfaceDark.withValues(alpha: 0.80)
-                    : AppColors.surfaceLight.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-                border: Border.all(
-                  color: color.withValues(alpha: 0.28),
-                  width: 1,
-                ),
+        child: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.14),
+                blurRadius: 20,
+                spreadRadius: 0,
+                offset: const Offset(0, 8),
               ),
-              child: Row(
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.20),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20, vertical: 18),
+                decoration: BoxDecoration(
+                  color: widget.isDark
+                      ? AppColors.surfaceDark.withValues(alpha: 0.85)
+                      : AppColors.surfaceLight.withValues(alpha: 0.90),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.32),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
                 children: [
                   Container(
                     width: 48,
@@ -593,222 +612,230 @@ class _HorizonCardWideState extends State<_HorizonCardWide>
                   ),
                 ],
               ),
-            ),
-          ),
-        ),
-      ),
+                ),    // Container
+              ),      // BackdropFilter
+            ),        // ClipRRect inner
+          ),          // Container outer (shadow)
+        ),            // AnimatedBuilder
     );
   }
 }
 
 // ── Hub projets avec stats dynamiques ────────────────────────
-class _ProjectHubCard extends ConsumerStatefulWidget {
-  const _ProjectHubCard({required this.isDark, required this.onTap});
+class _ProjectHubCard extends ConsumerWidget {
+  const _ProjectHubCard({required this.isDark});
   final bool isDark;
-  final VoidCallback onTap;
 
-  @override
-  ConsumerState<_ProjectHubCard> createState() => _ProjectHubCardState();
-}
-
-class _ProjectHubCardState extends ConsumerState<_ProjectHubCard>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pressCtrl;
-  late final Animation<double> _pressScale;
-
-  @override
-  void initState() {
-    super.initState();
-    _pressCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 110));
-    _pressScale = Tween<double>(begin: 1.0, end: 0.97)
-        .animate(CurvedAnimation(parent: _pressCtrl, curve: Curves.easeOut));
+  void _openConfig(BuildContext context, {KanbanProject? project}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ProjectConfigSheet(project: project),
+    );
   }
 
   @override
-  void dispose() {
-    _pressCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(kanbanStatsProvider);
     final projects = ref.watch(activeProjectsProvider);
     final displayProjects = projects.take(3).toList();
 
-    return GestureDetector(
-      onTapDown: (_) => _pressCtrl.forward(),
-      onTapUp: (_) {
-        _pressCtrl.reverse();
-        widget.onTap();
-      },
-      onTapCancel: () => _pressCtrl.reverse(),
-      child: AnimatedBuilder(
-        animation: _pressScale,
-        builder: (_, child) =>
-            Transform.scale(scale: _pressScale.value, child: child),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.surfaceDark.withValues(alpha: 0.85)
+            : AppColors.surfaceLight.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.22),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.14),
+            blurRadius: 24,
+            spreadRadius: 0,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header gradient ──────────────────────────────
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
               decoration: BoxDecoration(
-                color: widget.isDark
-                    ? AppColors.surfaceDark.withValues(alpha: 0.80)
-                    : AppColors.surfaceLight.withValues(alpha: 0.90),
-                borderRadius:
-                    BorderRadius.circular(AppConstants.radiusLarge),
-                border: Border.all(
-                  color: widget.isDark
-                      ? AppColors.glassBorder
-                      : AppColors.grey200,
-                  width: 1,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.chartViolet.withValues(alpha: 0.80),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppConstants.radiusLarge),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  // ── Header gradient ────────────────────────
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primary,
-                          AppColors.chartViolet.withValues(alpha: 0.80),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(AppConstants.radiusLarge),
-                      ),
-                    ),
-                    child: Row(
+                  const Text('📋', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('📋',
-                            style: TextStyle(fontSize: 22)),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Mes Projets',
-                                style: AppTextStyles.headingSmall(
-                                    color: Colors.white),
-                              ),
-                              Text(
-                                '${stats.projects} projet${stats.projects > 1 ? 's' : ''} actif${stats.projects > 1 ? 's' : ''}',
-                                style: AppTextStyles.caption(
-                                  color: Colors.white
-                                      .withValues(alpha: 0.65),
-                                ),
-                              ),
-                            ],
-                          ),
+                        Text(
+                          'Mes Projets',
+                          style: AppTextStyles.headingSmall(
+                              color: Colors.white),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Voir tout',
-                                style: AppTextStyles.caption(
-                                    color: Colors.white),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 10,
-                                  color: Colors.white),
-                            ],
+                        Text(
+                          '${stats.projects} projet${stats.projects > 1 ? 's' : ''} actif${stats.projects > 1 ? 's' : ''}',
+                          style: AppTextStyles.caption(
+                            color: Colors.white.withValues(alpha: 0.65),
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  // ── Stats rapides ──────────────────────────
-                  Padding(
-                    padding:
-                        const EdgeInsets.fromLTRB(18, 14, 18, 0),
-                    child: Row(
-                      children: [
-                        _MiniStat(
-                          value: '${stats.todo}',
-                          label: 'À faire',
-                          color: AppColors.grey400,
-                          isDark: widget.isDark,
-                        ),
-                        const SizedBox(width: 12),
-                        _MiniStat(
-                          value: '${stats.inProgress}',
-                          label: 'En cours',
-                          color: AppColors.chartAmber,
-                          isDark: widget.isDark,
-                          highlight: stats.inProgress > 0,
-                        ),
-                        const SizedBox(width: 12),
-                        _MiniStat(
-                          value: '${projects.fold(0, (s, p) => s + p.doneCount)}',
-                          label: 'Terminées',
-                          color: AppColors.success,
-                          isDark: widget.isDark,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // ── Liste projets ──────────────────────────
-                  if (displayProjects.isEmpty)
-                    Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(18, 0, 18, 16),
-                      child: Text(
-                        'Lance ton premier projet →',
-                        style: AppTextStyles.bodySmall(
-                            color: AppColors.grey400),
+                  // Bouton "Voir le Kanban" — navigate vers le vrai Kanban
+                  GestureDetector(
+                    onTap: () => context.push('/planner/kanban'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
-                      child: Column(
+                      child: Row(
                         children: [
-                          for (int i = 0;
-                              i < displayProjects.length;
-                              i++) ...[
-                            _ProjectRow(
-                              project: displayProjects[i],
-                              isDark: widget.isDark,
-                            ),
-                            if (i < displayProjects.length - 1)
-                              const SizedBox(height: 10),
-                          ],
-                          if (projects.length > 3) ...[
-                            const SizedBox(height: 10),
-                            Text(
-                              '+ ${projects.length - 3} autre${projects.length - 3 > 1 ? 's' : ''} projet${projects.length - 3 > 1 ? 's' : ''}',
-                              style: AppTextStyles.caption(
-                                  color: AppColors.primaryPale),
-                            ),
-                          ],
+                          Text(
+                            'Kanban',
+                            style: AppTextStyles.caption(color: Colors.white),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.arrow_forward_ios_rounded,
+                              size: 10, color: Colors.white),
                         ],
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
-          ),
+
+            // ── Stats rapides ────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+              child: Row(
+                children: [
+                  _MiniStat(
+                    value: '${stats.todo}',
+                    label: 'À faire',
+                    color: AppColors.grey400,
+                    isDark: isDark,
+                  ),
+                  const SizedBox(width: 12),
+                  _MiniStat(
+                    value: '${stats.inProgress}',
+                    label: 'En cours',
+                    color: AppColors.chartAmber,
+                    isDark: isDark,
+                    highlight: stats.inProgress > 0,
+                  ),
+                  const SizedBox(width: 12),
+                  _MiniStat(
+                    value: '${projects.fold(0, (s, p) => s + p.doneCount)}',
+                    label: 'Terminées',
+                    color: AppColors.success,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ── Liste projets (chacun tappable → config) ────
+            if (displayProjects.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 0, 18, 4),
+                child: Text(
+                  'Lance ton premier projet →',
+                  style: AppTextStyles.bodySmall(color: AppColors.grey400),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < displayProjects.length; i++) ...[
+                      _ProjectRow(
+                        project: displayProjects[i],
+                        isDark: isDark,
+                        onTap: () => _openConfig(context,
+                            project: displayProjects[i]),
+                      ),
+                      if (i < displayProjects.length - 1)
+                        const SizedBox(height: 10),
+                    ],
+                    if (projects.length > 3) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        '+ ${projects.length - 3} autre${projects.length - 3 > 1 ? 's' : ''} projet${projects.length - 3 > 1 ? 's' : ''}',
+                        style:
+                            AppTextStyles.caption(color: AppColors.primaryPale),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 14),
+
+            // ── Bouton nouveau projet ────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
+              child: GestureDetector(
+                onTap: () => _openConfig(context),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.25)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add_rounded,
+                          color: AppColors.primaryLight, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Nouveau projet',
+                        style: AppTextStyles.labelMedium(
+                            color: AppColors.primaryLight),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -865,9 +892,14 @@ class _MiniStat extends StatelessWidget {
 }
 
 class _ProjectRow extends StatelessWidget {
-  const _ProjectRow({required this.project, required this.isDark});
+  const _ProjectRow({
+    required this.project,
+    required this.isDark,
+    this.onTap,
+  });
   final dynamic project;
   final bool isDark;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -885,44 +917,61 @@ class _ProjectRow extends StatelessWidget {
       progressColor = AppColors.primary;
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isDark
+              ? AppColors.surfaceElevatedDark.withValues(alpha: 0.50)
+              : AppColors.grey200.withValues(alpha: 0.40),
+          borderRadius: BorderRadius.circular(12),
+          border: onTap != null
+              ? Border.all(
+                  color: progressColor.withValues(alpha: 0.18), width: 1)
+              : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                project.name as String,
-                style: AppTextStyles.labelMedium(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    project.name as String,
+                    style: AppTextStyles.labelMedium(
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
-              ),
+                const SizedBox(width: 8),
+                Text(
+                  totalTasks == 0 ? '—' : '${project.doneCount}/$totalTasks',
+                  style: AppTextStyles.caption(
+                    color: progress >= 1.0 ? AppColors.success : AppColors.grey400,
+                  ),
+                ),
+                if (onTap != null) ...[
+                  const SizedBox(width: 6),
+                  Icon(Icons.chevron_right_rounded,
+                      size: 16, color: AppColors.grey400),
+                ],
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              totalTasks == 0
-                  ? '—'
-                  : '${project.doneCount}/$totalTasks',
-              style: AppTextStyles.caption(
-                color: progress >= 1.0
-                    ? AppColors.success
-                    : AppColors.grey400,
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: totalTasks == 0 ? 0 : progress,
+                backgroundColor: progressColor.withValues(alpha: 0.12),
+                valueColor: AlwaysStoppedAnimation(progressColor),
+                minHeight: 4,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 5),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: LinearProgressIndicator(
-            value: totalTasks == 0 ? 0 : progress,
-            backgroundColor: progressColor.withValues(alpha: 0.12),
-            valueColor: AlwaysStoppedAnimation(progressColor),
-            minHeight: 4,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -1930,6 +1979,577 @@ class _AddHabitSheetState extends ConsumerState<_AddHabitSheet> {
   }
 }
 
+// ── Config / création projet ─────────────────────────────────
+class _ProjectConfigSheet extends ConsumerStatefulWidget {
+  const _ProjectConfigSheet({this.project});
+  final KanbanProject? project;
+
+  @override
+  ConsumerState<_ProjectConfigSheet> createState() =>
+      _ProjectConfigSheetState();
+}
+
+class _ProjectConfigSheetState extends ConsumerState<_ProjectConfigSheet> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _whyCtrl;
+  late final TextEditingController _visionCtrl;
+  late final List<TextEditingController> _criteriaCtrl;
+  DateTime? _targetDate;
+  bool _loading = false;
+  bool _deleteConfirm = false;
+
+  bool get _isEdit => widget.project != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.project;
+    _nameCtrl = TextEditingController(text: p?.name ?? '');
+    _whyCtrl = TextEditingController(text: p?.why ?? '');
+    _visionCtrl = TextEditingController(text: p?.vision ?? '');
+    _targetDate = p?.targetDate;
+    final existing = p?.successCriteria ?? [];
+    _criteriaCtrl = List.generate(
+      5,
+      (i) => TextEditingController(text: i < existing.length ? existing[i] : ''),
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _whyCtrl.dispose();
+    _visionCtrl.dispose();
+    for (final c in _criteriaCtrl) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  List<String> get _criteria =>
+      _criteriaCtrl.map((c) => c.text.trim()).where((s) => s.isNotEmpty).toList();
+
+  Future<void> _save() async {
+    if (_nameCtrl.text.trim().isEmpty) return;
+    setState(() => _loading = true);
+    try {
+      if (_isEdit) {
+        await ref.read(kanbanProvider.notifier).updateProject(
+          projectId: widget.project!.id,
+          name: _nameCtrl.text,
+          why: _whyCtrl.text.isEmpty ? null : _whyCtrl.text,
+          vision: _visionCtrl.text.isEmpty ? null : _visionCtrl.text,
+          successCriteria: _criteria,
+          targetDate: _targetDate,
+          clearWhy: _whyCtrl.text.isEmpty,
+          clearVision: _visionCtrl.text.isEmpty,
+          clearTargetDate: _targetDate == null,
+        );
+      } else {
+        await ref.read(kanbanProvider.notifier).addProject(
+          name: _nameCtrl.text,
+          why: _whyCtrl.text.isEmpty ? null : _whyCtrl.text,
+          vision: _visionCtrl.text.isEmpty ? null : _visionCtrl.text,
+          successCriteria: _criteria,
+          targetDate: _targetDate,
+        );
+      }
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    if (!_deleteConfirm) {
+      setState(() => _deleteConfirm = true);
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      await ref.read(kanbanProvider.notifier).deleteProject(widget.project!.id);
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _pickDate(BuildContext context) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _targetDate ?? now.add(const Duration(days: 30)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365 * 5)),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppColors.primary,
+            onPrimary: Colors.white,
+            surface: AppColors.surfaceDark,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) setState(() => _targetDate = picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark : AppColors.backgroundLight,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.90,
+          minChildSize: 0.50,
+          maxChildSize: 0.97,
+          expand: false,
+          builder: (_, scrollCtrl) => CustomScrollView(
+            controller: scrollCtrl,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Handle ──────────────────────────────
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 12, bottom: 20),
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.grey400.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+
+                    // ── Titre ────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Row(
+                        children: [
+                          const Text('📋', style: TextStyle(fontSize: 24)),
+                          const SizedBox(width: 10),
+                          Text(
+                            _isEdit ? 'Configurer le projet' : 'Nouveau projet',
+                            style: AppTextStyles.headingMedium(
+                              color: isDark ? AppColors.textDark : AppColors.textLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // ── Nom du projet ─────────────────────
+                    _SheetSection(label: 'Nom du projet', isDark: isDark),
+                    _SheetField(
+                      controller: _nameCtrl,
+                      hint: 'Ex. Lancer mon podcast',
+                      isDark: isDark,
+                      autofocus: !_isEdit,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Pourquoi ? ────────────────────────
+                    _SheetSection(
+                      label: 'Pourquoi ?',
+                      subtitle: 'Ton ancrage motivationnel',
+                      isDark: isDark,
+                    ),
+                    _SheetField(
+                      controller: _whyCtrl,
+                      hint: 'Ce projet compte parce que...',
+                      isDark: isDark,
+                      maxLines: 2,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Où on va ? ────────────────────────
+                    _SheetSection(
+                      label: 'Où on va ?',
+                      subtitle: 'Ta vision en 1 phrase',
+                      isDark: isDark,
+                    ),
+                    _SheetField(
+                      controller: _visionCtrl,
+                      hint: 'Dans 3 mois, j\'aurai...',
+                      isDark: isDark,
+                      maxLines: 2,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Date cible ────────────────────────
+                    _SheetSection(
+                      label: 'Date cible',
+                      subtitle: 'Optionnelle',
+                      isDark: isDark,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: GestureDetector(
+                        onTap: () => _pickDate(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.surfaceElevatedDark
+                                : AppColors.grey200.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.calendar_today_rounded,
+                                  size: 18,
+                                  color: _targetDate != null
+                                      ? AppColors.primaryLight
+                                      : AppColors.grey400),
+                              const SizedBox(width: 10),
+                              Text(
+                                _targetDate != null
+                                    ? '${_targetDate!.day}/${_targetDate!.month}/${_targetDate!.year}'
+                                    : 'Choisir une date',
+                                style: AppTextStyles.bodyMedium(
+                                  color: _targetDate != null
+                                      ? (isDark ? AppColors.textDark : AppColors.textLight)
+                                      : AppColors.grey400,
+                                ),
+                              ),
+                              const Spacer(),
+                              if (_targetDate != null)
+                                GestureDetector(
+                                  onTap: () => setState(() => _targetDate = null),
+                                  child: Icon(Icons.close_rounded,
+                                      size: 16, color: AppColors.grey400),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Critères de réussite ──────────────
+                    _SheetSection(
+                      label: 'Critères de réussite',
+                      subtitle: 'Jusqu\'à 5 — comment sauras-tu que tu as réussi ?',
+                      isDark: isDark,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        children: List.generate(5, (i) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: _criteriaCtrl[i].text.trim().isNotEmpty
+                                        ? AppColors.primary.withValues(alpha: 0.15)
+                                        : Colors.transparent,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: _criteriaCtrl[i].text.trim().isNotEmpty
+                                          ? AppColors.primaryLight
+                                          : AppColors.grey400.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: AppTextStyles.caption(
+                                        color: _criteriaCtrl[i].text.trim().isNotEmpty
+                                            ? AppColors.primaryLight
+                                            : AppColors.grey400,
+                                      ).copyWith(fontSize: 10),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _criteriaCtrl[i],
+                                    onChanged: (_) => setState(() {}),
+                                    textCapitalization: TextCapitalization.sentences,
+                                    style: AppTextStyles.bodySmall(
+                                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: i == 0
+                                          ? 'Mon premier critère de réussite...'
+                                          : 'Critère ${i + 1} (optionnel)',
+                                      hintStyle: AppTextStyles.bodySmall(
+                                          color: AppColors.grey400),
+                                      filled: true,
+                                      fillColor: isDark
+                                          ? AppColors.surfaceElevatedDark
+                                          : AppColors.grey200.withValues(alpha: 0.5),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 11),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    // ── Actions projet (mode édition) ─────
+                    if (_isEdit) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          children: [
+                            // Épingler au dashboard
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final nav = Navigator.of(context);
+                                  if (widget.project!.isFocusProject) {
+                                    await ref
+                                        .read(kanbanProvider.notifier)
+                                        .clearFocusProject();
+                                  } else {
+                                    await ref
+                                        .read(kanbanProvider.notifier)
+                                        .setFocusProject(widget.project!.id);
+                                  }
+                                  if (mounted) nav.pop();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: widget.project!.isFocusProject
+                                        ? AppColors.chartAmber.withValues(alpha: 0.15)
+                                        : AppColors.surfaceElevatedDark
+                                            .withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: widget.project!.isFocusProject
+                                          ? AppColors.chartAmber.withValues(alpha: 0.4)
+                                          : AppColors.grey400.withValues(alpha: 0.2),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        widget.project!.isFocusProject ? '⭐' : '☆',
+                                        style: const TextStyle(fontSize: 20),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        widget.project!.isFocusProject
+                                            ? 'Épinglé'
+                                            : 'Épingler',
+                                        style: AppTextStyles.caption(
+                                          color: widget.project!.isFocusProject
+                                              ? AppColors.chartAmber
+                                              : AppColors.grey400,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            // Ouvrir le Kanban
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  final router = GoRouter.of(context);
+                                  Navigator.pop(context);
+                                  router.push('/planner/kanban');
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                        color: AppColors.accent.withValues(alpha: 0.3)),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      const Text('📋',
+                                          style: TextStyle(fontSize: 20)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Kanban',
+                                        style: AppTextStyles.caption(
+                                            color: AppColors.accent),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // ── Bouton principal Enregistrer ──────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _loading ? null : _save,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: const StadiumBorder(),
+                            elevation: 0,
+                          ),
+                          child: _loading
+                              ? const KolybLoader(size: 6, color: Colors.white)
+                              : Text(
+                                  _isEdit
+                                      ? 'Enregistrer les modifications'
+                                      : 'Créer ce projet',
+                                  style: AppTextStyles.labelMedium(
+                                      color: Colors.white),
+                                ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Bouton Supprimer (mode édition) ──
+                    if (_isEdit) ...[
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: TextButton(
+                            onPressed: _loading ? null : _delete,
+                            child: Text(
+                              _deleteConfirm
+                                  ? 'Confirmer la suppression ?'
+                                  : 'Supprimer ce projet',
+                              style: AppTextStyles.labelMedium(
+                                color: _deleteConfirm
+                                    ? AppColors.error
+                                    : AppColors.grey400,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Composants internes de la sheet
+class _SheetSection extends StatelessWidget {
+  const _SheetSection({required this.label, required this.isDark, this.subtitle});
+  final String label;
+  final bool isDark;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.labelMedium(
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+          if (subtitle != null)
+            Text(subtitle!,
+                style: AppTextStyles.caption(color: AppColors.grey400)),
+        ],
+      ),
+    );
+  }
+}
+
+class _SheetField extends StatelessWidget {
+  const _SheetField({
+    required this.controller,
+    required this.hint,
+    required this.isDark,
+    this.maxLines = 1,
+    this.autofocus = false,
+  });
+  final TextEditingController controller;
+  final String hint;
+  final bool isDark;
+  final int maxLines;
+  final bool autofocus;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: TextField(
+        controller: controller,
+        autofocus: autofocus,
+        maxLines: maxLines,
+        textCapitalization: TextCapitalization.sentences,
+        style: AppTextStyles.bodyMedium(
+          color: isDark ? AppColors.textDark : AppColors.textLight,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTextStyles.bodyMedium(color: AppColors.grey400),
+          filled: true,
+          fillColor: isDark
+              ? AppColors.surfaceElevatedDark
+              : AppColors.grey200.withValues(alpha: 0.5),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── Graphique streaks habitudes ───────────────────────────────
 class _HabitStreakChart extends StatelessWidget {
   const _HabitStreakChart({required this.habits, required this.isDark});
@@ -2019,7 +2639,7 @@ class _HabitStreakChart extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Tes habitudes',
+                      'Mes habitudes',
                       style: AppTextStyles.headingSmall(
                         color: isDark
                             ? AppColors.textDark
