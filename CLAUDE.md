@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : mai 2026 — arborescence réelle synchronisée.*
+*Dernière mise à jour : mai 2026 — dashboard Mon Espace mis à jour.*
 
 ---
 
@@ -101,8 +101,22 @@ flutter_app/lib/
 │   │       ├── providers/
 │   │       │   └── dashboard_provider.dart
 │   │       └── screens/
-│   │           └── dashboard_screen.dart     ← streak, score, check-ins du jour,
-│   │                                            section Bien-être (méditation/respiration/revue)
+│   │           └── dashboard_screen.dart     ← ÉCRAN ENRICHI (mai 2026) — ordre des sections :
+│   │                                            1. Streak card (violet, glow pulsant)
+│   │                                            2. Suivi du jour : 3 anneaux Apple Watch
+│   │                                               Focus (violet) · Habitudes (teal) · Check-ins (amber)
+│   │                                               Curseur flashy visible même à 0%, track alpha 0.30
+│   │                                               Animation entrée 1.2s + pulse curseur infini
+│   │                                            3. Check-ins matin/soir : gradient contextuel,
+│   │                                               taille dynamique selon l'heure (flex 3:2),
+│   │                                               emoji géant fond semi-transparent, zéro bordure blanche
+│   │                                            4. Mon Projet en cours : card premium fond sombre,
+│   │                                               nom + pourquoi + barre % + stats tâches + J-X
+│   │                                               utilise focusProjectProvider (projet épinglé Kanban)
+│   │                                            5. Prendre soin de moi : Méditer (teal) + Respirer (violet)
+│   │                                               côte à côte avec glow animé + Revue hebdo (amber)
+│   │                                            6. Niveau + barre progression
+│   │                                            7. Bandeau motivation contextuel (streak-aware)
 │   │
 │   ├── objectives/                           ← "Mes Objectifs" — onglet 2
 │   │   ├── data/
@@ -436,7 +450,7 @@ Récompenses  → "Mes Badges"
 | Auth | `auth_screen.dart` | Email + Google + Apple |
 | Onboarding | `onboarding_screen.dart` | 4 écrans |
 | Check-in matin/soir | `checkin_screen.dart` | 3 questions + animation |
-| Dashboard | `dashboard_screen.dart` | Streak, score, cards bien-être |
+| Dashboard | `dashboard_screen.dart` | Streak · Anneaux suivi (Focus/Habitudes/Check-ins) · Check-ins gradient · Card projet · Bien-être · Niveau |
 | Objectifs | `objectives_screen.dart` | fl_chart, habitudes, lien Kanban |
 | Planner — Priorités | `planner_screen.dart` | MIT badge, 3 tâches, Kanban/Revue links |
 | Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90min, overlay, config |
