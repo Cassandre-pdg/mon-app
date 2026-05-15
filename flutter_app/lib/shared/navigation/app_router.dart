@@ -15,6 +15,12 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/rewards/presentation/screens/rewards_screen.dart';
 import '../../features/profile/presentation/screens/notification_settings_screen.dart';
 import '../../features/subscription/presentation/screens/paywall_screen.dart';
+import '../../features/planner/presentation/screens/kanban_screen.dart';
+import '../../features/planner/presentation/screens/weekly_review_screen.dart';
+import '../../features/wellness/presentation/screens/meditation_library_screen.dart';
+import '../../features/wellness/presentation/screens/meditation_player_screen.dart';
+import '../../features/wellness/presentation/screens/breathing_exercise_screen.dart';
+import '../../features/wellness/data/models/meditation.dart';
 import '../constants/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../../features/capture/presentation/providers/capture_provider.dart';
@@ -34,6 +40,11 @@ class AppRoutes {
   static const String notificationSettings  = '/settings/notifications';
   static const String rewards               = '/rewards';
   static const String paywall               = '/paywall';
+  static const String kanban                = '/planner/kanban';
+  static const String weeklyReview          = '/planner/weekly-review';
+  static const String wellnessMeditation    = '/wellness/meditation';
+  static const String wellnessMeditationPlayer = '/wellness/meditation/player';
+  static const String wellnessBreathing     = '/wellness/breathing';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -93,6 +104,30 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.checkinEvening,
         builder: (context, state) => const CheckinScreen(type: 'evening'),
+      ),
+
+      // ── Écrans sans barre de navigation ──────────────────
+      GoRoute(
+        path: AppRoutes.kanban,
+        builder: (context, state) => const KanbanScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.weeklyReview,
+        builder: (context, state) => const WeeklyReviewScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.wellnessMeditation,
+        builder: (context, state) => const MeditationLibraryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.wellnessMeditationPlayer,
+        builder: (context, state) {
+          return MeditationPlayerScreen(meditation: state.extra as Meditation);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.wellnessBreathing,
+        builder: (context, state) => const BreathingExerciseScreen(),
       ),
 
       // ── App principale : 5 onglets ───────────────────────
