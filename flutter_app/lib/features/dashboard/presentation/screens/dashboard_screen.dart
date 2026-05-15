@@ -1067,9 +1067,6 @@ class _OverviewCard extends StatelessWidget {
             ? 'un sur deux'
             : 'à faire aujourd\'hui';
 
-    // Score global (moyenne des 3 anneaux)
-    final avgScore = ((focusProgress + habitsProgress + checkinsProgress) / 3 * 100).round();
-
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacing16),
       decoration: BoxDecoration(
@@ -1103,7 +1100,6 @@ class _OverviewCard extends StatelessWidget {
                   focusProgress:    focusProgress,
                   habitsProgress:   habitsProgress,
                   checkinsProgress: checkinsProgress,
-                  avgScore:         avgScore,
                 ),
               ),
               const SizedBox(width: AppConstants.spacing24),
@@ -1226,13 +1222,11 @@ class _ActivityRings extends StatefulWidget {
   final double focusProgress;
   final double habitsProgress;
   final double checkinsProgress;
-  final int avgScore;
 
   const _ActivityRings({
     required this.focusProgress,
     required this.habitsProgress,
     required this.checkinsProgress,
-    required this.avgScore,
   });
 
   @override
@@ -1249,7 +1243,6 @@ class _ActivityRingsState extends State<_ActivityRings>
   @override
   void initState() {
     super.initState();
-    // Animation d'entrée : 0 → valeur en 1.2s avec légère élasticité
     _entryCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -1257,10 +1250,10 @@ class _ActivityRingsState extends State<_ActivityRings>
     _entryAnim = CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic);
     _entryCtrl.forward();
 
-    // Animation de pulse : respiration du tip (boucle infinie)
+    // Pulse curseur — respiration lente
     _pulseCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: true);
     _pulseAnim = CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut);
   }
@@ -1276,54 +1269,20 @@ class _ActivityRingsState extends State<_ActivityRings>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: Listenable.merge([_entryAnim, _pulseAnim]),
-      builder: (_, __) {
-        final t = _entryAnim.value;
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            CustomPaint(
-              size: const Size(136, 136),
-              painter: _RingsPainter(
-                focusProgress:    widget.focusProgress    * t,
-                habitsProgress:   widget.habitsProgress   * t,
-                checkinsProgress: widget.checkinsProgress * t,
-                pulseValue:       _pulseAnim.value,
-              ),
-            ),
-            // Score central
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${(widget.avgScore * t).round()}%',
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textDark,
-                    height: 1,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'score',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textDarkMuted,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
+      builder: (_, __) => CustomPaint(
+        size: const Size(136, 136),
+        painter: _RingsPainter(
+          focusProgress:    widget.focusProgress    * _entryAnim.value,
+          habitsProgress:   widget.habitsProgress   * _entryAnim.value,
+          checkinsProgress: widget.checkinsProgress * _entryAnim.value,
+          pulseValue:       _pulseAnim.value,
+        ),
+      ),
     );
   }
 }
 
-// ── Peintre des anneaux — Apple Watch style ───────────────────
+// ── Peintre des anneaux ───────────────────────────────────────
 class _RingsPainter extends CustomPainter {
   final double focusProgress;
   final double habitsProgress;
@@ -1337,8 +1296,15 @@ class _RingsPainter extends CustomPainter {
     required this.pulseValue,
   });
 
-  static const _strokeWidth = 13.0;
-  static const _gap         = 6.0;
+  static const _strokeWidth  = 13.0;
+  static const _gap          = 6.0;
+  // Curseur : arc de ~10° en radians
+  static const _cursorSweep  = 0.18;
+
+  // Couleurs curseur : teinte flashy de chaque anneau
+  static const _cursorFocus    = Color(0xFFB39DFB); // violet clair vif
+  static const _cursorHabits   = Color(0xFF5EEAD4); // teal clair
+  static const _cursorCheckins = Color(0xFFFFE566); // amber jaune vif
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1346,21 +1312,23 @@ class _RingsPainter extends CustomPainter {
     final maxR   = math.min(size.width, size.height) / 2 - 2;
 
     _drawRing(canvas, center, maxR,
-        focusProgress, AppColors.primary);
+        focusProgress,    AppColors.primary,     _cursorFocus);
     _drawRing(canvas, center, maxR - _strokeWidth - _gap,
-        habitsProgress, AppColors.accent);
+        habitsProgress,   AppColors.accent,      _cursorHabits);
     _drawRing(canvas, center, maxR - (_strokeWidth + _gap) * 2,
-        checkinsProgress, AppColors.chartAmber);
+        checkinsProgress, AppColors.chartAmber,  _cursorCheckins);
   }
 
   void _drawRing(Canvas canvas, Offset center, double radius,
-      double progress, Color color) {
-    // ── Piste (fond) ─────────────────────────────────────────
+      double progress, Color color, Color cursorColor) {
+    final rect   = Rect.fromCircle(center: center, radius: radius);
+    final startA = -math.pi / 2;
+
+    // ── 1. Track visible — "attend d'être rempli" ─────────────
     canvas.drawCircle(
-      center,
-      radius,
+      center, radius,
       Paint()
-        ..color = color.withValues(alpha: 0.22)
+        ..color = color.withValues(alpha: 0.30)
         ..style = PaintingStyle.stroke
         ..strokeWidth = _strokeWidth
         ..strokeCap = StrokeCap.round,
@@ -1368,24 +1336,10 @@ class _RingsPainter extends CustomPainter {
 
     if (progress <= 0) return;
 
-    final rect    = Rect.fromCircle(center: center, radius: radius);
-    final startA  = -math.pi / 2;
-    final sweepA  = 2 * math.pi * progress;
+    final sweepA = 2 * math.pi * progress;
 
-    // ── Halo extérieur (glow large) ───────────────────────────
-    canvas.drawArc(
-      rect, startA, sweepA, false,
-      Paint()
-        ..color = color.withValues(alpha: 0.18)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _strokeWidth + 6
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
-    );
-
-    // ── Arc principal ─────────────────────────────────────────
-    canvas.drawArc(
-      rect, startA, sweepA, false,
+    // ── 2. Arc rempli (couleur normale) ───────────────────────
+    canvas.drawArc(rect, startA, sweepA, false,
       Paint()
         ..color = color
         ..style = PaintingStyle.stroke
@@ -1393,25 +1347,28 @@ class _RingsPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
-    // ── Tip lumineux animé (pulse) ────────────────────────────
-    final tipAngle = startA + sweepA;
-    final tipX     = center.dx + radius * math.cos(tipAngle);
-    final tipY     = center.dy + radius * math.sin(tipAngle);
-    final tipOffset = Offset(tipX, tipY);
-    final tipR     = _strokeWidth / 2;
-    final glowR    = tipR + 2 + 2 * pulseValue; // respire 2→4px
+    // ── 3. Curseur flashy au bout de l'arc ────────────────────
+    // Le curseur couvre les derniers ~10° de l'arc rempli
+    final cursorLen   = math.min(_cursorSweep, sweepA);
+    final cursorStart = startA + sweepA - cursorLen;
 
-    // Halo du tip
-    canvas.drawCircle(
-      tipOffset, glowR,
+    // Halo large du curseur (pulse)
+    canvas.drawArc(rect, cursorStart, cursorLen, false,
       Paint()
-        ..color = color.withValues(alpha: 0.45 + 0.25 * pulseValue)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+        ..color = cursorColor.withValues(alpha: 0.35 + 0.30 * pulseValue)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _strokeWidth + 5
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
-    // Point blanc brillant au centre du tip
-    canvas.drawCircle(
-      tipOffset, tipR - 1,
-      Paint()..color = Colors.white.withValues(alpha: 0.92),
+
+    // Arc curseur principal (couleur flashy, pleine opacité)
+    canvas.drawArc(rect, cursorStart, cursorLen, false,
+      Paint()
+        ..color = cursorColor.withValues(alpha: 0.80 + 0.20 * pulseValue)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = _strokeWidth
+        ..strokeCap = StrokeCap.round,
     );
   }
 
