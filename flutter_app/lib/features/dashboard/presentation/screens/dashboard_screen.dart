@@ -1334,23 +1334,26 @@ class _RingsPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
-    if (progress <= 0) return;
-
     final sweepA = 2 * math.pi * progress;
 
-    // ── 2. Arc rempli (couleur normale) ───────────────────────
-    canvas.drawArc(rect, startA, sweepA, false,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _strokeWidth
-        ..strokeCap = StrokeCap.round,
-    );
+    // ── 2. Arc rempli (couleur normale) — seulement si > 0 ───
+    if (progress > 0) {
+      canvas.drawArc(rect, startA, sweepA, false,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = _strokeWidth
+          ..strokeCap = StrokeCap.round,
+      );
+    }
 
-    // ── 3. Curseur flashy au bout de l'arc ────────────────────
-    // Le curseur couvre les derniers ~10° de l'arc rempli
-    final cursorLen   = math.min(_cursorSweep, sweepA);
-    final cursorStart = startA + sweepA - cursorLen;
+    // ── 3. Curseur flashy — toujours visible ─────────────────
+    // À 0% : curseur à 12h (position de départ)
+    // À n% : curseur au bout de l'arc rempli
+    final cursorLen   = _cursorSweep;
+    final cursorStart = progress > 0
+        ? startA + sweepA - cursorLen
+        : startA;
 
     // Halo large du curseur (pulse)
     canvas.drawArc(rect, cursorStart, cursorLen, false,
