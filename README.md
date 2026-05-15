@@ -1,161 +1,84 @@
-# 🧭 Solo Pro — L'application compagnon de l'entrepreneur solitaire
+# Kolyb — Ton élan, au quotidien.
 
-> "L'entrepreneur qui avance seul va vite. L'entrepreneur bien accompagné va loin."
+> Application Flutter de bien-être, productivité et communauté pour entrepreneurs indépendants.
 
-Application Flutter de bien-être, productivité et lien social pour entrepreneurs, traders, artisans et freelances. Un seul espace pour tenir mentalement, performer durablement, et ne jamais se sentir seul.
-
----
-
-## 📌 Vision
-
-Solo Pro accompagne chaque dimension du quotidien de l'indépendant :
-- 🧠 **Mental & bien-être** — check-in émotionnel, journal, gestion du stress
-- ⚡ **Productivité** — planification, focus, revue hebdomadaire
-- 😴 **Sommeil & récupération** — suivi, routines, conseils adaptifs
-- 🤝 **Réseau & lien social** — communauté, groupes métiers, matching pairs
+Les indépendants jonglent entre 5 apps différentes, s'isolent progressivement et perdent le fil de leur progression. Kolyb réunit tout en un seul endroit.
 
 ---
 
-## 🗂️ Structure du projet
+## 📱 Navigation — 5 onglets V1
 
 ```
-solo-pro/
-├── flutter_app/          → Application mobile Flutter (iOS + Android)
-│   ├── lib/
-│   │   ├── features/
-│   │   │   ├── checkin/          → Check-in émotionnel quotidien
-│   │   │   │   ├── data/         → Appels Supabase, modèles JSON
-│   │   │   │   ├── domain/       → Logique métier pure
-│   │   │   │   └── presentation/ → Widgets, screens, Riverpod providers
-│   │   │   ├── planner/          → Planificateur 3 priorités (méthode MIT)
-│   │   │   ├── sleep/            → Tracker sommeil & récupération
-│   │   │   ├── community/        → Réseau, groupes, forum, matching
-│   │   │   ├── dashboard/        → Vue 360° unifiée
-│   │   │   └── onboarding/       → Parcours d'entrée personnalisé
-│   │   ├── shared/               → Widgets communs, thème, constantes
-│   │   └── main.dart
-│   ├── test/
-│   └── pubspec.yaml
-├── backend/              → API REST Node.js + Express (V2)
-│   ├── src/
-│   │   ├── routes/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   └── middleware/
-│   ├── .env.example
-│   └── server.js
-├── .gitignore
-└── README.md             → Ce fichier
+[ Mon Espace 🏠 ] [ Mes Objectifs 🎯 ] [ Ma Journée ✅ ] [ Le Salon 👥 ] [ Mon Profil 👤 ]
+      /home             /objectives           /planner          /community       /profile
 ```
 
 ---
 
 ## 🛠️ Stack technique
 
-| Composant | Technologie | Coût |
-|---|---|---|
-| **UI / App mobile** | Flutter 3.x (Dart) | Gratuit |
-| **State management** | Riverpod 2.x | Gratuit |
-| **Backend as a Service** | Supabase (serveur EU — Frankfurt) | Gratuit phase 1 |
-| **Authentification** | Supabase Auth (email, Google, Apple) | Gratuit |
-| **Notifications push** | Firebase Cloud Messaging | Gratuit |
-| **Analytics** | Mixpanel (plan free) | Gratuit |
-| **Crash reporting** | Firebase Crashlytics | Gratuit |
-| **IA suggestions (V2)** | OpenAI API GPT-4o-mini | 20–50 €/mois |
-| **Paiements (V2)** | Stripe + RevenueCat | 1,5 % + 0 € fixe |
-| **CI/CD** | GitHub Actions | Gratuit |
+| Composant | Technologie |
+|---|---|
+| UI / App mobile | Flutter 3.x (Dart) — iOS + Android |
+| State management | Riverpod 2.x |
+| Base de données | Supabase (EU Frankfurt — RGPD) |
+| Authentification | Supabase Auth (email, Google, Apple) |
+| Notifications push | Firebase Cloud Messaging |
+| Navigation | go_router |
+| Graphiques | fl_chart |
+| Paiements (V2) | RevenueCat + Stripe |
+| CI/CD | GitHub Actions |
 
 ---
 
-## 📦 Packages Flutter principaux
+## 🗄️ Base de données Supabase
 
-```yaml
-dependencies:
-  flutter_riverpod:        # State management
-  supabase_flutter:        # Base de données + auth
-  firebase_messaging:      # Notifications push
-  go_router:               # Navigation déclarative
-  fl_chart:                # Graphiques humeur, sommeil, productivité
-  flutter_local_notifications: # Rappels sans connexion
-  shared_preferences:      # Stockage local léger
-  freezed:                 # Modèles immuables
-  json_serializable:       # Sérialisation JSON
-  purchases_flutter:       # RevenueCat — abonnements (V2)
-```
-
----
-
-## 🗄️ Base de données (Supabase)
-
-Tables principales :
+RLS activé sur toutes les tables. Hébergement EU uniquement.
 
 | Table | Description |
 |---|---|
-| `users` | Profils utilisateurs (secteur, objectifs, préférences) |
-| `checkins` | Check-ins émotionnels quotidiens (score, humeur, notes) |
-| `planner_tasks` | Tâches du jour (3 priorités, statut, taux de complétion) |
-| `sleep_logs` | Suivi sommeil (coucher, lever, qualité 1–5) |
-| `groups` | Groupes thématiques (Traders, Artisans, Tech…) |
-| `posts` | Posts du forum communauté |
-| `relations` | Liens entre utilisateurs (pairs, mentors) |
-| `notifications_settings` | Préférences de rappels personnalisés |
+| `users` | Profils utilisateurs |
+| `checkins` | Check-ins émotionnels matin + soir |
+| `planner_tasks` | Tâches du jour (3 priorités MIT) |
+| `kanban_projects` | Projets Kanban (name, why, vision, success_criteria, target_date, status, is_focus_project) |
+| `kanban_tasks` | Tâches Kanban (todo / in_progress / done) |
+| `captures` | Notes brain dump (destination, is_processed) |
+| `groups` | Groupes thématiques communauté |
+| `posts` | Posts du forum (6 types, 4 réactions, sondages) |
+| `relations` | Liens entre utilisateurs |
+| `notification_settings` | Préférences notifications |
+| `sleep_logs` | Suivi sommeil (V2 — hors nav V1) |
 
-> ⚠️ Row Level Security (RLS) activé sur **toutes** les tables dès le setup.
-> Hébergement : **Supabase EU (Frankfurt)** — données en Europe, conformité RGPD.
-
----
-
-## 🚀 Lancer le projet en local
-
-### Prérequis
-- Flutter 3.x installé → `flutter --version`
-- Un compte Supabase → [supabase.com](https://supabase.com)
-- Un compte Firebase → [firebase.google.com](https://firebase.google.com)
-
-### Installation
-
-```bash
-# 1. Cloner le repo
-git clone https://github.com/Cassandre-pdg/mon-app.git
-cd mon-app
-
-# 2. Installer les dépendances Flutter
-cd flutter_app
-flutter pub get
-
-# 3. Configurer les variables d'environnement
-cp .env.example .env
-# → Remplir SUPABASE_URL, SUPABASE_ANON_KEY, etc.
-
-# 4. Lancer l'app
-flutter run
-```
+**Migrations Supabase :** `supabase/migrations/`
+- `003_kanban_persistence.sql` — création kanban_projects + kanban_tasks
+- `supabase_migration_enrichissement.sql` — why, target_date, status, is_focus_project, captures
+- `005_kanban_vision_criteria.sql` — vision (TEXT) + success_criteria (TEXT[])
 
 ---
 
-## 📱 Fonctionnalités V1 (MVP)
+## ⚡ Features V1 codées
 
-| Feature | Description | Critère de succès |
+| Feature | Écran | État |
 |---|---|---|
-| **Check-in quotidien** | 3 questions matin, score énergie 1–5, emoji humeur, graphique semaine | 60 % des users le font 5j/7 |
-| **Planificateur 3 tâches** | Saisie 3 priorités du jour, check le soir, taux de complétion | 50 % complètent 2 tâches/jour |
-| **Tracker sommeil** | Heure coucher/lever, qualité 1–5, corrélation humeur | 40 % le remplissent 4j/7 |
-| **Aperçu communauté** | Feed lecture seule, bouton "Rejoindre" avec teaser | 30 % cliquent sur Rejoindre |
-| **Onboarding** | 3 écrans : profil métier, objectif, premier check-in guidé | 80 % finissent l'onboarding |
-| **Dashboard unifié** | Vue du jour : humeur + tâches + sommeil + streak | Session > 3 min en moyenne |
-| **Notifications push** | Rappel matin check-in, rappel soir tâches. Heure personnalisable. | Taux opt-in > 60 % |
-
----
-
-## 💎 Fonctionnalités V2 Pro (après validation V1)
-
-- Forum & groupes actifs (poster, répondre, créer un groupe)
-- Journal IA (analyse tendances, alertes burn-out, suggestions personnalisées)
-- Matching pairs / mentor selon profil + objectifs
-- Sommeil avancé (routine guidée, alarme progressive, Apple Health / Google Fit)
-- Productivité avancée (revue hebdo guidée, objectifs long terme, intégration calendrier)
-- Rapports PDF mensuels exportables
-- Événements live (webinaires, cafés pro, ateliers)
+| Auth | `auth_screen.dart` | Email + Google + Apple |
+| Onboarding | `onboarding_screen.dart` | 4 écrans |
+| Dashboard | `dashboard_screen.dart` | Streak · Anneaux suivi · Check-ins · Card projet focus · Bien-être · Niveau |
+| Check-in matin/soir | `checkin_screen.dart` | 3 questions + animation |
+| Objectifs | `objectives_screen.dart` | Sections Objectifs/Projets/Habitudes/Suivi · _ProjectConfigSheet (vision, critères) |
+| Kanban | `kanban_screen.dart` | Colonnes todo/en cours/terminé · lien objectifs |
+| Config projet | `_ProjectConfigSheet` | nom, pourquoi, vision, date cible, critères de réussite (5 max), focus |
+| Planner — Priorités | `planner_screen.dart` | 3 tâches MIT, liens Kanban/Revue |
+| Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90 min |
+| Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5, notifications |
+| Planner — Flash | `flash_screen.dart` | Micro-tâches < 5 min |
+| Planner — Matrice | `eisenhower_screen.dart` | 4 quadrants urgence/importance |
+| Revue hebdo | `weekly_review_screen.dart` | Questions bilan |
+| Le Salon | `community_screen.dart` | Feed · Groupes · Défis mensuels |
+| Capture brain dump | `capture_bottom_sheet.dart` | Bouton haut-droite, badge pending |
+| Badges | `rewards_screen.dart` | Streaks, niveaux, badges |
+| Méditation | `meditation_library_screen.dart` + player | Bibliothèque + audio |
+| Respiration | `breathing_exercise_screen.dart` | Exercices guidés |
+| Profil + notifs | `profile_screen.dart` | Settings, toggle dark/light |
 
 ---
 
@@ -163,56 +86,42 @@ flutter run
 
 | Plan | Prix | Contenu |
 |---|---|---|
-| **Gratuit** | 0 € | Check-in, journal 7j, Pomodoro basique, forum lecture, 1 groupe |
-| **Pro** | 9,99 €/mois ou 84,99 €/an | Tout gratuit + journal IA illimité, tous modules, groupes illimités, matching, stats avancées |
-| **Early adopter** | 5,99 €/mois | Pour les 500 premiers abonnés Pro |
+| **Gratuit** | 0 € | Check-in · Dashboard · 3 priorités · Feed lecture · 3 posts/semaine · Badges · Flow · Méditation basique |
+| **Pro** | 14,99 €/mois | Posts illimités · Groupes · PDF mensuel · Stats avancées · Webinaires · Historique illimité |
 
 ---
 
-## 🗓️ Road Map
+## 🚀 Lancer le projet en local
 
-| Phase | Période | Objectif |
-|---|---|---|
-| **Phase 0** — Cadrage | S1–S8 | 20 entretiens users, maquettes Figma, landing page, 300 emails |
-| **Phase 1** — Dev V1 | S9–S20 | 7 features codées, beta 50 testeurs, CGU validées |
-| **Phase 2** — Lancement V1 | S21–S28 | App Store + Play Store, 1 000 MAU, rétention J30 > 40 % |
-| **Phase 3** — Dev V2 Pro | S29–S40 | Modules Pro, RevenueCat, 50 abonnés beta |
-| **Phase 4** — Lancement Pro | S41–S48 | 200 abonnés Pro, MRR > 2 000 € |
-| **Phase 5** — Croissance | M13–M18 | 10 000 MAU, 1 200 abonnés Pro, MRR > 12 000 € |
+```bash
+git clone https://github.com/Cassandre-pdg/mon-app.git
+cd mon-app/flutter_app
+flutter pub get
+flutter run
+```
 
----
+**Variables d'environnement :** configurées dans `lib/main.dart` via les clés Supabase.
 
-## 🎯 KPIs cibles (M6 post-lancement)
-
-| Indicateur | Cible |
-|---|---|
-| Rétention J7 (beta) | > 50 % |
-| Rétention J30 | > 45 % |
-| DAU / MAU ratio | > 40 % |
-| Sessions / user / semaine | > 5 |
-| NPS | > 50 |
-| Conversion Free → Pro | > 12 % |
+**iOS — si `pod install` échoue :**
+```bash
+LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install
+```
 
 ---
 
-## 🔒 Sécurité & RGPD
+## 🔒 RGPD
 
-- ✅ **Row Level Security** activé sur toutes les tables Supabase
-- ✅ **Hébergement EU** (Frankfurt) — données en Europe
-- ✅ **Chiffrement** des données sensibles (journal, émotions)
-- ✅ **Bouton suppression compte** + toutes les données (obligatoire RGPD)
-- ✅ **CGU + Politique de confidentialité** relues par avocat spécialisé
-- ✅ **Disclaimer** : Solo Pro est un outil de bien-être, pas un dispositif médical
+- RLS activé sur toutes les tables Supabase
+- Hébergement EU uniquement (Frankfurt)
+- Suppression compte + données dans Mon Profil > Paramètres
+- Disclaimer : Kolyb est un outil de bien-être, pas un dispositif médical
 
 ---
 
 ## 👩‍💻 Auteur
 
-**Cassandre** — Fondatrice Solo Pro
-- GitHub : [@Cassandre-pdg](https://github.com/Cassandre-pdg)
+**Cassandre** — Fondatrice Kolyb · [@Cassandre-pdg](https://github.com/Cassandre-pdg)
 
 ---
 
-## 📄 Licence
-
-Projet privé — tous droits réservés © 2025 Solo Pro
+*Projet privé — tous droits réservés © 2026 Kolyb*
