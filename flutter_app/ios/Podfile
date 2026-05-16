@@ -48,6 +48,9 @@ post_install do |installer|
       config.build_settings['PROVISIONING_PROFILE_SPECIFIER']   = ''
       # Aligne le déploiement iOS minimum pour éviter les warnings
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']       = '16.0'
+      # Empêche firebase_core 3.x de bloquer la build sur Xcode récent
+      config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS']     = 'NO'
+      config.build_settings['SWIFT_TREAT_WARNINGS_AS_ERRORS']   = 'NO'
     end
   end
 end
