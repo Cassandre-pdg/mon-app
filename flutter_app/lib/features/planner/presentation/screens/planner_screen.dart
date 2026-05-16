@@ -19,9 +19,10 @@ import 'eisenhower_screen.dart';
 import 'flow_screen.dart';
 
 // ── Écran principal "Ma Journée" ─────────────────────────────
-// Architecture : UN SEUL Scaffold (transparent), body = Stack.
-// La section s'affiche en Positioned.fill par-dessus le dashboard.
-// Pas de Scaffold imbriqué → plus de conflit avec le shell go_router.
+// Architecture : un seul Scaffold transparent.
+// Quand une section est active, le body bascule vers la section
+// (remplacement complet — pas de Stack/Positioned.fill pour éviter
+// les contraintes loose qui bloquent les Expanded internes).
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
 
@@ -42,108 +43,86 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // ── Section active : remplace le dashboard entièrement ──────
+    if (_activeSection != null) {
+      return _buildSectionView(_activeSection!, isDark);
+    }
+
+    // ── Dashboard ─────────────────────────────────────────────
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          // ── Dashboard (toujours dans l'arbre) ────────────────
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // En-tête
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                    child: Text(
-                      AppStrings.navPlanner,
-                      style: AppTextStyles.headingLarge(
-                        color: isDark
-                            ? AppColors.textDark
-                            : AppColors.textLight,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // En-tête
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                child: Text(
+                  AppStrings.navPlanner,
+                  style: AppTextStyles.headingLarge(
+                    color:
+                        isDark ? AppColors.textDark : AppColors.textLight,
+                  ),
+                ),
+              ),
+
+              // Bandeau projet focus
+              const _FocusProjectBanner(),
+              const SizedBox(height: 8),
+
+              // Mes 3 priorités du jour
+              const _PrioritiesSection(),
+              const SizedBox(height: 24),
+
+              // Cards Flow + Pomodoro côte à côte
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _FlowCard(
+                        onTap: () => _openSection('flow'),
                       ),
                     ),
-                  ),
-
-                  // Bandeau projet focus
-                  const _FocusProjectBanner(),
-                  const SizedBox(height: 8),
-
-                  // Mes 3 priorités du jour
-                  const _PrioritiesSection(),
-                  const SizedBox(height: 24),
-
-                  // Cards Flow + Pomodoro côte à côte
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _FlowCard(
-                            onTap: () => _openSection('flow'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _PomodoroCard(
-                            onTap: () => _openSection('pomodoro'),
-                          ),
-                        ),
-                      ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _PomodoroCard(
+                        onTap: () => _openSection('pomodoro'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Card Flash
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _FlashCard(
-                      onTap: () => _openSection('flash'),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Matrice Eisenhower — lien discret
-                  _MatriceLink(
-                    onTap: () => _openSection('matrice'),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ),
+              const SizedBox(height: 12),
 
-          // ── Overlay section (Positioned.fill = contraintes tight) ──
-          // Pas de Scaffold imbriqué : on pose un Container opaque
-          // directement dans le Stack du Scaffold existant.
-          if (_activeSection != null)
-            _SectionOverlay(
-              section: _activeSection!,
-              isDark: isDark,
-              onClose: _closeSection,
-            ),
-        ],
+              // Card Flash
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _FlashCard(
+                  onTap: () => _openSection('flash'),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Matrice Eisenhower — lien discret
+              _MatriceLink(
+                onTap: () => _openSection('matrice'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
-}
 
-// ── Overlay plein écran pour une section ─────────────────────
-// Positioned.fill → contraintes tight garanties par le Stack parent.
-// Pas de Scaffold imbriqué → aucun conflit MediaQuery/SafeArea.
-class _SectionOverlay extends StatelessWidget {
-  final String section;
-  final bool isDark;
-  final VoidCallback onClose;
-
-  const _SectionOverlay({
-    required this.section,
-    required this.isDark,
-    required this.onClose,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  // ── Construction de la vue section ────────────────────────────
+  // Retourne un Scaffold complet pour remplacer le dashboard.
+  // Le Scaffold reçoit des contraintes tight du ShellRoute parent →
+  // SafeArea + Column + Expanded fonctionnent sans ambiguïté.
+  Widget _buildSectionView(String section, bool isDark) {
     final String title;
     final Color accentColor;
     final Widget content;
@@ -168,21 +147,21 @@ class _SectionOverlay extends StatelessWidget {
       default:
         title       = '';
         accentColor = AppColors.primary;
-        content     = const SizedBox();
+        content     = const SizedBox.expand();
     }
 
-    // Header commun : flèche retour + barre couleur + titre
     final header = _SectionHeader(
       title: title,
       accentColor: accentColor,
-      onBack: onClose,
+      onBack: _closeSection,
       isDark: isDark,
     );
 
     // Flow : fond aurora animé
     if (section == 'flow') {
-      return Positioned.fill(
-        child: AuroraBackground(
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: AuroraBackground(
           child: SafeArea(
             child: Column(
               children: [
@@ -195,17 +174,16 @@ class _SectionOverlay extends StatelessWidget {
       );
     }
 
-    // Sections standard : fond uni, SafeArea, Column + Expanded
-    return Positioned.fill(
-      child: ColoredBox(
-        color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-        child: SafeArea(
-          child: Column(
-            children: [
-              header,
-              Expanded(child: content),
-            ],
-          ),
+    // Sections standard : fond uni
+    return Scaffold(
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      body: SafeArea(
+        child: Column(
+          children: [
+            header,
+            Expanded(child: content),
+          ],
         ),
       ),
     );
@@ -569,16 +547,20 @@ class _PomodoroCard extends StatelessWidget {
 
                   const Spacer(),
 
-                  // Infos + flèche
+                  // Infos + flèche — Flexible évite le débordement horizontal
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Pause 5 min entre chaque',
-                        style: AppTextStyles.caption(
-                          color: Colors.white.withValues(alpha: 0.6),
+                      Flexible(
+                        child: Text(
+                          'Pause 5 min entre chaque',
+                          style: AppTextStyles.caption(
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
