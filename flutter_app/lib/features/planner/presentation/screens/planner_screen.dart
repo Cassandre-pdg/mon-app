@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,16 +7,18 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/constants/app_strings.dart';
-import '../../../../shared/widgets/pill_tab_bar.dart';
+import '../../../../shared/widgets/aurora_background.dart';
 import '../providers/planner_provider.dart';
 import '../providers/kanban_provider.dart';
+import '../providers/flash_provider.dart';
+import '../providers/flow_provider.dart';
 import '../../data/planner_model.dart';
 import 'pomodoro_screen.dart';
 import 'flash_screen.dart';
 import 'eisenhower_screen.dart';
 import 'flow_screen.dart';
 
-// ── Écran principal "Ma Journée" avec sous-menu 4 onglets ─────
+// ── Écran principal "Ma Journée" — page scrollable ────────────
 class PlannerScreen extends ConsumerWidget {
   const PlannerScreen({super.key});
 
@@ -22,17 +26,17 @@ class PlannerScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return DefaultTabController(
-      length: 5,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── En-tête ──────────────────────────────────
+              // ── En-tête ──────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
                 child: Text(
                   AppStrings.navPlanner,
                   style: AppTextStyles.headingLarge(
@@ -40,35 +44,578 @@ class PlannerScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
 
-              // ── Bandeau projet focus ──────────────────────
+              // ── Bandeau projet focus ──────────────────────────
               const _FocusProjectBanner(),
-
-              // ── Barre d'onglets pill scrollable ──────────
-              PillTabBar(
-                scrollable: true,
-                tabs: const [
-                  '🎯  Priorités',
-                  '🌊  Flow',
-                  '🍅  Pomodoro',
-                  '⚡  Flash',
-                  '🧭  Matrice',
-                ],
-              ),
               const SizedBox(height: 8),
 
-              // ── Contenu des onglets ──────────────────────
-              const Expanded(
-                child: TabBarView(
+              // ── Mes 3 priorités du jour ───────────────────────
+              const _PrioritiesSection(),
+              const SizedBox(height: 24),
+
+              // ── Outils de focus : Flow + Pomodoro ─────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
                   children: [
-                    _PrioritesTab(),   // Onglet 1 : 3 priorités du jour
-                    FlowTab(),         // Onglet 2 : sessions Flow 90 min
-                    PomodoroContent(), // Onglet 3 : timer Pomodoro
-                    FlashTab(),        // Onglet 4 : micro-tâches < 5 min
-                    EisenhowerTab(),   // Onglet 5 : matrice urgence/importance
+                    Expanded(
+                      child: _FlowCard(
+                        onTap: () => _openModal(
+                          context,
+                          const _FlowModal(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _PomodoroCard(
+                        onTap: () => _openModal(
+                          context,
+                          const _PomodoroModal(),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 12),
+
+              // ── Flash ─────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _FlashCard(
+                  onTap: () => _openModal(
+                    context,
+                    const _FlashModal(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Matrice Eisenhower — accès discret ───────────
+              _MatriceLink(
+                onTap: () => _openModal(
+                  context,
+                  const _MatriceModal(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Ouverture en modal plein écran avec slide-up
+  void _openModal(BuildContext context, Widget modal) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: true,
+        pageBuilder: (_, __, ___) => modal,
+        transitionsBuilder: (_, animation, __, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ── Section Priorités (inline dans la page) ───────────────────
+class _PrioritiesSection extends ConsumerWidget {
+  const _PrioritiesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tasksAsync = ref.watch(plannerProvider);
+    final isDark     = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Titre section
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+          child: Row(
+            children: [
+              Text(
+                'Mes priorités du jour',
+                style: AppTextStyles.headingSmall(
+                  color: isDark ? AppColors.textDark : AppColors.textLight,
+                ),
+              ),
+              const SizedBox(width: 8),
+              tasksAsync.whenData((tasks) {
+                final done = tasks.where((t) => t.isCompleted).length;
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$done/${tasks.length}',
+                    style: AppTextStyles.caption(
+                        color: AppColors.primaryLight),
+                  ),
+                );
+              }).value ?? const SizedBox.shrink(),
+            ],
+          ),
+        ),
+
+        // Liste des tâches
+        tasksAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.all(24),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, _) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(AppStrings.errorGeneric,
+                style: AppTextStyles.bodyMedium(color: AppColors.error)),
+          ),
+          data: (tasks) => tasks.isEmpty
+              ? _EmptyState()
+              : _TaskList(tasks: tasks, isDark: isDark),
+        ),
+
+        // Bouton ajouter
+        tasksAsync.when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+          data: (tasks) => Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+            child: tasks.length < AppConstants.maxDailyTasks
+                ? _AddTaskButton()
+                : Text(
+                    AppStrings.plannerMaxTasks,
+                    style:
+                        AppTextStyles.bodySmall(color: AppColors.grey400),
+                    textAlign: TextAlign.center,
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Card Flow ─────────────────────────────────────────────────
+class _FlowCard extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _FlowCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final flow = ref.watch(flowProvider);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 150,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF3B1B8E), Color(0xFF6D28D9)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Orbe décorative fond
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+
+            // Contenu
+            Padding(
+              padding: const EdgeInsets.all(AppConstants.spacing16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nom + durée
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Flow',
+                        style: AppTextStyles.headingMedium(
+                            color: Colors.white),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '90 min',
+                          style: AppTextStyles.caption(
+                              color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Focus profond sans interruption',
+                    style: AppTextStyles.bodySmall(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Stats + flèche
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Sessions pills
+                      Row(
+                        children: List.generate(
+                          math.min(flow.sessionsPerDay, 4),
+                          (i) {
+                            final done = i < flow.completedToday;
+                            return Container(
+                              margin: const EdgeInsets.only(right: 5),
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: done
+                                    ? Colors.white
+                                    : Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: done
+                                  ? const Icon(Icons.check_rounded,
+                                      size: 12,
+                                      color: Color(0xFF6D28D9))
+                                  : null,
+                            );
+                          },
+                        ),
+                      ),
+                      // Flèche
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.arrow_forward_rounded,
+                            color: Colors.white, size: 16),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Card Pomodoro ─────────────────────────────────────────────
+class _PomodoroCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _PomodoroCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 150,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF8B1A2F), Color(0xFFFF4D6A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.secondary.withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Orbe décorative fond
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+
+            // Contenu
+            Padding(
+              padding: const EdgeInsets.all(AppConstants.spacing16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nom + durée
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Pomodoro',
+                        style: AppTextStyles.headingMedium(
+                            color: Colors.white),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '25 min',
+                          style: AppTextStyles.caption(
+                              color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Travail par intervalles courts',
+                    style: AppTextStyles.bodySmall(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Infos + flèche
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Pause 5 min entre chaque',
+                        style: AppTextStyles.caption(
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.arrow_forward_rounded,
+                            color: Colors.white, size: 16),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Card Flash ────────────────────────────────────────────────
+class _FlashCard extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _FlashCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final flashAsync = ref.watch(flashProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final pendingTasks = flashAsync.value
+            ?.where((t) => !t.isDone)
+            .toList() ??
+        [];
+    final count = pendingTasks.length;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppConstants.spacing16),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          border: Border.all(
+            color: AppColors.warning.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.warning.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Icône colorée
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.bolt_rounded,
+                  color: AppColors.warning, size: 24),
+            ),
+            const SizedBox(width: 14),
+
+            // Contenu
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Flash',
+                        style: AppTextStyles.headingSmall(
+                          color: isDark
+                              ? AppColors.textDark
+                              : AppColors.textLight,
+                        ),
+                      ),
+                      if (count > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '$count',
+                            style: AppTextStyles.caption(
+                              color: Colors.black87,
+                            ).copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    count == 0
+                        ? 'Micro-tâches de moins de 5 min'
+                        : pendingTasks
+                            .take(2)
+                            .map((t) => t.title)
+                            .join(' · '),
+                    style: AppTextStyles.bodySmall(
+                        color: AppColors.grey400),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Flèche
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: AppColors.grey400.withValues(alpha: 0.6),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Lien Matrice Eisenhower ───────────────────────────────────
+class _MatriceLink extends StatelessWidget {
+  final VoidCallback onTap;
+  const _MatriceLink({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.spacing16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isDark
+                ? AppColors.surfaceDark.withValues(alpha: 0.6)
+                : AppColors.surfaceLight,
+            borderRadius:
+                BorderRadius.circular(AppConstants.radiusMedium),
+            border: Border.all(
+              color: AppColors.grey400.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.grid_view_rounded,
+                size: 18,
+                color: AppColors.grey400.withValues(alpha: 0.7),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Matrice Eisenhower',
+                style: AppTextStyles.bodyMedium(
+                    color: AppColors.grey400),
+              ),
+              const Spacer(),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 13,
+                color: AppColors.grey400.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -78,63 +625,168 @@ class PlannerScreen extends ConsumerWidget {
   }
 }
 
-// ── Onglet 1 : 3 Priorités du jour ───────────────────────────
-class _PrioritesTab extends ConsumerWidget {
-  const _PrioritesTab();
+// ─────────────────────────────────────────────────────────────
+// ── Modals plein écran ────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+
+// ── Modal Flow (avec aurora) ──────────────────────────────────
+class _FlowModal extends StatelessWidget {
+  const _FlowModal();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tasksAsync = ref.watch(plannerProvider);
-    final isDark     = Theme.of(context).brightness == Brightness.dark;
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-          child: Text(
-            'Tes 3 priorités du jour',
-            style: AppTextStyles.bodyMedium(color: AppColors.grey400),
-          ),
-        ),
-
-        // Liste des tâches
-        Expanded(
-          child: tasksAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(
-              child: Text(
-                AppStrings.errorGeneric,
-                style: AppTextStyles.bodyMedium(color: AppColors.error),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: AuroraBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Barre de fermeture
+              _ModalHeader(
+                title: 'Flow',
+                accentColor: AppColors.primary,
               ),
-            ),
-            data: (tasks) => tasks.isEmpty
-                ? _EmptyState()
-                : _TaskList(tasks: tasks, isDark: isDark),
+              // Contenu Flow complet (config, timer, audio, projet)
+              const Expanded(child: FlowTab()),
+            ],
           ),
         ),
-
-        // Bouton ajouter (si < 3 tâches)
-        tasksAsync.when(
-          loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
-          data: (tasks) => tasks.length < AppConstants.maxDailyTasks
-              ? Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                  child: _AddTaskButton(),
-                )
-              : Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                  child: Text(
-                    AppStrings.plannerMaxTasks,
-                    style: AppTextStyles.bodySmall(color: AppColors.grey400),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-        ),
-      ],
+      ),
     );
   }
 }
+
+// ── Modal Pomodoro ────────────────────────────────────────────
+class _PomodoroModal extends StatelessWidget {
+  const _PomodoroModal();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _ModalHeader(
+              title: 'Pomodoro',
+              accentColor: AppColors.secondary,
+            ),
+            const Expanded(child: PomodoroContent()),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Modal Flash ───────────────────────────────────────────────
+class _FlashModal extends StatelessWidget {
+  const _FlashModal();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _ModalHeader(
+              title: 'Flash',
+              accentColor: AppColors.warning,
+            ),
+            const Expanded(child: FlashTab()),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Modal Matrice ─────────────────────────────────────────────
+class _MatriceModal extends StatelessWidget {
+  const _MatriceModal();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _ModalHeader(
+              title: 'Matrice Eisenhower',
+              accentColor: AppColors.primary,
+            ),
+            const Expanded(child: EisenhowerTab()),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Header commun pour les modals ─────────────────────────────
+class _ModalHeader extends StatelessWidget {
+  final String title;
+  final Color accentColor;
+
+  const _ModalHeader({
+    required this.title,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 16, 4),
+      child: Row(
+        children: [
+          // Indicateur coloré
+          Container(
+            width: 4,
+            height: 22,
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: AppTextStyles.headingMedium(
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+          const Spacer(),
+          // Bouton fermer
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.grey400.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.close_rounded,
+                  size: 20, color: AppColors.grey400),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// ── Widgets logique (inchangés) ───────────────────────────────
+// ─────────────────────────────────────────────────────────────
 
 // ── Liste de tâches ───────────────────────────────────────────
 class _TaskList extends ConsumerWidget {
@@ -153,9 +805,11 @@ class _TaskList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24),
       itemCount: tasks.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
         final task  = tasks[i];
         final color = _priorityColors[task.priority] ?? AppColors.primary;
@@ -167,7 +821,7 @@ class _TaskList extends ConsumerWidget {
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 20),
             decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha:0.15),
+              color: AppColors.error.withValues(alpha: 0.15),
               borderRadius:
                   BorderRadius.circular(AppConstants.radiusLarge),
             ),
@@ -180,16 +834,17 @@ class _TaskList extends ConsumerWidget {
             padding: const EdgeInsets.all(AppConstants.spacing16),
             decoration: BoxDecoration(
               color: task.isCompleted
-                  ? AppColors.success.withValues(alpha:0.08)
+                  ? AppColors.success.withValues(alpha: 0.08)
                   : isDark
                       ? AppColors.surfaceDark
                       : AppColors.surfaceLight,
               border: Border.all(
                 color: task.isCompleted
                     ? AppColors.success
-                    : color.withValues(alpha:0.3),
+                    : color.withValues(alpha: 0.3),
               ),
-              borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+              borderRadius:
+                  BorderRadius.circular(AppConstants.radiusLarge),
             ),
             child: Row(
               children: [
@@ -209,7 +864,8 @@ class _TaskList extends ConsumerWidget {
                           ? AppColors.success
                           : Colors.transparent,
                       border: Border.all(
-                        color: task.isCompleted ? AppColors.success : color,
+                        color:
+                            task.isCompleted ? AppColors.success : color,
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(8),
@@ -254,7 +910,8 @@ class _TaskList extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 1),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.12),
+                                color: AppColors.primary
+                                    .withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -290,18 +947,17 @@ class _TaskList extends ConsumerWidget {
   }
 }
 
-// ── Sheet partagé : ajouter OU modifier une tâche ────────────
+// ── Sheet partagé : ajouter OU modifier une tâche ─────────────
 void _showTaskSheet(
   BuildContext context,
   WidgetRef ref, {
   PlannerTask? task,
 }) {
-  final isEdit       = task != null;
-  final ctrl         = TextEditingController(text: task?.title ?? '');
-  int priority       = task?.priority ?? 1;
-  String? projectId  = task?.projectId;
-  final activeProjects =
-      ref.read(activeProjectsProvider);
+  final isEdit      = task != null;
+  final ctrl        = TextEditingController(text: task?.title ?? '');
+  int priority      = task?.priority ?? 1;
+  String? projectId = task?.projectId;
+  final activeProjects = ref.read(activeProjectsProvider);
 
   showModalBottomSheet(
     context: context,
@@ -323,7 +979,9 @@ void _showTaskSheet(
             top: false,
             child: SingleChildScrollView(
               padding: EdgeInsets.only(
-                left: 24, right: 24, top: 16,
+                left: 24,
+                right: 24,
+                top: 16,
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
               ),
               child: Column(
@@ -334,9 +992,11 @@ void _showTaskSheet(
                   Center(
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 16),
-                      width: 36, height: 4,
+                      width: 36,
+                      height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.grey400.withValues(alpha: 0.35),
+                        color:
+                            AppColors.grey400.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -382,8 +1042,7 @@ void _showTaskSheet(
                           onTap: () => setState(() => priority = p),
                           child: AnimatedContainer(
                             duration: AppConstants.animFast,
-                            margin:
-                                EdgeInsets.only(right: p < 3 ? 8 : 0),
+                            margin: EdgeInsets.only(right: p < 3 ? 8 : 0),
                             padding: const EdgeInsets.symmetric(
                                 vertical: 12),
                             decoration: BoxDecoration(
@@ -480,6 +1139,7 @@ void _showTaskSheet(
   );
 }
 
+// ── Pill projet dans le sheet ─────────────────────────────────
 class _PriorityProjectPill extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -530,10 +1190,19 @@ class _PriorityProjectPill extends StatelessWidget {
 class _AddTaskButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ElevatedButton.icon(
-      onPressed: () => _showTaskSheet(context, ref),
-      icon: const Icon(Icons.add_rounded),
-      label: const Text('Ajouter une priorité'),
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => _showTaskSheet(context, ref),
+        icon: const Icon(Icons.add_rounded, size: 18),
+        label: const Text('Ajouter une priorité'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: BorderSide(
+              color: AppColors.primary.withValues(alpha: 0.4)),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+      ),
     );
   }
 }
@@ -542,18 +1211,26 @@ class _AddTaskButton extends ConsumerWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.spacing32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+      child: Container(
+        padding: const EdgeInsets.all(AppConstants.spacing16),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.12),
+          ),
+        ),
+        child: Row(
           children: [
-            const Text('🎯', style: TextStyle(fontSize: 56)),
-            const SizedBox(height: AppConstants.spacing16),
-            Text(
-              AppStrings.plannerEmptyState,
-              style: AppTextStyles.bodyLarge(color: AppColors.grey400),
-              textAlign: TextAlign.center,
+            const Text('🎯', style: TextStyle(fontSize: 28)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                AppStrings.plannerEmptyState,
+                style: AppTextStyles.bodyMedium(color: AppColors.grey400),
+              ),
             ),
           ],
         ),
@@ -571,19 +1248,18 @@ class _FocusProjectBanner extends ConsumerWidget {
     final project = ref.watch(focusProjectProvider);
     if (project == null) return const SizedBox.shrink();
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final daysLeft = project.daysLeft;
+    final isDark    = Theme.of(context).brightness == Brightness.dark;
+    final daysLeft  = project.daysLeft;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
       child: Container(
         padding: const EdgeInsets.all(AppConstants.spacing12),
         decoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.25),
-          ),
+              color: AppColors.primary.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
@@ -603,7 +1279,9 @@ class _FocusProjectBanner extends ConsumerWidget {
                   Text(
                     project.name,
                     style: AppTextStyles.labelMedium(
-                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                      color: isDark
+                          ? AppColors.textDark
+                          : AppColors.textLight,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -618,7 +1296,6 @@ class _FocusProjectBanner extends ConsumerWidget {
                 ],
               ),
             ),
-            // Mini barre progression
             SizedBox(
               width: 48,
               child: ClipRRect(
