@@ -410,6 +410,8 @@ class _FlowCard extends ConsumerWidget {
                     style: AppTextStyles.bodySmall(
                       color: Colors.white.withValues(alpha: 0.7),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
 
                   const Spacer(),
@@ -543,6 +545,8 @@ class _PomodoroCard extends StatelessWidget {
                     style: AppTextStyles.bodySmall(
                       color: Colors.white.withValues(alpha: 0.7),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
 
                   const Spacer(),
