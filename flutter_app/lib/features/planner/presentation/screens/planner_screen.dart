@@ -18,9 +18,10 @@ import 'flash_screen.dart';
 import 'eisenhower_screen.dart';
 import 'flow_screen.dart';
 
-// ── Écran principal "Ma Journée" — état local, pas de navigation ──
-// On utilise _activeSection pour éviter tout conflit avec go_router.
-// Naviguer vers un autre onglet remet automatiquement le dashboard.
+// ── Écran principal "Ma Journée" ─────────────────────────────
+// Architecture : UN SEUL Scaffold (transparent), body = Stack.
+// La section s'affiche en Positioned.fill par-dessus le dashboard.
+// Pas de Scaffold imbriqué → plus de conflit avec le shell go_router.
 class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
 
@@ -29,7 +30,7 @@ class PlannerScreen extends ConsumerStatefulWidget {
 }
 
 class _PlannerScreenState extends ConsumerState<PlannerScreen> {
-  // null = dashboard, 'flow' | 'pomodoro' | 'flash' | 'matrice' = section
+  // null = dashboard  |  'flow' | 'pomodoro' | 'flash' | 'matrice'
   String? _activeSection;
 
   void _openSection(String section) =>
@@ -41,90 +42,111 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ── Vue section plein écran ───────────────────────────────
-    if (_activeSection != null) {
-      return _buildSectionView(isDark);
-    }
-
-    // ── Vue dashboard scrollable ──────────────────────────────
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // En-tête
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                child: Text(
-                  AppStrings.navPlanner,
-                  style: AppTextStyles.headingLarge(
-                    color: isDark ? AppColors.textDark : AppColors.textLight,
+      body: Stack(
+        children: [
+          // ── Dashboard (toujours dans l'arbre) ────────────────
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // En-tête
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                    child: Text(
+                      AppStrings.navPlanner,
+                      style: AppTextStyles.headingLarge(
+                        color: isDark
+                            ? AppColors.textDark
+                            : AppColors.textLight,
+                      ),
+                    ),
                   ),
-                ),
-              ),
 
-              // Bandeau projet focus
-              const _FocusProjectBanner(),
-              const SizedBox(height: 8),
+                  // Bandeau projet focus
+                  const _FocusProjectBanner(),
+                  const SizedBox(height: 8),
 
-              // Mes 3 priorités du jour
-              const _PrioritiesSection(),
-              const SizedBox(height: 24),
+                  // Mes 3 priorités du jour
+                  const _PrioritiesSection(),
+                  const SizedBox(height: 24),
 
-              // Cards Flow + Pomodoro côte à côte
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _FlowCard(
-                        onTap: () => _openSection('flow'),
-                      ),
+                  // Cards Flow + Pomodoro côte à côte
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _FlowCard(
+                            onTap: () => _openSection('flow'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _PomodoroCard(
+                            onTap: () => _openSection('pomodoro'),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _PomodoroCard(
-                        onTap: () => _openSection('pomodoro'),
-                      ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Card Flash
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _FlashCard(
+                      onTap: () => _openSection('flash'),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
+                  ),
+                  const SizedBox(height: 16),
 
-              // Card Flash
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: _FlashCard(
-                  onTap: () => _openSection('flash'),
-                ),
+                  // Matrice Eisenhower — lien discret
+                  _MatriceLink(
+                    onTap: () => _openSection('matrice'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-
-              // Matrice Eisenhower — lien discret
-              _MatriceLink(
-                onTap: () => _openSection('matrice'),
-              ),
-            ],
+            ),
           ),
-        ),
+
+          // ── Overlay section (Positioned.fill = contraintes tight) ──
+          // Pas de Scaffold imbriqué : on pose un Container opaque
+          // directement dans le Stack du Scaffold existant.
+          if (_activeSection != null)
+            _SectionOverlay(
+              section: _activeSection!,
+              isDark: isDark,
+              onClose: _closeSection,
+            ),
+        ],
       ),
     );
   }
+}
 
-  // ── Construction de la vue section ───────────────────────────
-  // On utilise Scaffold.appBar (PreferredSizeWidget) pour le header
-  // et Scaffold.body pour le contenu — Flutter garantit des contraintes
-  // tight au body, ce qui évite les erreurs d'Expanded imbriqués.
-  Widget _buildSectionView(bool isDark) {
-    final section = _activeSection!;
+// ── Overlay plein écran pour une section ─────────────────────
+// Positioned.fill → contraintes tight garanties par le Stack parent.
+// Pas de Scaffold imbriqué → aucun conflit MediaQuery/SafeArea.
+class _SectionOverlay extends StatelessWidget {
+  final String section;
+  final bool isDark;
+  final VoidCallback onClose;
 
-    String title;
-    Color accentColor;
-    Widget content;
+  const _SectionOverlay({
+    required this.section,
+    required this.isDark,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final String title;
+    final Color accentColor;
+    final Widget content;
 
     switch (section) {
       case 'flow':
@@ -149,20 +171,22 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         content     = const SizedBox();
     }
 
-    // Cas spécial Flow : aurora en fond, on gère le layout manuellement
+    // Header commun : flèche retour + barre couleur + titre
+    final header = _SectionHeader(
+      title: title,
+      accentColor: accentColor,
+      onBack: onClose,
+      isDark: isDark,
+    );
+
+    // Flow : fond aurora animé
     if (section == 'flow') {
-      return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: AuroraBackground(
+      return Positioned.fill(
+        child: AuroraBackground(
           child: SafeArea(
             child: Column(
               children: [
-                _SectionAppBar(
-                  title: title,
-                  accentColor: accentColor,
-                  onBack: _closeSection,
-                  isDark: isDark,
-                ),
+                header,
                 const Expanded(child: FlowTab()),
               ],
             ),
@@ -171,31 +195,31 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       );
     }
 
-    // Sections standard : appBar Flutter → body avec contraintes tight
-    return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      appBar: _SectionAppBar(
-        title: title,
-        accentColor: accentColor,
-        onBack: _closeSection,
-        isDark: isDark,
+    // Sections standard : fond uni, SafeArea, Column + Expanded
+    return Positioned.fill(
+      child: ColoredBox(
+        color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        child: SafeArea(
+          child: Column(
+            children: [
+              header,
+              Expanded(child: content),
+            ],
+          ),
+        ),
       ),
-      body: content,
     );
   }
 }
 
-// ── AppBar custom des sections ────────────────────────────────
-// Implémente PreferredSizeWidget pour être utilisé comme Scaffold.appBar.
-// Le framework garantit que Scaffold.body reçoit les contraintes restantes.
-class _SectionAppBar extends StatelessWidget implements PreferredSizeWidget {
+// ── Header des sections ───────────────────────────────────────
+class _SectionHeader extends StatelessWidget {
   final String title;
   final Color accentColor;
   final VoidCallback onBack;
   final bool isDark;
 
-  const _SectionAppBar({
+  const _SectionHeader({
     required this.title,
     required this.accentColor,
     required this.onBack,
@@ -203,57 +227,45 @@ class _SectionAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(56);
-
-  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: preferredSize.height,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 24, 0),
-            child: Row(
-              children: [
-                // Bouton retour
-                GestureDetector(
-                  onTap: onBack,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.grey400.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back_rounded,
-                      size: 20,
-                      color: AppColors.grey400,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Barre couleur accent
-                Container(
-                  width: 4,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: accentColor,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: AppTextStyles.headingMedium(
-                    color: isDark ? AppColors.textDark : AppColors.textLight,
-                  ),
-                ),
-              ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 24, 8),
+      child: Row(
+        children: [
+          // Bouton retour
+          GestureDetector(
+            onTap: onBack,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.grey400.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.arrow_back_rounded,
+                size: 20,
+                color: AppColors.grey400,
+              ),
             ),
           ),
-        ),
+          const SizedBox(width: 10),
+          // Barre couleur accent
+          Container(
+            width: 4,
+            height: 22,
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: AppTextStyles.headingMedium(
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+        ],
       ),
     );
   }
