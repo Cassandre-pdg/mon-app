@@ -116,13 +116,15 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
   }
 
   // ── Construction de la vue section ───────────────────────────
+  // On utilise Scaffold.appBar (PreferredSizeWidget) pour le header
+  // et Scaffold.body pour le contenu — Flutter garantit des contraintes
+  // tight au body, ce qui évite les erreurs d'Expanded imbriqués.
   Widget _buildSectionView(bool isDark) {
     final section = _activeSection!;
 
-    // Paramètres propres à chaque section
-    final String title;
-    final Color accentColor;
-    final Widget content;
+    String title;
+    Color accentColor;
+    Widget content;
 
     switch (section) {
       case 'flow':
@@ -147,49 +149,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         content     = const SizedBox();
     }
 
-    // Header partagé — flèche retour + barre couleur + titre
-    final header = Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 24, 4),
-      child: Row(
-        children: [
-          // Bouton retour
-          GestureDetector(
-            onTap: _closeSection,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.grey400.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                size: 20,
-                color: AppColors.grey400,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // Barre couleur accent
-          Container(
-            width: 4,
-            height: 22,
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            title,
-            style: AppTextStyles.headingMedium(
-              color: isDark ? AppColors.textDark : AppColors.textLight,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    // Flow : fond aurora animé
+    // Cas spécial Flow : aurora en fond, on gère le layout manuellement
     if (section == 'flow') {
       return Scaffold(
         backgroundColor: Colors.transparent,
@@ -197,7 +157,12 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           child: SafeArea(
             child: Column(
               children: [
-                header,
+                _SectionAppBar(
+                  title: title,
+                  accentColor: accentColor,
+                  onBack: _closeSection,
+                  isDark: isDark,
+                ),
                 const Expanded(child: FlowTab()),
               ],
             ),
@@ -206,16 +171,88 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       );
     }
 
-    // Autres sections : fond standard
+    // Sections standard : appBar Flutter → body avec contraintes tight
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: SafeArea(
-        child: Column(
-          children: [
-            header,
-            Expanded(child: content),
-          ],
+      appBar: _SectionAppBar(
+        title: title,
+        accentColor: accentColor,
+        onBack: _closeSection,
+        isDark: isDark,
+      ),
+      body: content,
+    );
+  }
+}
+
+// ── AppBar custom des sections ────────────────────────────────
+// Implémente PreferredSizeWidget pour être utilisé comme Scaffold.appBar.
+// Le framework garantit que Scaffold.body reçoit les contraintes restantes.
+class _SectionAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final Color accentColor;
+  final VoidCallback onBack;
+  final bool isDark;
+
+  const _SectionAppBar({
+    required this.title,
+    required this.accentColor,
+    required this.onBack,
+    required this.isDark,
+  });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(56);
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: preferredSize.height,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 24, 0),
+            child: Row(
+              children: [
+                // Bouton retour
+                GestureDetector(
+                  onTap: onBack,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.grey400.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_rounded,
+                      size: 20,
+                      color: AppColors.grey400,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Barre couleur accent
+                Container(
+                  width: 4,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  title,
+                  style: AppTextStyles.headingMedium(
+                    color: isDark ? AppColors.textDark : AppColors.textLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
