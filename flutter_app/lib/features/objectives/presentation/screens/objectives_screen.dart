@@ -27,9 +27,19 @@ class ObjectivesScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: SafeArea(
+      backgroundColor: isDark ? Colors.black : AppColors.backgroundLight,
+      body: Container(
+        decoration: isDark
+            ? const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black, AppColors.backgroundDark],
+                  stops: [0.0, 1.0],
+                ),
+              )
+            : null,
+        child: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
@@ -76,7 +86,8 @@ class ObjectivesScreen extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
@@ -171,24 +182,7 @@ class _ObjectivesContent extends ConsumerWidget {
 
         const SizedBox(height: 28),
 
-        // ── 3. Mes Habitudes ──────────────────────────────────
-        _SectionLabel('Mes Habitudes', isDark: isDark),
-        const SizedBox(height: 12),
-        habitsAsync.when(
-          loading: () => const _LoadingCard(),
-          error: (e, _) => _ErrorCard(
-            onRetry: () => ref.invalidate(habitsProvider),
-          ),
-          data: (habits) => habits.isEmpty
-              ? _HabitsEmptyCard(isDark: isDark)
-              : _HabitsList(habits: habits, isDark: isDark),
-        ),
-        const SizedBox(height: 12),
-        _AddHabitButton(isDark: isDark),
-
-        const SizedBox(height: 28),
-
-        // ── 4. Mon Suivi ──────────────────────────────────────
+        // ── 3. Mon Suivi ──────────────────────────────────────
         _SectionLabel('Mon Suivi', isDark: isDark),
         const SizedBox(height: 12),
         habitsAsync.when(
@@ -204,6 +198,23 @@ class _ObjectivesContent extends ConsumerWidget {
               ? const SizedBox.shrink()
               : _HabitStreakChart(habits: habits, isDark: isDark),
         ),
+
+        const SizedBox(height: 28),
+
+        // ── 4. Mes Habitudes ──────────────────────────────────
+        _SectionLabel('Mes Habitudes', isDark: isDark),
+        const SizedBox(height: 12),
+        habitsAsync.when(
+          loading: () => const _LoadingCard(),
+          error: (e, _) => _ErrorCard(
+            onRetry: () => ref.invalidate(habitsProvider),
+          ),
+          data: (habits) => habits.isEmpty
+              ? _HabitsEmptyCard(isDark: isDark)
+              : _HabitsList(habits: habits, isDark: isDark),
+        ),
+        const SizedBox(height: 12),
+        _AddHabitButton(isDark: isDark),
 
         const SizedBox(height: 40),
       ],
