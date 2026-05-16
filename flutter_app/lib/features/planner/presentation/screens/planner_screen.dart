@@ -18,14 +18,35 @@ import 'flash_screen.dart';
 import 'eisenhower_screen.dart';
 import 'flow_screen.dart';
 
-// ── Écran principal "Ma Journée" — page scrollable ────────────
-class PlannerScreen extends ConsumerWidget {
+// ── Écran principal "Ma Journée" — état local, pas de navigation ──
+// On utilise _activeSection pour éviter tout conflit avec go_router.
+// Naviguer vers un autre onglet remet automatiquement le dashboard.
+class PlannerScreen extends ConsumerStatefulWidget {
   const PlannerScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PlannerScreen> createState() => _PlannerScreenState();
+}
+
+class _PlannerScreenState extends ConsumerState<PlannerScreen> {
+  // null = dashboard, 'flow' | 'pomodoro' | 'flash' | 'matrice' = section
+  String? _activeSection;
+
+  void _openSection(String section) =>
+      setState(() => _activeSection = section);
+
+  void _closeSection() => setState(() => _activeSection = null);
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // ── Vue section plein écran ───────────────────────────────
+    if (_activeSection != null) {
+      return _buildSectionView(isDark);
+    }
+
+    // ── Vue dashboard scrollable ──────────────────────────────
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
@@ -34,7 +55,7 @@ class PlannerScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── En-tête ──────────────────────────────────────
+              // En-tête
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
                 child: Text(
@@ -45,34 +66,28 @@ class PlannerScreen extends ConsumerWidget {
                 ),
               ),
 
-              // ── Bandeau projet focus ──────────────────────────
+              // Bandeau projet focus
               const _FocusProjectBanner(),
               const SizedBox(height: 8),
 
-              // ── Mes 3 priorités du jour ───────────────────────
+              // Mes 3 priorités du jour
               const _PrioritiesSection(),
               const SizedBox(height: 24),
 
-              // ── Outils de focus : Flow + Pomodoro ─────────────
+              // Cards Flow + Pomodoro côte à côte
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
                   children: [
                     Expanded(
                       child: _FlowCard(
-                        onTap: () => _openModal(
-                          context,
-                          const _FlowModal(),
-                        ),
+                        onTap: () => _openSection('flow'),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _PomodoroCard(
-                        onTap: () => _openModal(
-                          context,
-                          const _PomodoroModal(),
-                        ),
+                        onTap: () => _openSection('pomodoro'),
                       ),
                     ),
                   ],
@@ -80,24 +95,18 @@ class PlannerScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
 
-              // ── Flash ─────────────────────────────────────────
+              // Card Flash
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: _FlashCard(
-                  onTap: () => _openModal(
-                    context,
-                    const _FlashModal(),
-                  ),
+                  onTap: () => _openSection('flash'),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // ── Matrice Eisenhower — accès discret ───────────
+              // Matrice Eisenhower — lien discret
               _MatriceLink(
-                onTap: () => _openModal(
-                  context,
-                  const _MatriceModal(),
-                ),
+                onTap: () => _openSection('matrice'),
               ),
             ],
           ),
@@ -106,24 +115,108 @@ class PlannerScreen extends ConsumerWidget {
     );
   }
 
-  // Ouverture en modal plein écran avec slide-up
-  void _openModal(BuildContext context, Widget modal) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: true,
-        pageBuilder: (_, __, ___) => modal,
-        transitionsBuilder: (_, animation, __, child) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            )),
-            child: child,
-          );
-        },
+  // ── Construction de la vue section ───────────────────────────
+  Widget _buildSectionView(bool isDark) {
+    final section = _activeSection!;
+
+    // Paramètres propres à chaque section
+    final String title;
+    final Color accentColor;
+    final Widget content;
+
+    switch (section) {
+      case 'flow':
+        title       = 'Flow';
+        accentColor = AppColors.primary;
+        content     = const FlowTab();
+      case 'pomodoro':
+        title       = 'Pomodoro';
+        accentColor = AppColors.secondary;
+        content     = const PomodoroContent();
+      case 'flash':
+        title       = 'Flash';
+        accentColor = AppColors.warning;
+        content     = const FlashTab();
+      case 'matrice':
+        title       = 'Matrice Eisenhower';
+        accentColor = AppColors.accent;
+        content     = const EisenhowerTab();
+      default:
+        title       = '';
+        accentColor = AppColors.primary;
+        content     = const SizedBox();
+    }
+
+    // Header partagé — flèche retour + barre couleur + titre
+    final header = Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 24, 4),
+      child: Row(
+        children: [
+          // Bouton retour
+          GestureDetector(
+            onTap: _closeSection,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.grey400.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.arrow_back_rounded,
+                size: 20,
+                color: AppColors.grey400,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Barre couleur accent
+          Container(
+            width: 4,
+            height: 22,
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: AppTextStyles.headingMedium(
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Flow : fond aurora animé
+    if (section == 'flow') {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: AuroraBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                header,
+                const Expanded(child: FlowTab()),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Autres sections : fond standard
+    return Scaffold(
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      body: SafeArea(
+        child: Column(
+          children: [
+            header,
+            Expanded(child: content),
+          ],
+        ),
       ),
     );
   }
@@ -620,165 +713,6 @@ class _MatriceLink extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// ── Modals plein écran ────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
-
-// ── Modal Flow (avec aurora) ──────────────────────────────────
-class _FlowModal extends StatelessWidget {
-  const _FlowModal();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: AuroraBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Barre de fermeture
-              _ModalHeader(
-                title: 'Flow',
-                accentColor: AppColors.primary,
-              ),
-              // Contenu Flow complet (config, timer, audio, projet)
-              const Expanded(child: FlowTab()),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Modal Pomodoro ────────────────────────────────────────────
-class _PomodoroModal extends StatelessWidget {
-  const _PomodoroModal();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _ModalHeader(
-              title: 'Pomodoro',
-              accentColor: AppColors.secondary,
-            ),
-            const Expanded(child: PomodoroContent()),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Modal Flash ───────────────────────────────────────────────
-class _FlashModal extends StatelessWidget {
-  const _FlashModal();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _ModalHeader(
-              title: 'Flash',
-              accentColor: AppColors.warning,
-            ),
-            const Expanded(child: FlashTab()),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Modal Matrice ─────────────────────────────────────────────
-class _MatriceModal extends StatelessWidget {
-  const _MatriceModal();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _ModalHeader(
-              title: 'Matrice Eisenhower',
-              accentColor: AppColors.primary,
-            ),
-            const Expanded(child: EisenhowerTab()),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Header commun pour les modals ─────────────────────────────
-class _ModalHeader extends StatelessWidget {
-  final String title;
-  final Color accentColor;
-
-  const _ModalHeader({
-    required this.title,
-    required this.accentColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 16, 4),
-      child: Row(
-        children: [
-          // Indicateur coloré
-          Container(
-            width: 4,
-            height: 22,
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            title,
-            style: AppTextStyles.headingMedium(
-              color: isDark ? AppColors.textDark : AppColors.textLight,
-            ),
-          ),
-          const Spacer(),
-          // Bouton fermer
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.grey400.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.close_rounded,
-                  size: 20, color: AppColors.grey400),
-            ),
-          ),
-        ],
       ),
     );
   }
