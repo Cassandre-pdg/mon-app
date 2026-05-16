@@ -52,19 +52,23 @@ class KanbanRepository {
     String? vision,
     List<String> successCriteria = const [],
     DateTime? targetDate,
+    ProjectCategory? category,
+    String? currentBlocker,
     String? objectiveId,
   }) async {
     final data = await _supabase
         .from('kanban_projects')
         .insert({
-          'user_id':           _userId,
-          'name':              name.trim(),
-          'why':               why?.trim(),
-          'vision':            vision?.trim(),
-          'success_criteria':  successCriteria.isEmpty ? null : successCriteria,
-          'target_date':       targetDate?.toIso8601String().split('T')[0],
-          'objective_id':      objectiveId,
-          'status':            'active',
+          'user_id':          _userId,
+          'name':             name.trim(),
+          'why':              why?.trim(),
+          'vision':           vision?.trim(),
+          'success_criteria': successCriteria.isEmpty ? null : successCriteria,
+          'target_date':      targetDate?.toIso8601String().split('T')[0],
+          'category':         category?.dbValue,
+          'current_blocker':  currentBlocker?.trim(),
+          'objective_id':     objectiveId,
+          'status':           'active',
         })
         .select()
         .single();
@@ -78,6 +82,8 @@ class KanbanRepository {
     String? vision,
     List<String>? successCriteria,
     DateTime? targetDate,
+    ProjectCategory? category,
+    String? currentBlocker,
     ProjectStatus? projectStatus,
     String? objectiveId,
     bool? isFocusProject,
@@ -85,6 +91,8 @@ class KanbanRepository {
     bool clearWhy = false,
     bool clearVision = false,
     bool clearTargetDate = false,
+    bool clearCategory = false,
+    bool clearCurrentBlocker = false,
   }) async {
     final updates = <String, dynamic>{};
     if (name != null) { updates['name'] = name.trim(); }
@@ -100,6 +108,10 @@ class KanbanRepository {
     else if (targetDate != null) {
       updates['target_date'] = targetDate.toIso8601String().split('T')[0];
     }
+    if (clearCategory) { updates['category'] = null; }
+    else if (category != null) { updates['category'] = category.dbValue; }
+    if (clearCurrentBlocker) { updates['current_blocker'] = null; }
+    else if (currentBlocker != null) { updates['current_blocker'] = currentBlocker.trim(); }
     if (projectStatus != null) { updates['status'] = projectStatus.dbValue; }
     if (objectiveId != null) { updates['objective_id'] = objectiveId; }
     if (isFocusProject != null) { updates['is_focus_project'] = isFocusProject; }

@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : mai 2026 — dashboard Mon Espace mis à jour.*
+*Dernière mise à jour : mai 2026 — ProjectConfigSheet partagé + catégorie/blocage projet.*
 
 ---
 
@@ -130,8 +130,7 @@ flutter_app/lib/
 │   │       │   └── objectives_provider.dart
 │   │       └── screens/
 │   │           └── objectives_screen.dart    ← sections : Objectifs → Projets → Habitudes → Mon Suivi
-│   │                                            _ProjectConfigSheet (créer/éditer projet : nom, pourquoi,
-│   │                                            vision, date cible, critères de réussite, focus toggle)
+│   │                                            utilise ProjectConfigSheet (shared) — voir shared/widgets/
 │   │                                            fond plat #0D0B1E (sans aurora), glassmorphism cards
 │   │
 │   ├── onboarding/
@@ -142,7 +141,9 @@ flutter_app/lib/
 │   ├── planner/                              ← "Ma Journée" — onglet 3
 │   │   ├── data/
 │   │   │   ├── flow_model.dart               ← FlowState, FlowTimerState
-│   │   │   ├── kanban_model.dart             ← KanbanProject {name, why, vision, successCriteria, targetDate, objectiveId, isFocusProject}, ProjectStatus
+│   │   │   ├── kanban_model.dart             ← KanbanProject {name, why, vision, successCriteria, targetDate,
+│   │   │   │                                    category (ProjectCategory?), currentBlocker, objectiveId, isFocusProject}
+│   │   │   │                                    enums : KanbanStatus, ProjectStatus, ProjectCategory (5 valeurs)
 │   │   │   ├── kanban_repository.dart
 │   │   │   ├── planner_model.dart            ← PlannerTask
 │   │   │   └── planner_repository.dart
@@ -241,12 +242,17 @@ flutter_app/lib/
     │   ├── app_theme.dart        ← ThemeData dark/light
     │   └── theme_provider.dart   ← toggle dark/light Riverpod
     └── widgets/
-        ├── app_background.dart       ← fond global (gradient violet sombre)
-        ├── aurora_background.dart    ← aurora animée (écrans Flow/Wellness)
-        ├── focus_audio_toggle.dart   ← toggle musique focus
-        ├── glass_card.dart           ← BackdropFilter glass morphism
-        ├── kolyb_loader.dart         ← loading screen branded
-        └── shareable_card.dart       ← carte partage réseaux sociaux
+        ├── app_background.dart           ← fond global (gradient violet sombre)
+        ├── aurora_background.dart        ← aurora animée (écrans Flow/Wellness)
+        ├── focus_audio_toggle.dart       ← toggle musique focus
+        ├── glass_card.dart               ← BackdropFilter glass morphism
+        ├── kolyb_loader.dart             ← loading screen branded
+        ├── project_config_sheet.dart     ← ⭐ sheet config projet PARTAGÉE (utilisée depuis
+        │                                    objectives_screen ET kanban_screen)
+        │                                    Champs : Nom → Catégorie → Pourquoi → Vision →
+        │                                    Date cible → Critères de réussite (3 défaut + ajouter) →
+        │                                    Blocage actuel
+        └── shareable_card.dart           ← carte partage réseaux sociaux
 ```
 
 ---
@@ -304,8 +310,10 @@ relations              → liens entre utilisateurs (amis, mentors)
 notification_settings  → préférences notifications
 captures               → notes brain dump (destination, is_processed)
 kanban_projects        → projets Kanban (name, why, vision, success_criteria TEXT[],
-                         target_date, status, objective_id, is_focus_project)
+                         target_date, status, objective_id, is_focus_project,
+                         category TEXT, current_blocker TEXT)
                          Migrations : 003 (création) + enrichissement + 005 (vision/criteria)
+                                    + 006 (category + current_blocker)
 kanban_tasks           → tâches Kanban (project_id, title, status, completed_at)
 ```
 
@@ -458,14 +466,14 @@ Récompenses  → "Mes Badges"
 | Onboarding | `onboarding_screen.dart` | 4 écrans |
 | Check-in matin/soir | `checkin_screen.dart` | 3 questions + animation |
 | Dashboard | `dashboard_screen.dart` | Streak · Anneaux suivi (Focus/Habitudes/Check-ins) · Check-ins gradient · Card projet · Bien-être · Niveau |
-| Objectifs | `objectives_screen.dart` | sections Objectifs/Projets/Habitudes/Suivi, _ProjectConfigSheet, glassmorphism |
+| Objectifs | `objectives_screen.dart` | sections Objectifs/Projets/Habitudes/Suivi, ProjectConfigSheet (partagé), glassmorphism |
 | Planner — Priorités | `planner_screen.dart` | MIT badge, 3 tâches, Kanban/Revue links |
 | Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90min, overlay, config |
 | Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5, notifications |
 | Planner — Flash | `flash_screen.dart` | Micro-tâches < 5min, par catégorie |
 | Planner — Matrice | `eisenhower_screen.dart` | Eisenhower 4 quadrants |
 | Kanban | `kanban_screen.dart` | Colonnes todo/en cours/terminé, lien objectifs (objectiveId) |
-| Config projet | `objectives_screen.dart` (`_ProjectConfigSheet`) | nom, pourquoi, vision, date cible, critères de réussite (5 max), focus |
+| Config projet | `shared/widgets/project_config_sheet.dart` (`ProjectConfigSheet`) | Nom → Catégorie → Pourquoi → Vision → Date cible → Critères (3 défaut + ajouter) → Blocage actuel. Utilisé depuis objectives_screen ET kanban_screen |
 | Revue hebdo | `weekly_review_screen.dart` | Questions bilan |
 | Le Salon — Feed | `community_screen.dart` | Filtres 6 types, tri, question semaine |
 | Le Salon — PostCard | `community_screen.dart` | Badge type, tag, 4 réactions, sondage |

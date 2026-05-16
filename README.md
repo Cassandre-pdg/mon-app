@@ -40,7 +40,7 @@ RLS activé sur toutes les tables. Hébergement EU uniquement.
 | `users` | Profils utilisateurs |
 | `checkins` | Check-ins émotionnels matin + soir |
 | `planner_tasks` | Tâches du jour (3 priorités MIT) |
-| `kanban_projects` | Projets Kanban (name, why, vision, success_criteria, target_date, status, is_focus_project) |
+| `kanban_projects` | Projets Kanban (name, why, vision, success_criteria, target_date, status, is_focus_project, category, current_blocker) |
 | `kanban_tasks` | Tâches Kanban (todo / in_progress / done) |
 | `captures` | Notes brain dump (destination, is_processed) |
 | `groups` | Groupes thématiques communauté |
@@ -53,6 +53,7 @@ RLS activé sur toutes les tables. Hébergement EU uniquement.
 - `003_kanban_persistence.sql` — création kanban_projects + kanban_tasks
 - `supabase_migration_enrichissement.sql` — why, target_date, status, is_focus_project, captures
 - `005_kanban_vision_criteria.sql` — vision (TEXT) + success_criteria (TEXT[])
+- `006_kanban_category_blocker.sql` — category (TEXT) + current_blocker (TEXT)
 
 ---
 
@@ -64,9 +65,9 @@ RLS activé sur toutes les tables. Hébergement EU uniquement.
 | Onboarding | `onboarding_screen.dart` | 4 écrans |
 | Dashboard | `dashboard_screen.dart` | Streak · Anneaux suivi · Check-ins · Card projet focus · Bien-être · Niveau |
 | Check-in matin/soir | `checkin_screen.dart` | 3 questions + animation |
-| Objectifs | `objectives_screen.dart` | Sections Objectifs/Projets/Habitudes/Suivi · _ProjectConfigSheet (vision, critères) |
+| Objectifs | `objectives_screen.dart` | Sections Objectifs/Projets/Habitudes/Suivi · ProjectConfigSheet partagé |
 | Kanban | `kanban_screen.dart` | Colonnes todo/en cours/terminé · lien objectifs |
-| Config projet | `_ProjectConfigSheet` | nom, pourquoi, vision, date cible, critères de réussite (5 max), focus |
+| Config projet | `shared/widgets/project_config_sheet.dart` | Nom → Catégorie → Pourquoi → Vision → Date cible → Critères (3 défaut + ajouter) → Blocage actuel · utilisé depuis Objectifs ET Kanban |
 | Planner — Priorités | `planner_screen.dart` | 3 tâches MIT, liens Kanban/Revue |
 | Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90 min |
 | Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5, notifications |

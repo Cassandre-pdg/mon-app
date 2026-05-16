@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 
 enum KanbanStatus { todo, inProgress, done }
 
+
 extension KanbanStatusLabel on KanbanStatus {
   String get label {
     switch (this) {
@@ -32,6 +33,52 @@ extension KanbanStatusLabel on KanbanStatus {
       case 'in_progress': return KanbanStatus.inProgress;
       case 'done':        return KanbanStatus.done;
       default:            return KanbanStatus.todo;
+    }
+  }
+}
+
+// Catégorie du projet
+enum ProjectCategory { produit, marketing, admin, reseau, personnel }
+
+extension ProjectCategoryX on ProjectCategory {
+  String get dbValue {
+    switch (this) {
+      case ProjectCategory.produit:    return 'produit';
+      case ProjectCategory.marketing:  return 'marketing';
+      case ProjectCategory.admin:      return 'admin';
+      case ProjectCategory.reseau:     return 'reseau';
+      case ProjectCategory.personnel:  return 'personnel';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case ProjectCategory.produit:    return 'Produit';
+      case ProjectCategory.marketing:  return 'Marketing';
+      case ProjectCategory.admin:      return 'Admin';
+      case ProjectCategory.reseau:     return 'Réseau';
+      case ProjectCategory.personnel:  return 'Personnel';
+    }
+  }
+
+  String get emoji {
+    switch (this) {
+      case ProjectCategory.produit:    return '📦';
+      case ProjectCategory.marketing:  return '📣';
+      case ProjectCategory.admin:      return '🗂️';
+      case ProjectCategory.reseau:     return '🤝';
+      case ProjectCategory.personnel:  return '🌱';
+    }
+  }
+
+  static ProjectCategory? fromDb(String? value) {
+    switch (value) {
+      case 'produit':    return ProjectCategory.produit;
+      case 'marketing':  return ProjectCategory.marketing;
+      case 'admin':      return ProjectCategory.admin;
+      case 'reseau':     return ProjectCategory.reseau;
+      case 'personnel':  return ProjectCategory.personnel;
+      default:           return null;
     }
   }
 }
@@ -121,6 +168,8 @@ class KanbanProject {
   final List<String> successCriteria;   // Critères de réussite (jusqu'à 5)
   final DateTime? targetDate;           // Date cible
   final ProjectStatus projectStatus;
+  final ProjectCategory? category;      // Catégorie du projet
+  final String? currentBlocker;         // Ce qui bloque en ce moment (optionnel)
   final String? objectiveId;            // Objectif parent lié
   final bool isFocusProject;            // Projet mis en avant sur le dashboard
   final List<KanbanTask> tasks;
@@ -134,6 +183,8 @@ class KanbanProject {
     this.vision,
     this.successCriteria = const [],
     this.targetDate,
+    this.category,
+    this.currentBlocker,
     required this.projectStatus,
     this.objectiveId,
     required this.isFocusProject,
@@ -158,6 +209,8 @@ class KanbanProject {
         targetDate: json['target_date'] != null
             ? DateTime.parse(json['target_date'] as String)
             : null,
+        category: ProjectCategoryX.fromDb(json['category'] as String?),
+        currentBlocker: json['current_blocker'] as String?,
         projectStatus: ProjectStatusX.fromDb(json['status'] as String? ?? 'active'),
         objectiveId: json['objective_id'] as String?,
         isFocusProject: json['is_focus_project'] as bool? ?? false,
@@ -171,6 +224,8 @@ class KanbanProject {
     String? vision,
     List<String>? successCriteria,
     DateTime? targetDate,
+    ProjectCategory? category,
+    String? currentBlocker,
     ProjectStatus? projectStatus,
     String? objectiveId,
     bool? isFocusProject,
@@ -179,6 +234,8 @@ class KanbanProject {
     bool clearWhy = false,
     bool clearVision = false,
     bool clearTargetDate = false,
+    bool clearCategory = false,
+    bool clearCurrentBlocker = false,
   }) =>
       KanbanProject(
         id: id,
@@ -188,6 +245,8 @@ class KanbanProject {
         vision: clearVision ? null : (vision ?? this.vision),
         successCriteria: successCriteria ?? this.successCriteria,
         targetDate: clearTargetDate ? null : (targetDate ?? this.targetDate),
+        category: clearCategory ? null : (category ?? this.category),
+        currentBlocker: clearCurrentBlocker ? null : (currentBlocker ?? this.currentBlocker),
         projectStatus: projectStatus ?? this.projectStatus,
         objectiveId: objectiveId ?? this.objectiveId,
         isFocusProject: isFocusProject ?? this.isFocusProject,
@@ -229,6 +288,8 @@ class KanbanProject {
     String? vision,
     List<String> successCriteria = const [],
     DateTime? targetDate,
+    ProjectCategory? category,
+    String? currentBlocker,
     String? objectiveId,
   }) =>
       KanbanProject(
@@ -239,6 +300,8 @@ class KanbanProject {
         vision: vision?.trim(),
         successCriteria: successCriteria,
         targetDate: targetDate,
+        category: category,
+        currentBlocker: currentBlocker?.trim(),
         projectStatus: ProjectStatus.active,
         objectiveId: objectiveId,
         isFocusProject: false,
