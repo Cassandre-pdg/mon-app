@@ -12,7 +12,7 @@ class PlannerRepository {
   Future<List<PlannerTask>> getTodayTasks() async {
     final data = await _supabase
         .from('planner_tasks')
-        .select()
+        .select('*, kanban_projects(name)')
         .eq('user_id', _userId)
         .eq('planned_date', _today)
         .order('priority');
@@ -22,6 +22,7 @@ class PlannerRepository {
   Future<PlannerTask> createTask({
     required String title,
     required int priority,
+    String? projectId,
   }) async {
     final data = await _supabase
         .from('planner_tasks')
@@ -32,8 +33,9 @@ class PlannerRepository {
           'planned_date': _today,
           'is_completed': false,
           'pomodoro_count': 0,
+          'project_id': projectId,
         })
-        .select()
+        .select('*, kanban_projects(name)')
         .single();
     return PlannerTask.fromJson(data);
   }
@@ -56,13 +58,19 @@ class PlannerRepository {
     String id, {
     required String title,
     required int priority,
+    String? projectId,
+    bool clearProject = false,
   }) async {
     final data = await _supabase
         .from('planner_tasks')
-        .update({'title': title, 'priority': priority})
+        .update({
+          'title': title,
+          'priority': priority,
+          'project_id': clearProject ? null : projectId,
+        })
         .eq('id', id)
         .eq('user_id', _userId)
-        .select()
+        .select('*, kanban_projects(name)')
         .single();
     return PlannerTask.fromJson(data);
   }

@@ -9,6 +9,7 @@ import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/services/focus_audio_service.dart';
 import '../../data/flow_model.dart';
 import '../providers/flow_provider.dart';
+import '../providers/kanban_provider.dart';
 
 // ── Onglet Flow ────────────────────────────────────────────────
 class FlowTab extends ConsumerWidget {
@@ -354,6 +355,16 @@ class _FlowConfig extends ConsumerWidget {
 
           const SizedBox(height: AppConstants.spacing16),
 
+          // ── Sélecteur projet ─────────────────────────────────
+          Text(
+            'Projet en cours',
+            style: AppTextStyles.labelMedium(color: AppColors.grey400),
+          ),
+          const SizedBox(height: 8),
+          _FlowProjectPicker(flow: flow),
+
+          const SizedBox(height: AppConstants.spacing16),
+
           // ── Sélecteur d'ambiance sonore ──────────────────────
           Text(
             'Ambiance sonore',
@@ -383,6 +394,95 @@ class _FlowConfig extends ConsumerWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Sélecteur projet pour Flow ────────────────────────────────
+class _FlowProjectPicker extends ConsumerWidget {
+  final FlowState flow;
+  const _FlowProjectPicker({required this.flow});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeProjects = ref.watch(activeProjectsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return SizedBox(
+      height: 36,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _FlowProjectChip(
+            label: 'Libre',
+            isSelected: flow.selectedProjectId == null,
+            isDark: isDark,
+            onTap: () => ref
+                .read(flowProvider.notifier)
+                .selectProject(id: null, name: null),
+          ),
+          const SizedBox(width: 8),
+          ...activeProjects.map((p) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _FlowProjectChip(
+                  label: p.name,
+                  isSelected: flow.selectedProjectId == p.id,
+                  isDark: isDark,
+                  onTap: () => ref
+                      .read(flowProvider.notifier)
+                      .selectProject(id: p.id, name: p.name),
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+}
+
+class _FlowProjectChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _FlowProjectChip({
+    required this.label,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: AppConstants.animFast,
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.18)
+              : (isDark ? AppColors.surfaceDark : AppColors.grey100),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : AppColors.grey400.withValues(alpha: 0.2),
+            width: isSelected ? 1.5 : 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.caption(
+            color:
+                isSelected ? AppColors.primaryLight : AppColors.grey400,
+          ).copyWith(
+            fontWeight:
+                isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
       ),
     );
   }

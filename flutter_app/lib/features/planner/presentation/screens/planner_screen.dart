@@ -7,6 +7,7 @@ import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/constants/app_strings.dart';
 import '../../../../shared/widgets/pill_tab_bar.dart';
 import '../providers/planner_provider.dart';
+import '../providers/kanban_provider.dart';
 import '../../data/planner_model.dart';
 import 'pomodoro_screen.dart';
 import 'flash_screen.dart';
@@ -40,6 +41,9 @@ class PlannerScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
+
+              // ── Bandeau projet focus ──────────────────────
+              const _FocusProjectBanner(),
 
               // ── Barre d'onglets pill scrollable ──────────
               PillTabBar(
@@ -218,7 +222,7 @@ class _TaskList extends ConsumerWidget {
                 ),
                 const SizedBox(width: AppConstants.spacing12),
 
-                // Titre + priorité
+                // Titre + priorité + projet
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,9 +242,29 @@ class _TaskList extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        'Priorité ${_priorityLabels[task.priority]}',
-                        style: AppTextStyles.caption(color: color),
+                      Row(
+                        children: [
+                          Text(
+                            'Priorité ${_priorityLabels[task.priority]}',
+                            style: AppTextStyles.caption(color: color),
+                          ),
+                          if (task.projectName != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                task.projectName!,
+                                style: AppTextStyles.caption(
+                                    color: AppColors.primaryLight),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
@@ -272,9 +296,12 @@ void _showTaskSheet(
   WidgetRef ref, {
   PlannerTask? task,
 }) {
-  final isEdit = task != null;
-  final ctrl = TextEditingController(text: task?.title ?? '');
-  int priority = task?.priority ?? 1;
+  final isEdit       = task != null;
+  final ctrl         = TextEditingController(text: task?.title ?? '');
+  int priority       = task?.priority ?? 1;
+  String? projectId  = task?.projectId;
+  final activeProjects =
+      ref.read(activeProjectsProvider);
 
   showModalBottomSheet(
     context: context,
@@ -286,118 +313,217 @@ void _showTaskSheet(
       return StatefulBuilder(
         builder: (ctx, setState) => Container(
           decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceLight,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            color: isDark
+                ? AppColors.surfaceElevatedDark
+                : AppColors.surfaceLight,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: SafeArea(
             top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Handle
-                Container(
-                  margin: const EdgeInsets.only(top: 12, bottom: 4),
-                  width: 36, height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.grey400.withValues(alpha: 0.35),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 24, right: 24, top: 16,
-                    bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isEdit ? 'Modifier la priorité' : 'Nouvelle priorité',
-                        style: AppTextStyles.headingMedium(
-                          color: isDark ? AppColors.textDark : AppColors.textLight,
-                        ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                left: 24, right: 24, top: 16,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      width: 36, height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.grey400.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      const SizedBox(height: AppConstants.spacing16),
-                      TextField(
-                        controller: ctrl,
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          hintText: 'Sur quoi tu vas avancer ?',
-                        ),
-                      ),
-                      const SizedBox(height: AppConstants.spacing16),
-                      Text('Niveau de priorité',
-                          style: AppTextStyles.labelMedium(
-                              color: AppColors.grey400)),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [1, 2, 3].map((p) {
-                          const colors = {
-                            1: AppColors.error,
-                            2: AppColors.warning,
-                            3: AppColors.accent,
-                          };
-                          const labels = {1: '🔴 Haute', 2: '🟡 Moyenne', 3: '🟢 Basse'};
-                          final c = colors[p]!;
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => priority = p),
-                              child: AnimatedContainer(
-                                duration: AppConstants.animFast,
-                                margin: EdgeInsets.only(right: p < 3 ? 8 : 0),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: priority == p
-                                      ? c.withValues(alpha: 0.15)
-                                      : Colors.transparent,
-                                  border: Border.all(
-                                    color: priority == p ? c : AppColors.grey400.withValues(alpha: 0.3),
-                                  ),
-                                  borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-                                ),
-                                child: Text(
-                                  labels[p]!,
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.bodySmall(
-                                    color: priority == p ? c : AppColors.grey400,
-                                  ),
-                                ),
+                    ),
+                  ),
+                  Text(
+                    isEdit ? 'Modifier la priorité' : 'Nouvelle priorité',
+                    style: AppTextStyles.headingMedium(
+                      color: isDark
+                          ? AppColors.textDark
+                          : AppColors.textLight,
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.spacing16),
+                  TextField(
+                    controller: ctrl,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      hintText: 'Sur quoi tu vas avancer ?',
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.spacing16),
+
+                  // Niveau de priorité
+                  Text('Niveau de priorité',
+                      style: AppTextStyles.labelMedium(
+                          color: AppColors.grey400)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [1, 2, 3].map((p) {
+                      const colors = {
+                        1: AppColors.error,
+                        2: AppColors.warning,
+                        3: AppColors.accent,
+                      };
+                      const labels = {
+                        1: '🔴 Haute',
+                        2: '🟡 Moyenne',
+                        3: '🟢 Basse',
+                      };
+                      final c = colors[p]!;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => priority = p),
+                          child: AnimatedContainer(
+                            duration: AppConstants.animFast,
+                            margin:
+                                EdgeInsets.only(right: p < 3 ? 8 : 0),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12),
+                            decoration: BoxDecoration(
+                              color: priority == p
+                                  ? c.withValues(alpha: 0.15)
+                                  : Colors.transparent,
+                              border: Border.all(
+                                color: priority == p
+                                    ? c
+                                    : AppColors.grey400
+                                        .withValues(alpha: 0.3),
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                  AppConstants.radiusMedium),
+                            ),
+                            child: Text(
+                              labels[p]!,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.bodySmall(
+                                color: priority == p
+                                    ? c
+                                    : AppColors.grey400,
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: AppConstants.spacing24),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (ctrl.text.trim().isEmpty) return;
-                          if (isEdit) {
-                            ref.read(plannerProvider.notifier).editTask(
-                                  task.id,
-                                  title: ctrl.text.trim(),
-                                  priority: priority,
-                                );
-                          } else {
-                            ref.read(plannerProvider.notifier).addTask(
-                                  title: ctrl.text.trim(),
-                                  priority: priority,
-                                );
-                          }
-                          Navigator.pop(ctx);
-                        },
-                        child: Text(isEdit ? 'Enregistrer' : 'Ajouter'),
-                      ),
-                    ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                ),
-              ],
+
+                  // Projet lié (optionnel)
+                  if (activeProjects.isNotEmpty) ...[
+                    const SizedBox(height: AppConstants.spacing16),
+                    Text('Projet lié (optionnel)',
+                        style: AppTextStyles.labelMedium(
+                            color: AppColors.grey400)),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _PriorityProjectPill(
+                            label: 'Aucun',
+                            isSelected: projectId == null,
+                            onTap: () =>
+                                setState(() => projectId = null),
+                          ),
+                          const SizedBox(width: 8),
+                          ...activeProjects.map((p) => Padding(
+                                padding:
+                                    const EdgeInsets.only(right: 8),
+                                child: _PriorityProjectPill(
+                                  label: p.name,
+                                  isSelected: projectId == p.id,
+                                  onTap: () => setState(
+                                      () => projectId = p.id),
+                                ),
+                              )),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: AppConstants.spacing24),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (ctrl.text.trim().isEmpty) return;
+                      if (isEdit) {
+                        ref.read(plannerProvider.notifier).editTask(
+                              task.id,
+                              title: ctrl.text.trim(),
+                              priority: priority,
+                              projectId: projectId,
+                              clearProject: projectId == null,
+                            );
+                      } else {
+                        ref.read(plannerProvider.notifier).addTask(
+                              title: ctrl.text.trim(),
+                              priority: priority,
+                              projectId: projectId,
+                            );
+                      }
+                      Navigator.pop(ctx);
+                    },
+                    child: Text(isEdit ? 'Enregistrer' : 'Ajouter'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       );
     },
   );
+}
+
+class _PriorityProjectPill extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _PriorityProjectPill({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: AppConstants.animFast,
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.18)
+              : AppColors.primary.withValues(alpha: 0.06),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : AppColors.primary.withValues(alpha: 0.2),
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.caption(
+            color: isSelected
+                ? AppColors.primaryLight
+                : AppColors.grey400,
+          ).copyWith(
+            fontWeight:
+                isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ── Bouton ajouter une tâche ──────────────────────────────────
@@ -426,9 +552,86 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: AppConstants.spacing16),
             Text(
               AppStrings.plannerEmptyState,
-              style:
-                  AppTextStyles.bodyLarge(color: AppColors.grey400),
+              style: AppTextStyles.bodyLarge(color: AppColors.grey400),
               textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bandeau projet focus ──────────────────────────────────────
+class _FocusProjectBanner extends ConsumerWidget {
+  const _FocusProjectBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final project = ref.watch(focusProjectProvider);
+    if (project == null) return const SizedBox.shrink();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final daysLeft = project.daysLeft;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+      child: Container(
+        padding: const EdgeInsets.all(AppConstants.spacing12),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.25),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text('📌', style: TextStyle(fontSize: 14)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    project.name,
+                    style: AppTextStyles.labelMedium(
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    daysLeft != null
+                        ? '${(project.progressPercent * 100).round()}% · J-$daysLeft'
+                        : '${(project.progressPercent * 100).round()}% avancé',
+                    style: AppTextStyles.caption(
+                        color: AppColors.primaryLight),
+                  ),
+                ],
+              ),
+            ),
+            // Mini barre progression
+            SizedBox(
+              width: 48,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: project.progressPercent,
+                  minHeight: 5,
+                  backgroundColor:
+                      AppColors.primary.withValues(alpha: 0.15),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primary),
+                ),
+              ),
             ),
           ],
         ),

@@ -16,9 +16,17 @@ class PlannerNotifier extends AsyncNotifier<List<PlannerTask>> {
     return ref.watch(plannerRepositoryProvider).getTodayTasks();
   }
 
-  Future<void> addTask({required String title, required int priority}) async {
+  Future<void> addTask({
+    required String title,
+    required int priority,
+    String? projectId,
+  }) async {
     final repo = ref.read(plannerRepositoryProvider);
-    final newTask = await repo.createTask(title: title, priority: priority);
+    final newTask = await repo.createTask(
+      title: title,
+      priority: priority,
+      projectId: projectId,
+    );
     state = AsyncData([...?state.value, newTask]
       ..sort((a, b) => a.priority.compareTo(b.priority)));
   }
@@ -35,10 +43,16 @@ class PlannerNotifier extends AsyncNotifier<List<PlannerTask>> {
     String id, {
     required String title,
     required int priority,
+    String? projectId,
+    bool clearProject = false,
   }) async {
-    final updated = await ref
-        .read(plannerRepositoryProvider)
-        .updateTask(id, title: title, priority: priority);
+    final updated = await ref.read(plannerRepositoryProvider).updateTask(
+          id,
+          title: title,
+          priority: priority,
+          projectId: projectId,
+          clearProject: clearProject,
+        );
     final list = state.value!.map((t) => t.id == id ? updated : t).toList()
       ..sort((a, b) => a.priority.compareTo(b.priority));
     state = AsyncData(list);

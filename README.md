@@ -39,9 +39,10 @@ RLS activé sur toutes les tables. Hébergement EU uniquement.
 |---|---|
 | `users` | Profils utilisateurs |
 | `checkins` | Check-ins émotionnels matin + soir |
-| `planner_tasks` | Tâches du jour (3 priorités MIT) |
+| `planner_tasks` | Tâches du jour (3 priorités MIT) + `project_id` (lien projet optionnel) |
 | `kanban_projects` | Projets Kanban (name, why, vision, success_criteria, target_date, status, is_focus_project, category, current_blocker) |
 | `kanban_tasks` | Tâches Kanban (todo / in_progress / done) |
+| `flash_tasks` | Micro-tâches Flash < 5 min (category, estimated_minutes, is_done, project_id, done_at) |
 | `captures` | Notes brain dump (destination, is_processed) |
 | `groups` | Groupes thématiques communauté |
 | `posts` | Posts du forum (6 types, 4 réactions, sondages) |
@@ -54,6 +55,7 @@ RLS activé sur toutes les tables. Hébergement EU uniquement.
 - `supabase_migration_enrichissement.sql` — why, target_date, status, is_focus_project, captures
 - `005_kanban_vision_criteria.sql` — vision (TEXT) + success_criteria (TEXT[])
 - `006_kanban_category_blocker.sql` — category (TEXT) + current_blocker (TEXT)
+- `007_flash_tasks_and_planner_project.sql` — table flash_tasks (RLS) + project_id sur planner_tasks
 
 ---
 
@@ -68,10 +70,10 @@ RLS activé sur toutes les tables. Hébergement EU uniquement.
 | Objectifs | `objectives_screen.dart` | Sections Objectifs/Projets/Habitudes/Suivi · ProjectConfigSheet partagé |
 | Kanban | `kanban_screen.dart` | Colonnes todo/en cours/terminé · lien objectifs |
 | Config projet | `shared/widgets/project_config_sheet.dart` | Nom → Catégorie → Pourquoi → Vision → Date cible → Critères (3 défaut + ajouter) → Blocage actuel · utilisé depuis Objectifs ET Kanban |
-| Planner — Priorités | `planner_screen.dart` | 3 tâches MIT, liens Kanban/Revue |
-| Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90 min |
-| Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5, notifications |
-| Planner — Flash | `flash_screen.dart` | Micro-tâches < 5 min |
+| Planner — Priorités | `planner_screen.dart` | 3 tâches MIT · lien projet optionnel · bandeau projet focus |
+| Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90 min · sélecteur projet · timer background (WidgetsBindingObserver) |
+| Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5 · sélecteur projet · timer background · dialogue absence ≥ 3 min |
+| Planner — Flash | `flash_screen.dart` | File persistante Supabase · lien projet · bloc d'exécution (✓ Fait / → Passer / 🗑) · bilan fin de bloc |
 | Planner — Matrice | `eisenhower_screen.dart` | 4 quadrants urgence/importance |
 | Revue hebdo | `weekly_review_screen.dart` | Questions bilan |
 | Le Salon | `community_screen.dart` | Feed · Groupes · Défis mensuels |

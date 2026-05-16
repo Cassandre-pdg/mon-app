@@ -1,94 +1,68 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../data/flash_model.dart';
+import '../../data/flash_repository.dart';
 
-// ── Modèle d'une micro-tâche Flash (< 5 minutes) ─────────────
-class FlashTask {
-  final String id;
-  final String title;
-  final String category;
-  final int estimatedMinutes; // 1 à 5 min
-  final bool isDone;
-  final DateTime createdAt;
+export '../../data/flash_model.dart' show FlashTask, FlashCategory, flashCategories;
 
-  const FlashTask({
-    required this.id,
-    required this.title,
-    required this.category,
-    required this.estimatedMinutes,
-    this.isDone = false,
-    required this.createdAt,
-  });
+final flashRepositoryProvider = Provider<FlashRepository>((ref) {
+  return FlashRepository(Supabase.instance.client);
+});
 
-  FlashTask copyWith({bool? isDone}) => FlashTask(
-        id: id,
-        title: title,
-        category: category,
-        estimatedMinutes: estimatedMinutes,
-        isDone: isDone ?? this.isDone,
-        createdAt: createdAt,
-      );
-}
+final flashProvider =
+    AsyncNotifierProvider<FlashNotifier, List<FlashTask>>(FlashNotifier.new);
 
-// ── Catégories disponibles ────────────────────────────────────
-class FlashCategory {
-  final String key;
-  final String emoji;
-  final String label;
+class FlashNotifier extends AsyncNotifier<List<FlashTask>> {
+  @override
+  Future<List<FlashTask>> build() async {
+    return ref.watch(flashRepositoryProvider).getAll();
+  }
 
-  const FlashCategory({
-    required this.key,
-    required this.emoji,
-    required this.label,
-  });
-}
-
-const flashCategories = [
-  FlashCategory(key: 'email',    emoji: '📧', label: 'Email'),
-  FlashCategory(key: 'appel',    emoji: '📞', label: 'Appel'),
-  FlashCategory(key: 'admin',    emoji: '📋', label: 'Admin'),
-  FlashCategory(key: 'facture',  emoji: '💰', label: 'Facturation'),
-  FlashCategory(key: 'message',  emoji: '💬', label: 'Message'),
-  FlashCategory(key: 'autre',    emoji: '🔧', label: 'Divers'),
-];
-
-// ── Notifier Riverpod ─────────────────────────────────────────
-class FlashNotifier extends StateNotifier<List<FlashTask>> {
-  FlashNotifier() : super([]);
-
-  void addTask({
+  Future<void> addTask({
     required String title,
     required String category,
     required int minutes,
-  }) {
-    state = [
-      ...state,
-      FlashTask(
-        id: const Uuid().v4(),
-        title: title,
-        category: category,
-        estimatedMinutes: minutes,
-        createdAt: DateTime.now(),
-      ),
-    ];
+    String? projectId,
+  }) async {
+    final repo = ref.read(flashRepositoryProvider);
+    final task = await repo.addTask(
+      title: title,
+      category: category,
+      estimatedMinutes: minutes,
+      projectId: projectId,
+    );
+    state = AsyncData([...?state.value, task]);
   }
 
-  void toggleDone(String id) {
-    state = state
-        .map((t) => t.id == id ? t.copyWith(isDone: !t.isDone) : t)
-        .toList();
+  Future<void> toggleDone(String id) async {
+    final current = state.value?.firstWhere((t) => t.id == id);
+    if (current == null) return;
+    final repo = ref.read(flashRepositoryProvider);
+    final updated = current.isDone
+        ? await repo.markUndone(id)
+        : await repo.markDone(id);
+    state = AsyncData(
+      state.value!.map((t) => t.id == id ? updated : t).toList(),
+    );
   }
 
-  void deleteTask(String id) {
-    state = state.where((t) => t.id != id).toList();
+  Future<void> deleteTask(String id) async {
+    await ref.read(flashRepositoryProvider).deleteTask(id);
+    state = AsyncData(state.value!.where((t) => t.id != id).toList());
   }
 
-  // Supprimer toutes les tâches terminées
-  void clearDone() {
-    state = state.where((t) => !t.isDone).toList();
+  Future<void> clearDone() async {
+    await ref.read(flashRepositoryProvider).clearDone();
+    state = AsyncData(state.value!.where((t) => !t.isDone).toList());
   }
+
+  // Nombre de tâches en attente (pour badge)
+  int get pendingCount =>
+      state.value?.where((t) => !t.isDone).length ?? 0;
 }
 
-final flashProvider =
-    StateNotifierProvider<FlashNotifier, List<FlashTask>>(
-  (_) => FlashNotifier(),
-);
+// Badge count pour affichage externe
+final flashPendingCountProvider = Provider<int>((ref) {
+  final async = ref.watch(flashProvider);
+  return async.value?.where((t) => !t.isDone).length ?? 0;
+});

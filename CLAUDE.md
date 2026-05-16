@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : mai 2026 — ProjectConfigSheet partagé + catégorie/blocage projet.*
+*Dernière mise à jour : mai 2026 — Ma Journée connectée aux Objectifs/Projets : Flash Supabase + bloc mode, MIT→projet, timers background, sélecteur projet Flow/Pomodoro.*
 
 ---
 
@@ -140,27 +140,34 @@ flutter_app/lib/
 │   │
 │   ├── planner/                              ← "Ma Journée" — onglet 3
 │   │   ├── data/
-│   │   │   ├── flow_model.dart               ← FlowState, FlowTimerState
+│   │   │   ├── flash_model.dart              ← FlashTask {id, userId, title, category, estimatedMinutes,
+│   │   │   │                                    isDone, projectId, projectName, doneAt, createdAt}
+│   │   │   │                                    + FlashCategory + flashCategories
+│   │   │   ├── flash_repository.dart         ← CRUD Supabase flash_tasks (join kanban_projects)
+│   │   │   ├── flow_model.dart               ← FlowState {selectedProjectId, selectedProjectName, ...}
 │   │   │   ├── kanban_model.dart             ← KanbanProject {name, why, vision, successCriteria, targetDate,
 │   │   │   │                                    category (ProjectCategory?), currentBlocker, objectiveId, isFocusProject}
 │   │   │   │                                    enums : KanbanStatus, ProjectStatus, ProjectCategory (5 valeurs)
 │   │   │   ├── kanban_repository.dart
-│   │   │   ├── planner_model.dart            ← PlannerTask
-│   │   │   └── planner_repository.dart
+│   │   │   ├── planner_model.dart            ← PlannerTask {projectId, projectName, ...}
+│   │   │   └── planner_repository.dart       ← select avec join kanban_projects(name)
 │   │   └── presentation/
 │   │       ├── providers/
 │   │       │   ├── eisenhower_provider.dart
-│   │       │   ├── flash_provider.dart
-│   │       │   ├── flow_provider.dart
-│   │       │   ├── kanban_provider.dart
-│   │       │   └── planner_provider.dart
+│   │       │   ├── flash_provider.dart       ← AsyncNotifierProvider Supabase + flashPendingCountProvider
+│   │       │   ├── flow_provider.dart        ← WidgetsBindingObserver + selectProject()
+│   │       │   ├── kanban_provider.dart      ← focusProjectProvider + activeProjectsProvider
+│   │       │   └── planner_provider.dart     ← addTask/editTask avec projectId
 │   │       └── screens/
 │   │           ├── planner_screen.dart       ← ÉCRAN PRINCIPAL : 5 onglets intégrés
 │   │           │                               Priorités (MIT badge + liens Kanban/Revue)
 │   │           │                               Flow · Pomodoro · Flash · Matrice
-│   │           ├── flow_screen.dart          ← FlowTab + FlowScreen autonome (aurora, arc timer)
-│   │           ├── pomodoro_screen.dart      ← PomodoroContent (timer 25/5)
-│   │           ├── flash_screen.dart         ← FlashTab (micro-tâches < 5 min, par catégorie)
+│   │           ├── flow_screen.dart          ← FlowTab : aurora, arc timer 90min, sélecteur projet,
+│   │           │                               _FlowProjectPicker (activeProjectsProvider)
+│   │           ├── pomodoro_screen.dart      ← PomodoroContent (ConsumerStatefulWidget) : timer 25/5,
+│   │           │                               WidgetsBindingObserver, sélecteur projet, dialogue absence ≥ 3min
+│   │           ├── flash_screen.dart         ← FlashTab : file Supabase par catégorie, bouton "Lancer un bloc
+│   │           │                               Flash", _FlashBlocMode (tâches une par une + bilan), lien projet
 │   │           ├── eisenhower_screen.dart    ← EisenhowerTab (matrice urgence/importance)
 │   │           ├── kanban_screen.dart        ← KanbanScreen (route /planner/kanban)
 │   │           ├── priorities_screen.dart    ← PrioritiesScreen autonome (route dédiée)
@@ -302,7 +309,8 @@ Tables déjà créées avec RLS activé :
 ```sql
 users                  → profils utilisateurs
 checkins               → check-ins émotionnels (matin + soir)
-planner_tasks          → tâches du jour (3 priorités MIT)
+planner_tasks          → tâches du jour (3 priorités MIT) + project_id (lien projet, nullable)
+                         select avec join kanban_projects(name)
 sleep_logs             → suivi sommeil (V2)
 groups                 → groupes thématiques communauté
 posts                  → posts du forum (PostType, réactions x4, sondage)
@@ -315,6 +323,9 @@ kanban_projects        → projets Kanban (name, why, vision, success_criteria T
                          Migrations : 003 (création) + enrichissement + 005 (vision/criteria)
                                     + 006 (category + current_blocker)
 kanban_tasks           → tâches Kanban (project_id, title, status, completed_at)
+flash_tasks            → micro-tâches Flash (title, category, estimated_minutes, is_done,
+                         project_id nullable, done_at, created_at) — RLS activé
+                         Migration : 007 (création + RLS + project_id sur planner_tasks)
 ```
 
 **Règle RGPD absolue :** Row Level Security activé sur TOUTES les tables. Ne jamais créer une table sans activer RLS immédiatement.
@@ -467,10 +478,10 @@ Récompenses  → "Mes Badges"
 | Check-in matin/soir | `checkin_screen.dart` | 3 questions + animation |
 | Dashboard | `dashboard_screen.dart` | Streak · Anneaux suivi (Focus/Habitudes/Check-ins) · Check-ins gradient · Card projet · Bien-être · Niveau |
 | Objectifs | `objectives_screen.dart` | sections Objectifs/Projets/Habitudes/Suivi, ProjectConfigSheet (partagé), glassmorphism |
-| Planner — Priorités | `planner_screen.dart` | MIT badge, 3 tâches, Kanban/Revue links |
-| Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90min, overlay, config |
-| Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5, notifications |
-| Planner — Flash | `flash_screen.dart` | Micro-tâches < 5min, par catégorie |
+| Planner — Priorités | `planner_screen.dart` | MIT badge, 3 tâches, Kanban/Revue links · lien projet (badge violet) · bandeau projet focus (focusProjectProvider) |
+| Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90min, overlay, config · sélecteur projet (_FlowProjectPicker) · timer background (WidgetsBindingObserver, SharedPreferences startedAt) |
+| Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5, notifications · ConsumerStatefulWidget · WidgetsBindingObserver · sélecteur projet · dialogue absence ≥ 3min |
+| Planner — Flash | `flash_screen.dart` | File persistante Supabase (flash_tasks) · lien projet optionnel · bouton "Lancer un bloc Flash" · _FlashBlocMode : tâches une par une (✓ / → / 🗑) + bilan · flashPendingCountProvider |
 | Planner — Matrice | `eisenhower_screen.dart` | Eisenhower 4 quadrants |
 | Kanban | `kanban_screen.dart` | Colonnes todo/en cours/terminé, lien objectifs (objectiveId) |
 | Config projet | `shared/widgets/project_config_sheet.dart` (`ProjectConfigSheet`) | Nom → Catégorie → Pourquoi → Vision → Date cible → Critères (3 défaut + ajouter) → Blocage actuel. Utilisé depuis objectives_screen ET kanban_screen |

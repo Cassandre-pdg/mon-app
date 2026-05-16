@@ -28,6 +28,10 @@ class FlowState {
   /// Ambiance sonore sélectionnée
   final FocusAudio selectedAudio;
 
+  /// Projet en cours pour cette session (optionnel)
+  final String? selectedProjectId;
+  final String? selectedProjectName;
+
   const FlowState({
     this.sessionsPerDay = 1,
     this.completedToday = 0,
@@ -35,6 +39,8 @@ class FlowState {
     this.secondsLeft = sessionDurationSeconds,
     this.totalFocusMinutesToday = 0,
     this.selectedAudio = FocusAudio.silence,
+    this.selectedProjectId,
+    this.selectedProjectName,
   });
 
   FlowState copyWith({
@@ -44,6 +50,8 @@ class FlowState {
     int? secondsLeft,
     int? totalFocusMinutesToday,
     FocusAudio? selectedAudio,
+    String? selectedProjectId,
+    String? selectedProjectName,
   }) =>
       FlowState(
         sessionsPerDay: sessionsPerDay ?? this.sessionsPerDay,
@@ -53,6 +61,9 @@ class FlowState {
         totalFocusMinutesToday:
             totalFocusMinutesToday ?? this.totalFocusMinutesToday,
         selectedAudio: selectedAudio ?? this.selectedAudio,
+        selectedProjectId: selectedProjectId ?? this.selectedProjectId,
+        selectedProjectName:
+            selectedProjectName ?? this.selectedProjectName,
       );
 
   /// Progression de la session (0.0 → 1.0)
