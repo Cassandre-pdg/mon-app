@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : mai 2026 — Ma Journée connectée aux Objectifs/Projets : Flash Supabase + bloc mode, MIT→projet, timers background, sélecteur projet Flow/Pomodoro.*
+*Dernière mise à jour : mai 2026 — Fix planner : rendu conditionnel (plus de Stack overlay), cards Flow/Pomodoro sans overflow, Podfile Firebase fix.*
 
 ---
 
@@ -628,6 +628,18 @@ builder: (ctx) => MyConsumerStatefulSheet(...)
 // Et dans la classe : extends ConsumerStatefulWidget
 ```
 
+**PlannerScreen — rendu conditionnel (ne jamais revenir au Stack overlay) :**
+```dart
+// planner_screen.dart utilise _activeSection (String?) pour afficher soit
+// le dashboard scrollable, soit la vue de section plein écran.
+// NE PAS utiliser Stack + Positioned.fill : les contraintes loose cassent
+// les Expanded internes (AssertionError → écran rouge en debug).
+// Architecture correcte :
+if (_activeSection != null) return _buildSectionView(_activeSection!, isDark);
+return Scaffold(body: SingleChildScrollView(...));  // dashboard
+// _buildSectionView retourne un Scaffold complet avec Expanded(child: TabContent)
+```
+
 ---
 
 ## 🍎 BUILD IOS — NOTES IMPORTANTES
@@ -645,6 +657,7 @@ find /Users/cassandre/Desktop/mon-app/flutter_app -name "*.framework" -exec xatt
 ```
 
 **Le Podfile** (`ios/Podfile`) a `CODE_SIGNING_ALLOWED=NO` sur tous les targets pods — ne pas y toucher.
+Il contient aussi `GCC_TREAT_WARNINGS_AS_ERRORS=NO` et `SWIFT_TREAT_WARNINGS_AS_ERRORS=NO` pour éviter que firebase_core 3.x bloque la build sur Xcode récent.
 
 **Profile.xcconfig** (`ios/Flutter/Profile.xcconfig`) doit exister avec :
 ```
