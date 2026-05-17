@@ -71,11 +71,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
               // Bandeau projet focus
               const _FocusProjectBanner(),
-              const SizedBox(height: 8),
+              const SizedBox(height: 20),
 
               // Mes 3 priorités du jour
               const _PrioritiesSection(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
+
+              // Séparateur section "Outils focus"
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                child: _SectionLabel(label: 'Outils focus'),
+              ),
 
               // Cards Flow + Pomodoro côte à côte
               Padding(
@@ -96,7 +102,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               // Card Flash
               Padding(
@@ -105,7 +111,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                   onTap: () => _openSection('flash'),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // Matrice Eisenhower — lien discret
               _MatriceLink(
@@ -249,6 +255,38 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+// ── Label de section ──────────────────────────────────────────
+class _SectionLabel extends StatelessWidget {
+  final String label;
+  const _SectionLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 14,
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: AppTextStyles.labelMedium(
+            color: isDark
+                ? AppColors.textDarkMuted
+                : AppColors.textLight.withValues(alpha: 0.55),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // ── Section Priorités (inline dans la page) ───────────────────
 class _PrioritiesSection extends ConsumerWidget {
   const _PrioritiesSection();
@@ -263,32 +301,39 @@ class _PrioritiesSection extends ConsumerWidget {
       children: [
         // Titre section
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-          child: Row(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Mes priorités du jour',
-                style: AppTextStyles.headingSmall(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                ),
+              _SectionLabel(label: "Priorités du jour"),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Text(
+                    'Mes 3 priorités',
+                    style: AppTextStyles.headingMedium(
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  tasksAsync.whenData((tasks) {
+                    final done = tasks.where((t) => t.isCompleted).length;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '$done/${tasks.length}',
+                        style: AppTextStyles.caption(
+                            color: AppColors.primaryLight),
+                      ),
+                    );
+                  }).value ?? const SizedBox.shrink(),
+                ],
               ),
-              const SizedBox(width: 8),
-              tasksAsync.whenData((tasks) {
-                final done = tasks.where((t) => t.isCompleted).length;
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$done/${tasks.length}',
-                    style: AppTextStyles.caption(
-                        color: AppColors.primaryLight),
-                  ),
-                );
-              }).value ?? const SizedBox.shrink(),
             ],
           ),
         ),
@@ -519,11 +564,15 @@ class _PomodoroCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Pomodoro',
-                        style: AppTextStyles.headingMedium(
-                            color: Colors.white),
+                      Flexible(
+                        child: Text(
+                          'Pomodoro',
+                          style: AppTextStyles.headingMedium(
+                              color: Colors.white),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
