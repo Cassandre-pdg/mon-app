@@ -17,6 +17,9 @@ import 'community_model.dart';
 // ALTER TABLE posts ADD COLUMN IF NOT EXISTS reactions_bravo      INTEGER DEFAULT 0;
 // ALTER TABLE posts ADD COLUMN IF NOT EXISTS poll_options TEXT[];
 // ALTER TABLE posts ADD COLUMN IF NOT EXISTS poll_votes   INTEGER[];
+// -- Réponses inline (refonte Le Salon V2)
+// ALTER TABLE posts ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES posts(id) ON DELETE CASCADE;
+// CREATE INDEX IF NOT EXISTS posts_parent_id_idx ON posts(parent_id);
 //
 // CREATE TABLE IF NOT EXISTS post_reports (
 //   id          UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -58,7 +61,7 @@ class CommunityRepository {
 
   // ── Feed ──────────────────────────────────────────────────────
 
-  /// Charge les 50 derniers posts (tous les champs, ordre anti-chronologique)
+  /// Charge les 50 derniers messages racines (parent_id IS NULL)
   Future<List<CommunityPost>> getPosts() async {
     try {
       final data = await _supabase
@@ -70,6 +73,7 @@ class CommunityRepository {
 
       return (data as List)
           .map((json) => CommunityPost.fromJson(json))
+          .where((p) => p.parentId == null)
           .toList();
     } catch (e) {
       _logger.e('Erreur chargement posts : $e');
@@ -77,7 +81,62 @@ class CommunityRepository {
     }
   }
 
-  /// Crée un nouveau post avec type, tag et options de sondage optionnels
+  /// Charge les réponses d'un message (ordre chronologique)
+  Future<List<CommunityPost>> getReplies(String parentId) async {
+    try {
+      final data = await _supabase
+          .from('posts')
+          .select()
+          .eq('parent_id', parentId)
+          .eq('is_flagged', false)
+          .order('created_at', ascending: true);
+
+      return (data as List)
+          .map((json) => CommunityPost.fromJson(json))
+          .toList();
+    } catch (e) {
+      _logger.e('Erreur chargement réponses : $e');
+      rethrow;
+    }
+  }
+
+  /// Crée une réponse à un message existant
+  Future<void> createReply({
+    required String content,
+    required String authorName,
+    required String parentId,
+  }) async {
+    try {
+      await _supabase.from('posts').insert({
+        'user_id':     _userId,
+        'author_name': authorName,
+        'content':     content,
+        'post_type':   PostType.reflexion.dbValue,
+        'parent_id':   parentId,
+      });
+      // Incrémente le compteur de réponses sur le parent
+      try {
+        final row = await _supabase
+            .from('posts')
+            .select('replies_count')
+            .eq('id', parentId)
+            .single();
+        final count = (row['replies_count'] as int?) ?? 0;
+        await _supabase
+            .from('posts')
+            .update({'replies_count': count + 1})
+            .eq('id', parentId);
+      } catch (_) {
+        // Non-bloquant : le stream temps réel corrigera
+      }
+      _logger.i('Réponse créée pour : $parentId');
+    } catch (e) {
+      _logger.e('Erreur création réponse : $e');
+      rethrow;
+    }
+  }
+
+  /// Crée un nouveau message (top-level, sans parent)
   Future<CommunityPost> createPost({
     required String content,
     required String authorName,

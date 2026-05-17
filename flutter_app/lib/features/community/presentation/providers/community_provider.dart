@@ -60,9 +60,10 @@ class CommunityPostsNotifier
         .listen(
           (data) {
             if (mounted) {
+              // Filtre : seulement les messages racines (pas les réponses)
               final posts = data
                   .map((j) => CommunityPost.fromJson(j))
-                  .where((p) => !p.isFlagged)
+                  .where((p) => !p.isFlagged && p.parentId == null)
                   .toList();
               state = AsyncValue.data(posts);
             }
@@ -100,6 +101,35 @@ class CommunityPostsNotifier
       );
     } catch (e, st) {
       if (mounted) state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  /// Crée une réponse et met à jour le compteur du message parent
+  Future<void> createReply({
+    required String content,
+    required String authorName,
+    required String parentId,
+  }) async {
+    // Optimiste : incrémente replies_count sur le parent
+    final current = state.value ?? [];
+    final idx = current.indexWhere((p) => p.id == parentId);
+    if (idx != -1 && mounted) {
+      final updated = List<CommunityPost>.from(current);
+      updated[idx] = current[idx].copyWith(
+        repliesCount: current[idx].repliesCount + 1,
+      );
+      state = AsyncValue.data(updated);
+    }
+    try {
+      await _repo.createReply(
+        content: content,
+        authorName: authorName,
+        parentId: parentId,
+      );
+    } catch (_) {
+      // Rollback
+      if (mounted) state = AsyncValue.data(current);
       rethrow;
     }
   }
@@ -276,6 +306,12 @@ class PollVotedNotifier extends StateNotifier<Map<String, int>> {
   bool hasVoted(String postId) => state.containsKey(postId);
   int? voteFor(String postId) => state[postId];
 }
+
+// ── Réponses d'un message (chargé à la demande) ──────────────
+final repliesProvider =
+    FutureProvider.family<List<CommunityPost>, String>((ref, parentId) {
+  return ref.watch(communityRepositoryProvider).getReplies(parentId);
+});
 
 // ── Posts feed filtrés + triés (computed) ─────────────────────
 // Utilisé par _SalonTab pour obtenir la liste finale à afficher

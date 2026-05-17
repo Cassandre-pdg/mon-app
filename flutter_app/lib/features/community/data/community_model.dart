@@ -90,6 +90,7 @@ class CommunityPost {
   final String content;
   final PostType postType;
   final String? postTag;
+  final String? parentId; // null = message racine, non-null = réponse
   final int repliesCount;
   final bool isFlagged;
   final int reactionsUtile;
@@ -108,6 +109,7 @@ class CommunityPost {
     required this.content,
     required this.postType,
     this.postTag,
+    this.parentId,
     this.repliesCount = 0,
     this.isFlagged = false,
     this.reactionsUtile = 0,
@@ -133,6 +135,7 @@ class CommunityPost {
       content:            json['content'] as String,
       postType:           PostTypeX.fromDb(json['post_type'] as String?),
       postTag:            json['post_tag'] as String?,
+      parentId:           json['parent_id'] as String?,
       repliesCount:       (json['replies_count'] as int?) ?? 0,
       isFlagged:          (json['is_flagged'] as bool?) ?? false,
       reactionsUtile:     (json['reactions_utile'] as int?) ?? 0,
@@ -165,6 +168,7 @@ class CommunityPost {
       content:            content,
       postType:           postType,
       postTag:            postTag,
+      parentId:           parentId,
       repliesCount:       repliesCount ?? this.repliesCount,
       isFlagged:          isFlagged ?? this.isFlagged,
       reactionsUtile:     reactionsUtile ?? this.reactionsUtile,
