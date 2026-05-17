@@ -43,14 +43,15 @@ class DashboardScreen extends ConsumerWidget {
                     children: [
                       Text(
                         '$greeting 👋',
-                        style: AppTextStyles.headingLarge(
+                        style: AppTextStyles.displayLarge(
                           color: isDark ? AppColors.textDark : AppColors.textLight,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         dateStr,
-                        style: AppTextStyles.bodyMedium(color: AppColors.grey400),
+                        style: AppTextStyles.bodySmall(color: AppColors.grey400)
+                            .copyWith(letterSpacing: 0.1),
                       ),
                     ],
                   ),

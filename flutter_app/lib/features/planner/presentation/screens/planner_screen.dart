@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/theme/app_colors.dart';
@@ -60,12 +61,28 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               // En-tête
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                child: Text(
-                  AppStrings.navPlanner,
-                  style: AppTextStyles.headingLarge(
-                    color:
-                        isDark ? AppColors.textDark : AppColors.textLight,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.navPlanner,
+                      style: AppTextStyles.displayLarge(
+                        color: isDark ? AppColors.textDark : AppColors.textLight,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      () {
+                        try {
+                          return DateFormat('EEEE d MMMM', 'fr_FR').format(DateTime.now());
+                        } catch (_) {
+                          return DateFormat('EEEE d MMMM').format(DateTime.now());
+                        }
+                      }(),
+                      style: AppTextStyles.bodySmall(color: AppColors.grey400)
+                          .copyWith(letterSpacing: 0.1),
+                    ),
+                  ],
                 ),
               ),
 
