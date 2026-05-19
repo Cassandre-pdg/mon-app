@@ -99,6 +99,9 @@ class CommunityPostsNotifier
         postTag: postTag,
         pollOptions: pollOptions,
       );
+      // Force un refresh immédiat — le stream temps réel peut avoir un délai
+      // et le post n'apparaîtrait pas instantanément sans ce loadPosts()
+      await loadPosts();
     } catch (e, st) {
       if (mounted) state = AsyncValue.error(e, st);
       rethrow;

@@ -82,19 +82,19 @@ class _MessagesTabState extends ConsumerState<_MessagesTab> {
       children: [
         // Pills filtre type en premier — navigation stable
         Padding(
-          padding: const EdgeInsets.only(top: 4),
+          padding: const EdgeInsets.only(top: 8),
           child: _TypeFilterPills(
             selected: ref.watch(postTypeFilterProvider),
             onSelect: (t) => ref.read(postTypeFilterProvider.notifier).state = t,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
 
         // Question de la semaine — card visible, contenu dynamique
         _WeeklyQuestionCard(
           onTap: () => _openCompose(context, forcedType: PostType.reflexion),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
 
         // Feed
         Expanded(
@@ -941,26 +941,33 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
       ),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 4),
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.grey400.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(2),
+        // SingleChildScrollView évite le bottom overflow quand le clavier
+        // s'ouvre directement sur le step 2 (réponse question semaine)
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 4),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.grey400.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            if (!widget.canPost)
-              _buildPaywallNudge()
-            else if (_step == 1)
-              _buildStep1()
-            else
-              _buildStep2(),
-          ],
+              if (!widget.canPost)
+                _buildPaywallNudge()
+              else if (_step == 1)
+                _buildStep1()
+              else
+                _buildStep2(),
+            ],
+          ),
         ),
       ),
     );
@@ -1032,12 +1039,8 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
 
   Widget _buildStep2() {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
-      ),
+      // viewInsets.bottom est géré par le SingleChildScrollView parent
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
