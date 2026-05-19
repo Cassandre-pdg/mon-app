@@ -80,18 +80,21 @@ class _MessagesTabState extends ConsumerState<_MessagesTab> {
 
     return Column(
       children: [
-        // Question de la semaine — 1 ligne discrète
-        _WeeklyQuestionBar(
+        // Pills filtre type en premier — navigation stable
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: _TypeFilterPills(
+            selected: ref.watch(postTypeFilterProvider),
+            onSelect: (t) => ref.read(postTypeFilterProvider.notifier).state = t,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Question de la semaine — card visible, contenu dynamique
+        _WeeklyQuestionCard(
           onTap: () => _openCompose(context, forcedType: PostType.reflexion),
         ),
-        const SizedBox(height: 8),
-
-        // Pills filtre type (scroll horizontal)
-        _TypeFilterPills(
-          selected: ref.watch(postTypeFilterProvider),
-          onSelect: (t) => ref.read(postTypeFilterProvider.notifier).state = t,
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
         // Feed
         Expanded(
@@ -147,43 +150,71 @@ class _MessagesTabState extends ConsumerState<_MessagesTab> {
 }
 
 // ─────────────────────────────────────────────────────────────
-// QUESTION DE LA SEMAINE — 1 ligne discrète
+// QUESTION DE LA SEMAINE — card lisible, contenu dynamique
 // ─────────────────────────────────────────────────────────────
-class _WeeklyQuestionBar extends StatelessWidget {
+class _WeeklyQuestionCard extends StatelessWidget {
   final VoidCallback onTap;
-  const _WeeklyQuestionBar({required this.onTap});
+  const _WeeklyQuestionCard({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-        child: Row(
-          children: [
-            Container(
-              width: 5,
-              height: 5,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryLight,
-                shape: BoxShape.circle,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.primaryLight.withValues(alpha: 0.22),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icône ampoule
+              Padding(
+                padding: const EdgeInsets.only(top: 1),
+                child: Text(
+                  '💡',
+                  style: const TextStyle(fontSize: 15),
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '💡 Cette semaine : "$currentWeeklyQuestion"',
-                style: AppTextStyles.caption(color: AppColors.primaryPale),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              const SizedBox(width: 10),
+              // Question sur 2 lignes
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Question de la semaine',
+                      style: AppTextStyles.caption(color: AppColors.primaryPale)
+                          .copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      currentWeeklyQuestion,
+                      style: AppTextStyles.bodySmall(color: AppColors.textDark),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              'Répondre →',
-              style: AppTextStyles.caption(color: AppColors.primaryLight),
-            ),
-          ],
+              const SizedBox(width: 10),
+              // Bouton répondre
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  'Répondre →',
+                  style: AppTextStyles.caption(color: AppColors.primaryLight)
+                      .copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -806,14 +837,19 @@ class _ComposeBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Dégradé transparent → fond pour se fondre sans couper le contenu
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0D0B1E).withValues(alpha: 0.96),
-        border: Border(
-          top: BorderSide(
-            color: AppColors.primary.withValues(alpha: 0.1),
-          ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            AppColors.backgroundDark.withValues(alpha: 0.92),
+            AppColors.backgroundDark,
+          ],
+          stops: const [0.0, 0.4, 1.0],
         ),
       ),
       child: GestureDetector(
