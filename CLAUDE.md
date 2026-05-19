@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : mai 2026 — Fix planner : rendu conditionnel (plus de Stack overlay), cards Flow/Pomodoro sans overflow, Podfile Firebase fix.*
+*Dernière mise à jour : mai 2026 — Fix planner : rendu conditionnel (plus de Stack overlay), cards Flow/Pomodoro sans overflow, Podfile Firebase fix. Refonte Le Salon : fond AppBackground DA cohérent, onglet Défis hero card + Ma progression + Classement compétitif.*
 
 ---
 
@@ -88,9 +88,23 @@ flutter_app/lib/
 │   │       │                                    feedSortModeProvider, reactedPostsProvider,
 │   │       │                                    pollVotedProvider, reportedPostsProvider
 │   │       ├── screens/
-│   │       │   └── community_screen.dart     ← Feed (filtres type + tri) + Groupes + Défis
+│   │       │   └── community_screen.dart     ← ÉCRAN REFONTE (mai 2026) — fond AppBackground
+│   │       │                                    Onglet Messages : Feed (filtres type + tri) +
+│   │       │                                    question semaine + compose bar
 │   │       │                                    PostCard : badge type, tag, 4 réactions, sondage
 │   │       │                                    PostSheet : 2 étapes (type → rédaction + tag)
+│   │       │                                    Onglet Défis : 3 sections
+│   │       │                                    A) Hero card : emoji cercle, badge mois, J-X
+│   │       │                                       countdown, description, 3 étapes numérotées
+│   │       │                                       (rejoindre/action quotidienne/partager),
+│   │       │                                       badge exclusif amber, CTA gradient violet
+│   │       │                                    B) Ma progression (si inscrit) : compteur jours,
+│   │       │                                       cercle %, barre, label motivant dynamique
+│   │       │                                    C) Classement du mois : top 10 avec 🥇🥈🥉,
+│   │       │                                       avatars colorés, barres progression, ligne
+│   │       │                                       "Toi" surlignée violet, badge de rang en
+│   │       │                                       temps réel — mock déterministe par mois,
+│   │       │                                       à remplacer par Supabase query en V2
 │   │       └── widgets/
 │   │           └── salon_charter_modal.dart
 │   │
@@ -490,7 +504,8 @@ Récompenses  → "Mes Badges"
 | Le Salon — PostCard | `community_screen.dart` | Badge type, tag, 4 réactions, sondage |
 | Le Salon — PostSheet | `community_screen.dart` | 2 étapes : type → texte + tag + poll |
 | Le Salon — Groupes | `community_screen.dart` | 5 groupes V1, rejoindre/quitter |
-| Le Salon — Défis | `community_screen.dart` | Défi mensuel, barre progression |
+| Le Salon — Défis | `community_screen.dart` | Hero card (emoji + étapes + badge + CTA) · Ma progression (cercle % + barre + label dynamique) · Classement du mois (top 10 médailles + ligne "Toi" violette + badge rang) |
+| Le Salon — Fond | `community_screen.dart` | Utilise `AppBackground` (jamais de gradient custom) — identique à toutes les autres pages |
 | Profil | `profile_screen.dart` | Infos utilisateur |
 | Notifs settings | `notification_settings_screen.dart` | 6 types de notifs |
 | Capture brain-dump | `capture_bottom_sheet.dart` | Bouton haut-droite, badge pending |
