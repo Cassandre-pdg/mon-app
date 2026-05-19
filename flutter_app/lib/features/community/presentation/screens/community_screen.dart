@@ -5,18 +5,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
+import '../../../../shared/widgets/app_background.dart';
 import '../../../../shared/widgets/pill_tab_bar.dart';
 import '../../data/community_model.dart';
 import '../../data/challenge_model.dart';
 import '../providers/community_provider.dart';
 import '../providers/challenge_provider.dart';
-
-// ── Dégradé noir → bleu foncé propre au Salon ────────────────
-const _salonGradient = LinearGradient(
-  begin: Alignment.topCenter,
-  end: Alignment.bottomCenter,
-  colors: [Color(0xFF0D0B1E), Color(0xFF071428)],
-);
 
 // ─────────────────────────────────────────────────────────────
 // ÉCRAN PRINCIPAL
@@ -26,10 +20,9 @@ class CommunityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultTabController(
-      length: 2,
-      child: Container(
-        decoration: const BoxDecoration(gradient: _salonGradient),
+    return AppBackground(
+      child: DefaultTabController(
+        length: 2,
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: SafeArea(
@@ -1362,7 +1355,7 @@ class _FeedError extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ONGLET DÉFIS
+// ONGLET DÉFIS — REFONTE
 // ─────────────────────────────────────────────────────────────
 class _DefisTab extends ConsumerWidget {
   const _DefisTab();
@@ -1372,245 +1365,43 @@ class _DefisTab extends ConsumerWidget {
     final challengeAsync = ref.watch(challengeProvider);
 
     return challengeAsync.when(
-      loading: () =>
-          const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, __) => Center(
-        child: Text(
-          'Impossible de charger le défi',
-          style: AppTextStyles.bodyMedium(
-              color: AppColors.textDarkMuted),
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.spacing32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('😕', style: TextStyle(fontSize: 44)),
+              const SizedBox(height: 12),
+              Text(
+                'Impossible de charger le défi du mois',
+                style: AppTextStyles.bodyMedium(color: AppColors.textDarkMuted),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
       data: (challenge) {
         if (challenge == null) {
           return Center(
-            child: Text(
-              'Pas de défi ce mois-ci',
-              style: AppTextStyles.bodyMedium(
-                  color: AppColors.textDarkMuted),
-            ),
-          );
-        }
-        return ListView(
-          padding:
-              const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          children: [
-            _ChallengeCard(challenge: challenge),
-            const SizedBox(height: 24),
-            const _ChallengeVictoriesSection(),
-          ],
-        );
-      },
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// CARD DÉFI DU MOIS
-// ─────────────────────────────────────────────────────────────
-class _ChallengeCard extends ConsumerWidget {
-  final KolybChallenge challenge;
-  const _ChallengeCard({required this.challenge});
-
-  static const _months = [
-    '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
-  ];
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final progress = challenge.progressRatio;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary.withValues(alpha: 0.22),
-            AppColors.chartAmber.withValues(alpha: 0.08),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(challenge.emoji,
-                  style: const TextStyle(fontSize: 32)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Défi ${_months[DateTime.now().month]}',
-                      style: AppTextStyles.caption(
-                          color: AppColors.primaryPale),
-                    ),
-                    Text(
-                      challenge.title,
-                      style: AppTextStyles.headingMedium(
-                          color: AppColors.textDark),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            challenge.description,
-            style: AppTextStyles.bodySmall(
-              color: AppColors.textDark.withValues(alpha: 0.85),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Barre de progression
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${challenge.userProgressDays}/${challenge.targetDays} jours',
-                style: AppTextStyles.caption(
-                    color: AppColors.primaryPale),
-              ),
-              Text(
-                'J-${challenge.daysRemaining}',
-                style: AppTextStyles.caption(
-                    color: AppColors.textDarkMuted),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor:
-                  AppColors.surfaceDark,
-              valueColor: AlwaysStoppedAnimation(
-                challenge.isCompleted
-                    ? AppColors.chartAmber
-                    : AppColors.primary,
-              ),
-              minHeight: 6,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Footer : participants + bouton
-          Row(
-            children: [
-              const Icon(
-                Icons.people_outline_rounded,
-                size: 14,
-                color: AppColors.textDarkMuted,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '${challenge.participantsCount} participants',
-                style: AppTextStyles.caption(
-                    color: AppColors.textDarkMuted),
-              ),
-              const Spacer(),
-              if (!challenge.isJoined)
-                GestureDetector(
-                  onTap: () =>
-                      ref.read(challengeProvider.notifier).joinChallenge(),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Je relève 💪',
-                      style: AppTextStyles.bodySmall(color: Colors.white)
-                          .copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color:
-                        AppColors.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color:
-                          AppColors.primary.withValues(alpha: 0.4),
-                    ),
-                  ),
-                  child: Text(
-                    'En cours ✓',
-                    style:
-                        AppTextStyles.bodySmall(color: AppColors.primary)
-                            .copyWith(fontWeight: FontWeight.w600),
-                  ),
-                ),
-            ],
-          ),
-          if (challenge.isJoined) ...[
-            const SizedBox(height: 10),
-            Text(
-              challenge.rewardLabel,
-              style: AppTextStyles.caption(
-                  color: AppColors.chartAmber),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// VICTOIRES DU MOIS (filtrées depuis le feed)
-// ─────────────────────────────────────────────────────────────
-class _ChallengeVictoriesSection extends ConsumerWidget {
-  const _ChallengeVictoriesSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final postsAsync = ref.watch(communityPostsProvider);
-
-    return postsAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
-      data: (posts) {
-        final victories = posts
-            .where(
-              (p) =>
-                  p.postType == PostType.victoire &&
-                  p.parentId == null,
-            )
-            .take(10)
-            .toList();
-
-        if (victories.isEmpty) {
-          return Center(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 32),
+              padding: const EdgeInsets.all(AppConstants.spacing32),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('🏅',
-                      style: TextStyle(fontSize: 40)),
-                  const SizedBox(height: 12),
+                  const Text('🏆', style: TextStyle(fontSize: 52)),
+                  const SizedBox(height: 16),
                   Text(
-                    'Sois le premier à partager ta victoire du mois !',
+                    'Pas de défi ce mois-ci',
+                    style: AppTextStyles.headingSmall(
+                        color: AppColors.textDarkMuted),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Reviens bientôt, le prochain arrive !',
                     style: AppTextStyles.bodyMedium(
                         color: AppColors.textDarkMuted),
                     textAlign: TextAlign.center,
@@ -1621,16 +1412,21 @@ class _ChallengeVictoriesSection extends ConsumerWidget {
           );
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           children: [
-            Text(
-              'Les victoires du mois 🏆',
-              style: AppTextStyles.headingSmall(
-                  color: AppColors.textDark),
-            ),
-            const SizedBox(height: 12),
-            ...victories.map((p) => _VictoryItem(post: p)),
+            // Section A : Hero card du défi
+            _ChallengeHeroCard(challenge: challenge),
+
+            // Section B : Ma progression (seulement si inscrit)
+            if (challenge.isJoined) ...[
+              const SizedBox(height: 16),
+              _UserProgressCard(challenge: challenge),
+            ],
+
+            // Section C : Classement compétitif
+            const SizedBox(height: 24),
+            _LeaderboardSection(challenge: challenge),
           ],
         );
       },
@@ -1639,46 +1435,872 @@ class _ChallengeVictoriesSection extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// ITEM VICTOIRE (compact)
+// SECTION A — HERO CARD DU DÉFI
 // ─────────────────────────────────────────────────────────────
-class _VictoryItem extends StatelessWidget {
-  final CommunityPost post;
-  const _VictoryItem({required this.post});
+class _ChallengeHeroCard extends ConsumerWidget {
+  final KolybChallenge challenge;
+  const _ChallengeHeroCard({required this.challenge});
+
+  static const _monthNames = [
+    '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+  ];
+
+  /// Action quotidienne selon le type de défi mensuel
+  static String _dailyAction(int month) {
+    switch (month) {
+      case 2:
+      case 6:
+      case 7:
+      case 11:
+        return 'Complète ton check-in matin ET soir chaque jour';
+      case 3:
+        return 'Lance une session Focus chaque jour';
+      default:
+        return 'Fais ton check-in matin chaque jour';
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
+    final monthName = _monthNames[now.month];
+    final daysLeft = challenge.daysRemaining;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary.withValues(alpha: 0.28),
+            AppColors.surfaceDark,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.chartAmber.withValues(alpha: 0.22),
+          color: AppColors.primary.withValues(alpha: 0.35),
         ),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('🏆', style: TextStyle(fontSize: 18)),
-          const SizedBox(width: 10),
-          Expanded(
+          // ── Header : emoji + mois + J-X ──────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Emoji dans un cercle premium
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      challenge.emoji,
+                      style: const TextStyle(fontSize: 30),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Badge "Défi de mai"
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color:
+                                AppColors.primaryLight.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Text(
+                          'Défi de $monthName',
+                          style: AppTextStyles.caption(
+                            color: AppColors.primaryPale,
+                          ).copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        challenge.title,
+                        style: AppTextStyles.headingMedium(
+                            color: AppColors.textDark),
+                      ),
+                    ],
+                  ),
+                ),
+                // Countdown J-X (rouge si ≤ 7 jours)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: daysLeft <= 7
+                        ? AppColors.secondary.withValues(alpha: 0.15)
+                        : AppColors.surfaceElevatedDark,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: daysLeft <= 7
+                          ? AppColors.secondary.withValues(alpha: 0.4)
+                          : AppColors.glassBorderWhite,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'J-$daysLeft',
+                        style: AppTextStyles.bodySmall(
+                          color: daysLeft <= 7
+                              ? AppColors.secondary
+                              : AppColors.textDark,
+                        ).copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        'restants',
+                        style: AppTextStyles.caption(
+                            color: AppColors.textDarkMuted),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Description ────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: Text(
+              challenge.description,
+              style: AppTextStyles.bodySmall(
+                color: AppColors.textDark.withValues(alpha: 0.85),
+              ),
+            ),
+          ),
+
+          // ── Séparateur ─────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Divider(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              height: 1,
+            ),
+          ),
+
+          // ── Comment participer — 3 étapes ──────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  post.authorName,
-                  style:
-                      AppTextStyles.caption(color: AppColors.chartAmber)
-                          .copyWith(fontWeight: FontWeight.w600),
+                  'Comment participer',
+                  style: AppTextStyles.labelMedium(color: AppColors.primaryPale)
+                      .copyWith(fontWeight: FontWeight.w700),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 12),
+                _StepRow(
+                  number: 1,
+                  icon: Icons.add_circle_outline_rounded,
+                  text: 'Rejoins le défi en appuyant sur le bouton ci-dessous',
+                  color: AppColors.primaryLight,
+                ),
+                const SizedBox(height: 10),
+                _StepRow(
+                  number: 2,
+                  icon: Icons.check_circle_outline_rounded,
+                  text: _dailyAction(now.month),
+                  color: AppColors.accent,
+                ),
+                const SizedBox(height: 10),
+                _StepRow(
+                  number: 3,
+                  icon: Icons.emoji_events_outlined,
+                  text: 'Partage ta victoire dans Le Salon 🏆',
+                  color: AppColors.chartAmber,
+                ),
+              ],
+            ),
+          ),
+
+          // ── Séparateur ─────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Divider(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              height: 1,
+            ),
+          ),
+
+          // ── Badge exclusif à débloquer ──────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.chartAmber.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.chartAmber.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text('🏅', style: TextStyle(fontSize: 22)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Badge exclusif à débloquer',
+                        style: AppTextStyles.caption(color: AppColors.chartAmber)
+                            .copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        challenge.rewardLabel,
+                        style:
+                            AppTextStyles.bodySmall(color: AppColors.textDark),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // ── CTA principal ───────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            child: challenge.isJoined
+                ? const _JoinedBadge()
+                : _JoinButton(
+                    onTap: () =>
+                        ref.read(challengeProvider.notifier).joinChallenge(),
+                  ),
+          ),
+
+          // ── Nombre de participants ──────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.people_outline_rounded,
+                  size: 14,
+                  color: AppColors.textDarkMuted,
+                ),
+                const SizedBox(width: 6),
                 Text(
-                  post.content,
-                  style: AppTextStyles.bodySmall(
-                      color: AppColors.textDark),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                  '${challenge.participantsCount} entrepreneurs relèvent ce défi',
+                  style: AppTextStyles.caption(color: AppColors.textDarkMuted),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Étape numérotée ──────────────────────────────────────────
+class _StepRow extends StatelessWidget {
+  final int number;
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  const _StepRow({
+    required this.number,
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Cercle numéroté
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+            border: Border.all(color: color.withValues(alpha: 0.4)),
+          ),
+          child: Center(
+            child: Text(
+              '$number',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Icon(icon, size: 16, color: color.withValues(alpha: 0.8)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTextStyles.bodySmall(color: AppColors.textDark),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Bouton "Je relève le défi" ───────────────────────────────
+class _JoinButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _JoinButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.primary, AppColors.primaryLight],
+          ),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.4),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('💪', style: TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Text(
+              'Je relève le défi !',
+              style: AppTextStyles.bodyMedium(color: Colors.white)
+                  .copyWith(fontWeight: FontWeight.w700, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Badge "Inscrit au défi" ──────────────────────────────────
+class _JoinedBadge extends StatelessWidget {
+  const _JoinedBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            size: 18,
+            color: AppColors.primaryLight,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Tu participes à ce défi',
+            style: AppTextStyles.bodySmall(color: AppColors.primaryPale)
+                .copyWith(fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// SECTION B — MA PROGRESSION
+// ─────────────────────────────────────────────────────────────
+class _UserProgressCard extends StatelessWidget {
+  final KolybChallenge challenge;
+  const _UserProgressCard({required this.challenge});
+
+  String _statusLabel() {
+    final ratio = challenge.progressRatio;
+    if (challenge.isCompleted) return 'Défi accompli 🏆';
+    if (ratio >= 0.75) return 'Presque au sommet, tiens bon !';
+    if (ratio >= 0.5) return 'Plus que la moitié, continue !';
+    if (ratio >= 0.25) return 'Bien lancé, garde le rythme !';
+    if (ratio > 0) return 'Tu as commencé, ne t\'arrête plus !';
+    return 'Lance-toi, le premier jour compte !';
+  }
+
+  Color _statusColor() {
+    final ratio = challenge.progressRatio;
+    if (challenge.isCompleted) return AppColors.chartAmber;
+    if (ratio >= 0.75) return AppColors.accent;
+    if (ratio >= 0.5) return AppColors.primaryLight;
+    return AppColors.primaryPale;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = challenge.progressRatio;
+    final done = challenge.userProgressDays;
+    final total = challenge.targetDays;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('📊', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Text(
+                'Ma progression',
+                style: AppTextStyles.headingSmall(color: AppColors.textDark),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // ── Compteur + cercle ─────────────────────────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '$done',
+                            style: AppTextStyles.headingLarge(
+                              color: AppColors.primaryLight,
+                            ).copyWith(fontSize: 38),
+                          ),
+                          TextSpan(
+                            text: ' / $total jours',
+                            style: AppTextStyles.bodyMedium(
+                              color: AppColors.textDarkMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _statusLabel(),
+                      style: AppTextStyles.caption(color: _statusColor())
+                          .copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              // Cercle de pourcentage
+              SizedBox(
+                width: 64,
+                height: 64,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      value: progress,
+                      backgroundColor: AppColors.surfaceElevatedDark,
+                      valueColor: AlwaysStoppedAnimation(
+                        challenge.isCompleted
+                            ? AppColors.chartAmber
+                            : AppColors.primaryLight,
+                      ),
+                      strokeWidth: 6,
+                    ),
+                    Text(
+                      '${(progress * 100).round()}%',
+                      style: AppTextStyles.caption(color: AppColors.textDark)
+                          .copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // ── Barre de progression ──────────────────────────
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: AppColors.surfaceElevatedDark,
+              valueColor: AlwaysStoppedAnimation(
+                challenge.isCompleted ? AppColors.chartAmber : AppColors.primary,
+              ),
+              minHeight: 8,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// SECTION C — CLASSEMENT DU MOIS
+// ─────────────────────────────────────────────────────────────
+
+/// Entrée du classement
+class _LeaderEntry {
+  final String name;
+  final int days;
+  final bool isCurrentUser;
+
+  const _LeaderEntry({
+    required this.name,
+    required this.days,
+    required this.isCurrentUser,
+  });
+}
+
+/// Génère un classement mockée déterministe par mois — à remplacer par Supabase en V2
+List<_LeaderEntry> _buildMockLeaderboard(KolybChallenge challenge) {
+  final now = DateTime.now();
+  // Seed stable par mois+année pour une liste cohérente pendant toute la session
+  final monthSeed = now.month * 13 + now.year;
+
+  const frenchNames = [
+    'Marie B.', 'Thomas L.', 'Sophie M.', 'Lucas D.', 'Emma R.',
+    'Nathan V.', 'Léa F.', 'Antoine G.', 'Camille H.', 'Hugo P.',
+    'Manon S.', 'Romain C.', 'Clara B.', 'Julien M.', 'Alice T.',
+    'Pierre N.', 'Inès K.', 'Maxime R.', 'Laura D.', 'Théo V.',
+  ];
+
+  final daysSinceStart = now
+      .difference(challenge.startDate)
+      .inDays
+      .clamp(1, challenge.targetDays);
+
+  // Max 19 fictifs + l'utilisateur = 20 max dans le classement
+  final count = challenge.participantsCount.clamp(4, 19);
+  final entries = <_LeaderEntry>[];
+
+  for (int i = 0; i < count; i++) {
+    // Progression décroissante avec légère variation pour éviter les ex-aequo
+    final baseProgress = (daysSinceStart - (i * 0.7)).round();
+    final variation = (monthSeed + i * 7) % 4 - 1; // de -1 à +2
+    final days = (baseProgress + variation).clamp(0, daysSinceStart);
+    entries.add(_LeaderEntry(
+      name: frenchNames[i % frenchNames.length],
+      days: days,
+      isCurrentUser: false,
+    ));
+  }
+
+  // Insère l'utilisateur courant avec sa progression réelle
+  entries.add(_LeaderEntry(
+    name: 'Toi',
+    days: challenge.userProgressDays,
+    isCurrentUser: true,
+  ));
+
+  // Tri décroissant par jours complétés
+  entries.sort((a, b) => b.days.compareTo(a.days));
+  return entries;
+}
+
+class _LeaderboardSection extends StatelessWidget {
+  final KolybChallenge challenge;
+  const _LeaderboardSection({required this.challenge});
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = _buildMockLeaderboard(challenge);
+    final userRank = entries.indexWhere((e) => e.isCurrentUser) + 1;
+    final top10 = entries.take(10).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Titre + badge de rang utilisateur ──────────────
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Classement du mois',
+              style: AppTextStyles.headingSmall(color: AppColors.textDark),
+            ),
+            if (userRank > 0)
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Text(
+                  userRank == 1
+                      ? '🥇 Tu mènes !'
+                      : userRank == 2
+                          ? '🥈 Top 3 !'
+                          : userRank == 3
+                              ? '🥉 Top 3 !'
+                              : 'Tu es ${userRank}e',
+                  style: AppTextStyles.caption(color: AppColors.primaryPale)
+                      .copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Prouve ce dont tu es capable 🔥',
+          style: AppTextStyles.caption(color: AppColors.textDarkMuted),
+        ),
+        const SizedBox(height: 16),
+
+        // ── Top 10 ─────────────────────────────────────────
+        ...top10.asMap().entries.map((e) => _LeaderRow(
+              rank: e.key + 1,
+              entry: e.value,
+              totalDays: challenge.targetDays,
+            )),
+
+        // ── Séparateur + ta position si > top 10 ───────────
+        if (userRank > 10) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Divider(color: AppColors.surfaceElevatedDark),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    '···',
+                    style: AppTextStyles.caption(
+                        color: AppColors.textDarkMuted),
+                  ),
+                ),
+                const Expanded(
+                  child: Divider(color: AppColors.surfaceElevatedDark),
+                ),
+              ],
+            ),
+          ),
+          _LeaderRow(
+            rank: userRank,
+            entry: entries[userRank - 1],
+            totalDays: challenge.targetDays,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// ── Ligne du classement ──────────────────────────────────────
+class _LeaderRow extends StatelessWidget {
+  final int rank;
+  final _LeaderEntry entry;
+  final int totalDays;
+
+  const _LeaderRow({
+    required this.rank,
+    required this.entry,
+    required this.totalDays,
+  });
+
+  String _medal() {
+    switch (rank) {
+      case 1:
+        return '🥇';
+      case 2:
+        return '🥈';
+      case 3:
+        return '🥉';
+      default:
+        return '';
+    }
+  }
+
+  Color _avatarColor() {
+    if (entry.isCurrentUser) return AppColors.primary;
+    switch (rank % 5) {
+      case 1:
+        return AppColors.accent;
+      case 2:
+        return AppColors.secondary;
+      case 3:
+        return AppColors.chartAmber;
+      case 4:
+        return AppColors.primaryLight;
+      default:
+        return AppColors.grey600;
+    }
+  }
+
+  String get _initials {
+    final parts = entry.name.trim().split(' ');
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return '${parts[0][0]}${parts.last[0]}'.toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isTop3 = rank <= 3;
+    final progressRatio =
+        totalDays > 0 ? (entry.days / totalDays).clamp(0.0, 1.0) : 0.0;
+    final avatarColor = _avatarColor();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: entry.isCurrentUser
+            ? AppColors.primary.withValues(alpha: 0.12)
+            : AppColors.surfaceDark,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: entry.isCurrentUser
+              ? AppColors.primary.withValues(alpha: 0.35)
+              : isTop3
+                  ? AppColors.chartAmber.withValues(alpha: 0.2)
+                  : AppColors.surfaceElevatedDark,
+        ),
+      ),
+      child: Row(
+        children: [
+          // Rang ou médaille
+          SizedBox(
+            width: 28,
+            child: _medal().isNotEmpty
+                ? Text(_medal(), style: const TextStyle(fontSize: 20))
+                : Text(
+                    '$rank',
+                    style: AppTextStyles.bodySmall(
+                            color: AppColors.textDarkMuted)
+                        .copyWith(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                  ),
+          ),
+          const SizedBox(width: 8),
+
+          // Avatar initiales coloré
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: avatarColor.withValues(alpha: 0.2),
+              border: Border.all(color: avatarColor.withValues(alpha: 0.5)),
+            ),
+            child: Center(
+              child: Text(
+                entry.isCurrentUser ? '✦' : _initials,
+                style: TextStyle(
+                  fontSize: entry.isCurrentUser ? 14 : 12,
+                  fontWeight: FontWeight.w700,
+                  color: avatarColor,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          // Nom + barre de progression
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        entry.isCurrentUser ? 'Toi 👤' : entry.name,
+                        style: AppTextStyles.bodySmall(
+                          color: entry.isCurrentUser
+                              ? AppColors.primaryPale
+                              : AppColors.textDark,
+                        ).copyWith(fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${entry.days}j',
+                      style: AppTextStyles.caption(
+                        color: entry.isCurrentUser
+                            ? AppColors.primaryPale
+                            : AppColors.textDarkMuted,
+                      ).copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progressRatio,
+                    backgroundColor: AppColors.surfaceElevatedDark,
+                    valueColor: AlwaysStoppedAnimation(
+                      entry.isCurrentUser
+                          ? AppColors.primaryLight
+                          : isTop3
+                              ? AppColors.chartAmber
+                              : AppColors.grey400,
+                    ),
+                    minHeight: 4,
+                  ),
                 ),
               ],
             ),
