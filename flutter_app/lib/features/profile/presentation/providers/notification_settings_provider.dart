@@ -46,19 +46,17 @@ class NotificationSettingsNotifier
 
   /// Met à jour les préférences localement, planifie les notifications,
   /// puis persiste dans Supabase.
+  /// Si Supabase échoue, l'état local est conservé (pas de crash UI).
   Future<void> update(NotificationSettings settings) async {
-    // Mise à jour optimiste de l'UI
+    // Mise à jour optimiste — l'UI reflète le changement immédiatement
     state = AsyncValue.data(settings);
 
     try {
-      // Appliquer les planifications locales
       await _applySchedules(settings);
-      // Persister dans Supabase
       await _repo.upsertSettings(settings);
-      // Invalide le FutureProvider pour qu'il soit cohérent
       _ref.invalidate(notificationSettingsProvider);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
+    } catch (_) {
+      // Supabase indisponible : on garde l'état local, pas de crash
     }
   }
 
@@ -69,7 +67,6 @@ class NotificationSettingsNotifier
     bool? streakAlert,
     bool? flowSession,
     bool? community,
-    bool? sleepReminder,
   }) async {
     final current = state.valueOrNull;
     if (current == null) return;
@@ -80,15 +77,13 @@ class NotificationSettingsNotifier
       streakAlertEnabled: streakAlert,
       flowSessionEnabled: flowSession,
       communityEnabled: community,
-      sleepReminderEnabled: sleepReminder,
     ));
   }
 
-  /// Met à jour l'heure d'une notification
+  /// Met à jour l'heure d'un rappel check-in
   Future<void> updateTime({
     String? morningTime,
     String? eveningTime,
-    String? sleepTime,
   }) async {
     final current = state.valueOrNull;
     if (current == null) return;
@@ -96,7 +91,6 @@ class NotificationSettingsNotifier
     await update(current.copyWith(
       morningTime: morningTime,
       eveningTime: eveningTime,
-      sleepTime: sleepTime,
     ));
   }
 

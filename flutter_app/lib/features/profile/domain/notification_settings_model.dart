@@ -8,12 +8,10 @@ class NotificationSettings {
   final bool streakAlertEnabled;
   final bool flowSessionEnabled;
   final bool communityEnabled;
-  final bool sleepReminderEnabled;
 
   /// Format HH:MM — ex. "07:30"
   final String morningTime;
   final String eveningTime;
-  final String sleepTime;
 
   /// Token FCM de l'appareil (null sur simulateur iOS)
   final String? fcmToken;
@@ -24,10 +22,8 @@ class NotificationSettings {
     this.streakAlertEnabled = true,
     this.flowSessionEnabled = true,
     this.communityEnabled = true,
-    this.sleepReminderEnabled = false,
     this.morningTime = '07:30',
     this.eveningTime = '18:30',
-    this.sleepTime = '22:00',
     this.fcmToken,
   });
 
@@ -46,11 +42,8 @@ class NotificationSettings {
             json['flow_session_enabled'] as bool? ?? true,
         communityEnabled:
             json['community_enabled'] as bool? ?? true,
-        sleepReminderEnabled:
-            json['sleep_reminder_enabled'] as bool? ?? false,
         morningTime: json['morning_time'] as String? ?? '07:30',
         eveningTime: json['evening_time'] as String? ?? '18:30',
-        sleepTime:   json['sleep_time']   as String? ?? '22:00',
         fcmToken:    json['fcm_token']    as String?,
       );
 
@@ -60,10 +53,8 @@ class NotificationSettings {
         'streak_alert_enabled':    streakAlertEnabled,
         'flow_session_enabled':    flowSessionEnabled,
         'community_enabled':       communityEnabled,
-        'sleep_reminder_enabled':  sleepReminderEnabled,
         'morning_time': morningTime,
         'evening_time': eveningTime,
-        'sleep_time':   sleepTime,
         if (fcmToken != null) 'fcm_token': fcmToken,
       };
 
@@ -73,10 +64,8 @@ class NotificationSettings {
     bool? streakAlertEnabled,
     bool? flowSessionEnabled,
     bool? communityEnabled,
-    bool? sleepReminderEnabled,
     String? morningTime,
     String? eveningTime,
-    String? sleepTime,
     String? fcmToken,
   }) =>
       NotificationSettings(
@@ -84,13 +73,11 @@ class NotificationSettings {
             morningCheckinEnabled ?? this.morningCheckinEnabled,
         eveningCheckinEnabled:
             eveningCheckinEnabled ?? this.eveningCheckinEnabled,
-        streakAlertEnabled:  streakAlertEnabled ?? this.streakAlertEnabled,
-        flowSessionEnabled:  flowSessionEnabled  ?? this.flowSessionEnabled,
-        communityEnabled:    communityEnabled    ?? this.communityEnabled,
-        sleepReminderEnabled: sleepReminderEnabled ?? this.sleepReminderEnabled,
+        streakAlertEnabled: streakAlertEnabled ?? this.streakAlertEnabled,
+        flowSessionEnabled: flowSessionEnabled  ?? this.flowSessionEnabled,
+        communityEnabled:   communityEnabled    ?? this.communityEnabled,
         morningTime: morningTime ?? this.morningTime,
         eveningTime: eveningTime ?? this.eveningTime,
-        sleepTime:   sleepTime   ?? this.sleepTime,
         fcmToken:    fcmToken    ?? this.fcmToken,
       );
 }

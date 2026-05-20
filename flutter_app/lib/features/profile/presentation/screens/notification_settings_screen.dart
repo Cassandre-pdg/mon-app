@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/theme/app_colors.dart';
@@ -101,7 +101,7 @@ class _NotificationSettingsList extends ConsumerWidget {
             ),
             if (settings.morningCheckinEnabled) ...[
               _Separator(isDark: isDark),
-              _TimeTile(
+              _WheelTimeTile(
                 label: 'Heure du matin',
                 time: settings.morningTime,
                 isDark: isDark,
@@ -120,40 +120,11 @@ class _NotificationSettingsList extends ConsumerWidget {
             ),
             if (settings.eveningCheckinEnabled) ...[
               _Separator(isDark: isDark),
-              _TimeTile(
+              _WheelTimeTile(
                 label: 'Heure du soir',
                 time: settings.eveningTime,
                 isDark: isDark,
                 onChanged: (t) => notifier.updateTime(eveningTime: t),
-              ),
-            ],
-          ],
-        ),
-
-        const SizedBox(height: AppConstants.spacing24),
-
-        // ── Sommeil ───────────────────────────────────────────
-        _SectionHeader(title: 'SOMMEIL', isDark: isDark),
-        const SizedBox(height: AppConstants.spacing12),
-        _NotificationCard(
-          isDark: isDark,
-          children: [
-            _ToggleTile(
-              icon: Icons.bedtime_rounded,
-              iconColor: AppColors.accent,
-              title: 'Rappel sommeil',
-              subtitle: 'Pense à renseigner ton sommeil',
-              value: settings.sleepReminderEnabled,
-              isDark: isDark,
-              onChanged: (v) => notifier.toggle(sleepReminder: v),
-            ),
-            if (settings.sleepReminderEnabled) ...[
-              _Separator(isDark: isDark),
-              _TimeTile(
-                label: 'Heure du coucher',
-                time: settings.sleepTime,
-                isDark: isDark,
-                onChanged: (t) => notifier.updateTime(sleepTime: t),
               ),
             ],
           ],
@@ -200,7 +171,7 @@ class _NotificationSettingsList extends ConsumerWidget {
             _ToggleTile(
               icon: Icons.people_rounded,
               iconColor: AppColors.accent,
-              title: 'Ma Tribu',
+              title: 'Le Salon',
               subtitle: 'Réponses et activité dans tes groupes',
               value: settings.communityEnabled,
               isDark: isDark,
@@ -313,7 +284,6 @@ class _ToggleTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Icône colorée
           Container(
             width: 36,
             height: 36,
@@ -324,8 +294,6 @@ class _ToggleTile extends StatelessWidget {
             child: Icon(icon, color: iconColor, size: 18),
           ),
           const SizedBox(width: AppConstants.spacing12),
-
-          // Titre + sous-titre
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,8 +312,6 @@ class _ToggleTile extends StatelessWidget {
               ],
             ),
           ),
-
-          // Toggle
           CupertinoSwitch(
             value: value,
             onChanged: onChanged,
@@ -357,47 +323,50 @@ class _ToggleTile extends StatelessWidget {
   }
 }
 
-class _TimeTile extends StatelessWidget {
+// ── Sélecteur d'heure — row cliquable ─────────────────────────
+
+class _WheelTimeTile extends StatelessWidget {
   final String label;
   final String time;
   final bool isDark;
   final ValueChanged<String> onChanged;
 
-  const _TimeTile({
+  const _WheelTimeTile({
     required this.label,
     required this.time,
     required this.isDark,
     required this.onChanged,
   });
 
-  TimeOfDay get _timeOfDay {
+  Future<void> _openPicker(BuildContext context) async {
     final parts = time.split(':');
-    return TimeOfDay(
-      hour: int.parse(parts[0]),
-      minute: int.parse(parts[1]),
+    final initialTime = DateTime(
+      2024, 1, 1,
+      int.tryParse(parts[0]) ?? 7,
+      int.tryParse(parts[1]) ?? 30,
     );
-  }
 
-  Future<void> _pickTime(BuildContext context) async {
-    final picked = await showTimePicker(
+    await showModalBottomSheet<void>(
       context: context,
-      initialTime: _timeOfDay,
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-        child: child!,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _WheelPickerSheet(
+        label: label,
+        initialTime: initialTime,
+        isDark: isDark,
+        onConfirm: (dt) {
+          final formatted =
+              '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+          onChanged(formatted);
+        },
       ),
     );
-    if (picked == null) return;
-
-    final formatted =
-        '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-    onChanged(formatted);
   }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _pickTime(context),
+      onTap: () => _openPicker(context),
       borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -406,19 +375,19 @@ class _TimeTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const SizedBox(width: 48), // aligne avec les ToggleTile
+            const SizedBox(width: 48),
             Expanded(
               child: Text(
                 label,
                 style: AppTextStyles.bodySmall(color: AppColors.grey400),
               ),
             ),
-            // Badge heure sélectionnée
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
+                borderRadius:
+                    BorderRadius.circular(AppConstants.radiusMedium),
               ),
               child: Text(
                 time,
@@ -427,7 +396,155 @@ class _TimeTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.chevron_right_rounded, color: AppColors.grey400, size: 18),
+            Icon(Icons.chevron_right_rounded,
+                color: AppColors.grey400, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bottom sheet avec molette CupertinoDatePicker ─────────────
+
+class _WheelPickerSheet extends StatefulWidget {
+  final String label;
+  final DateTime initialTime;
+  final bool isDark;
+  final ValueChanged<DateTime> onConfirm;
+
+  const _WheelPickerSheet({
+    required this.label,
+    required this.initialTime,
+    required this.isDark,
+    required this.onConfirm,
+  });
+
+  @override
+  State<_WheelPickerSheet> createState() => _WheelPickerSheetState();
+}
+
+class _WheelPickerSheetState extends State<_WheelPickerSheet> {
+  late DateTime _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.initialTime;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bgColor =
+        widget.isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final textColor =
+        widget.isDark ? AppColors.textDark : AppColors.textLight;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.18),
+            blurRadius: 40,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: widget.isDark
+                    ? Colors.white.withValues(alpha: 0.18)
+                    : Colors.black.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // Titre
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+              child: Text(
+                widget.label,
+                style: AppTextStyles.headingSmall(color: textColor),
+              ),
+            ),
+
+            // Molette
+            SizedBox(
+              height: 200,
+              child: CupertinoTheme(
+                data: CupertinoThemeData(
+                  brightness: widget.isDark ? Brightness.dark : Brightness.light,
+                  primaryColor: AppColors.primary,
+                  textTheme: CupertinoTextThemeData(
+                    dateTimePickerTextStyle: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  use24hFormat: true,
+                  initialDateTime: _selected,
+                  backgroundColor: Colors.transparent,
+                  onDateTimeChanged: (dt) => setState(() => _selected = dt),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Bouton Confirmer
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6D28D9), Color(0xFF8B5CF6)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      widget.onConfirm(_selected);
+                      Navigator.of(context).pop();
+                    },
+                    style: TextButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text(
+                      'Confirmer',
+                      style: AppTextStyles.bodyLarge(color: Colors.white)
+                          .copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
