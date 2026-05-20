@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : mai 2026 — Fix planner : rendu conditionnel (plus de Stack overlay), cards Flow/Pomodoro sans overflow, Podfile Firebase fix. Refonte Le Salon : fond AppBackground DA cohérent, onglet Défis hero card + Ma progression + Classement compétitif.*
+*Dernière mise à jour : mai 2026 — Fix planner : rendu conditionnel (plus de Stack overlay), cards Flow/Pomodoro sans overflow, Podfile Firebase fix. Refonte Le Salon : fond AppBackground DA cohérent, onglet Défis hero card + Ma progression + Classement compétitif. Refonte Mon Profil : header cliquable identité enrichie, section abonnement, ShareCard remontée.*
 
 ---
 
@@ -191,15 +191,32 @@ flutter_app/lib/
 │   ├── profile/                              ← "Mon Profil" — onglet 5
 │   │   ├── data/
 │   │   │   ├── notification_settings_repository.dart
-│   │   │   └── profile_repository.dart
+│   │   │   └── profile_repository.dart       ← ProfileStats {fullName, email, jobTitle, company,
+│   │   │                                          tagline, currentStreak, longestStreak,
+│   │   │                                          totalPoints, level, levelLabel}
+│   │   │                                        updateProfile(fullName, jobTitle, company, tagline)
+│   │   │                                        — stocké dans user_metadata Supabase Auth
 │   │   ├── domain/
 │   │   │   └── notification_settings_model.dart
 │   │   └── presentation/
 │   │       ├── providers/
 │   │       │   ├── notification_settings_provider.dart
-│   │       │   └── profile_provider.dart
+│   │       │   └── profile_provider.dart      ← profileStatsProvider, profileActionsProvider
+│   │       │                                     updateProfile() + updateName() + resetPassword()
 │   │       └── screens/
-│   │           ├── profile_screen.dart
+│   │           ├── profile_screen.dart        ← REFONTE (mai 2026)
+│   │           │                                Ordre : Header cliquable → Stats → Mon abonnement
+│   │           │                                → Apparence → Mon compte → ShareCard → Déconnexion
+│   │           │                                Header : avatar initiales, nom, métier·entreprise
+│   │           │                                (ou tagline, ou email en fallback), badge niveau,
+│   │           │                                icône crayon → ouvre _IdentityBottomSheet
+│   │           │                                _IdentityBottomSheet : 4 champs (nom, métier,
+│   │           │                                entreprise optionnel, tagline 80 chars max)
+│   │           │                                _SubscriptionSection : plan actuel (Gratuit),
+│   │           │                                CTA gradient violet → /paywall,
+│   │           │                                "Restaurer mes achats" (snackbar V1, RevenueCat V2)
+│   │           │                                Mon compte : Mes Badges · Notifs · Mon identité ·
+│   │           │                                Réinitialiser mot de passe
 │   │           └── notification_settings_screen.dart ← route /settings/notifications
 │   │
 │   ├── rewards/                              ← "Mes Badges" (sans nav bar — route dédiée)
@@ -506,7 +523,7 @@ Récompenses  → "Mes Badges"
 | Le Salon — Groupes | `community_screen.dart` | 5 groupes V1, rejoindre/quitter |
 | Le Salon — Défis | `community_screen.dart` | Hero card (emoji + étapes + badge + CTA) · Ma progression (cercle % + barre + label dynamique) · Classement du mois (top 10 médailles + ligne "Toi" violette + badge rang) |
 | Le Salon — Fond | `community_screen.dart` | Utilise `AppBackground` (jamais de gradient custom) — identique à toutes les autres pages |
-| Profil | `profile_screen.dart` | Infos utilisateur |
+| Profil | `profile_screen.dart` | REFONTE mai 2026 — Header cliquable (identité enrichie : métier, entreprise, tagline dans user_metadata) · Stats gamification · Section abonnement (plan Gratuit + CTA Pro + Restaurer achats) · Apparence · Mon compte (Badges / Notifs / Mon identité / Mot de passe) · ShareCard remontée · Déconnexion |
 | Notifs settings | `notification_settings_screen.dart` | 6 types de notifs |
 | Capture brain-dump | `capture_bottom_sheet.dart` | Bouton haut-droite, badge pending |
 | Badges/Récompenses | `rewards_screen.dart` | Streaks, niveaux, badges |
