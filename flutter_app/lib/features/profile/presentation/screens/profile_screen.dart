@@ -47,32 +47,60 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppConstants.spacing24),
 
-                // ── Header profil ───────────────────────────────
+                // ── Header profil cliquable ─────────────────────
                 statsAsync.when(
                   loading: () => _ProfileHeaderSkeleton(isDark: isDark),
-                  error: (_, __) => _ProfileHeaderSimple(
+                  error: (_, __) => _ProfileHeaderCard(
                     fullName: fullName,
                     email: email,
+                    jobTitle: null,
+                    company: null,
+                    tagline: null,
                     levelLabel: 'Explorateur',
                     level: 1,
                     isDark: isDark,
+                    onTap: () => _openIdentitySheet(
+                      context,
+                      ref,
+                      fullName: fullName,
+                      jobTitle: '',
+                      company: '',
+                      tagline: '',
+                    ),
                   ),
-                  data: (stats) => _ProfileHeader(
+                  data: (stats) => _ProfileHeaderCard(
                     fullName: stats.fullName ?? fullName,
                     email: stats.email,
+                    jobTitle: stats.jobTitle,
+                    company: stats.company,
+                    tagline: stats.tagline,
                     levelLabel: stats.levelLabel,
                     level: stats.level,
                     isDark: isDark,
+                    onTap: () => _openIdentitySheet(
+                      context,
+                      ref,
+                      fullName: stats.fullName ?? fullName,
+                      jobTitle: stats.jobTitle ?? '',
+                      company: stats.company ?? '',
+                      tagline: stats.tagline ?? '',
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppConstants.spacing16),
 
-                // ── Stats ───────────────────────────────────────
+                // ── Stats progression ───────────────────────────
                 statsAsync.when(
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
                   data: (stats) => _StatsCard(stats: stats, isDark: isDark),
                 ),
+                const SizedBox(height: AppConstants.spacing24),
+
+                // ── Mon abonnement ──────────────────────────────
+                _SectionTitle(title: 'Mon abonnement', isDark: isDark),
+                const SizedBox(height: AppConstants.spacing12),
+                _SubscriptionSection(isDark: isDark),
                 const SizedBox(height: AppConstants.spacing24),
 
                 // ── Apparence ───────────────────────────────────
@@ -85,14 +113,21 @@ class ProfileScreen extends ConsumerWidget {
                 _SectionTitle(title: 'Mon compte', isDark: isDark),
                 const SizedBox(height: AppConstants.spacing12),
                 _AccountSection(
-                  fullName: fullName,
+                  fullName: statsAsync.valueOrNull?.fullName ?? fullName,
+                  jobTitle: statsAsync.valueOrNull?.jobTitle ?? '',
+                  company: statsAsync.valueOrNull?.company ?? '',
+                  tagline: statsAsync.valueOrNull?.tagline ?? '',
                   isDark: isDark,
                 ),
-                const SizedBox(height: AppConstants.spacing32),
+                const SizedBox(height: AppConstants.spacing24),
+
+                // ── Carte partage ───────────────────────────────
+                const ShareCard(),
+                const SizedBox(height: AppConstants.spacing24),
 
                 // ── Déconnexion ─────────────────────────────────
                 _SignOutButton(isDark: isDark),
-                const SizedBox(height: AppConstants.spacing24),
+                const SizedBox(height: AppConstants.spacing16),
 
                 // ── Supprimer compte ────────────────────────────
                 Center(
@@ -106,11 +141,7 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: AppConstants.spacing32),
-
-                // ── Carte partage ───────────────────────────────
-                ShareCard(),
-                const SizedBox(height: AppConstants.spacing32),
+                const SizedBox(height: AppConstants.spacing24),
 
                 // ── RGPD + version ──────────────────────────────
                 Center(
@@ -132,6 +163,43 @@ class ProfileScreen extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _openIdentitySheet(
+    BuildContext context,
+    WidgetRef ref, {
+    required String fullName,
+    required String jobTitle,
+    required String company,
+    required String tagline,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _IdentityBottomSheet(
+        initialName: fullName,
+        initialJobTitle: jobTitle,
+        initialCompany: company,
+        initialTagline: tagline,
+        onSave: (name, job, comp, tag) async {
+          await ref.read(profileActionsProvider.notifier).updateProfile(
+                fullName: name,
+                jobTitle: job,
+                company: comp,
+                tagline: tag,
+              );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profil mis à jour'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -168,20 +236,28 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-// ── Header profil ─────────────────────────────────────────────
-class _ProfileHeader extends StatelessWidget {
+// ── Header profil cliquable ───────────────────────────────────
+class _ProfileHeaderCard extends StatelessWidget {
   final String fullName;
   final String email;
+  final String? jobTitle;
+  final String? company;
+  final String? tagline;
   final String levelLabel;
   final int level;
   final bool isDark;
+  final VoidCallback onTap;
 
-  const _ProfileHeader({
+  const _ProfileHeaderCard({
     required this.fullName,
     required this.email,
+    required this.jobTitle,
+    required this.company,
+    required this.tagline,
     required this.levelLabel,
     required this.level,
     required this.isDark,
+    required this.onTap,
   });
 
   String get _initials {
@@ -193,107 +269,132 @@ class _ProfileHeader extends StatelessWidget {
 
   String get _levelEmoji {
     switch (level) {
-      case 1: return '🌱';
-      case 2: return '💼';
-      case 3: return '🚀';
-      case 4: return '🏗️';
-      case 5: return '👑';
-      default: return '🌱';
+      case 1:
+        return '🌱';
+      case 2:
+        return '💼';
+      case 3:
+        return '🚀';
+      case 4:
+        return '🏗️';
+      case 5:
+        return '👑';
+      default:
+        return '🌱';
     }
+  }
+
+  // Ligne secondaire sous le nom : métier + entreprise, ou tagline, ou email
+  String get _subtitle {
+    final parts = <String>[];
+    if (jobTitle != null && jobTitle!.isNotEmpty) parts.add(jobTitle!);
+    if (company != null && company!.isNotEmpty) parts.add(company!);
+    if (parts.isNotEmpty) return parts.join(' · ');
+    if (tagline != null && tagline!.isNotEmpty) return tagline!;
+    return email;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.spacing16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppConstants.radiusXL),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.15),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppConstants.spacing16),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(AppConstants.radiusXL),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.20),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          // Avatar avec initiales
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.primary, AppColors.primaryLight],
+        child: Row(
+          children: [
+            // Avatar avec initiales + anneau violet
+            Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.30),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  _initials,
+                  style: AppTextStyles.headingMedium(
+                    color: Colors.white,
+                  ).copyWith(fontWeight: FontWeight.w700, fontSize: 22),
+                ),
               ),
             ),
-            child: Center(
-              child: Text(
-                _initials,
-                style: AppTextStyles.headingMedium(
-                  color: Colors.white,
-                ).copyWith(fontWeight: FontWeight.w700),
-              ),
-            ),
-          ),
-          const SizedBox(width: AppConstants.spacing16),
+            const SizedBox(width: AppConstants.spacing16),
 
-          // Nom + email + niveau
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  fullName,
-                  style: AppTextStyles.headingSmall(
-                    color: isDark ? AppColors.textDark : AppColors.textLight,
+            // Nom + sous-titre + niveau
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fullName,
+                    style: AppTextStyles.headingSmall(
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  email,
-                  style: AppTextStyles.bodySmall(color: AppColors.grey400),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                // Badge niveau
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                  const SizedBox(height: 3),
+                  Text(
+                    _subtitle,
+                    style: AppTextStyles.bodySmall(color: AppColors.grey400),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusSmall),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '$_levelEmoji $levelLabel',
+                          style: AppTextStyles.caption(
+                            color: AppColors.primaryLight,
+                          ).copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    '$_levelEmoji $levelLabel',
-                    style: AppTextStyles.caption(color: AppColors.primary)
-                        .copyWith(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // Indicateur "modifier"
+            Icon(
+              Icons.edit_outlined,
+              color: AppColors.grey400,
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }
-}
-
-// ── Header simplifié (état erreur) ────────────────────────────
-class _ProfileHeaderSimple extends _ProfileHeader {
-  const _ProfileHeaderSimple({
-    required super.fullName,
-    required super.email,
-    required super.levelLabel,
-    required super.level,
-    required super.isDark,
-  });
 }
 
 // ── Header squelette (état loading) ──────────────────────────
@@ -312,15 +413,440 @@ class _ProfileHeaderSkeleton extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
+            width: 68,
+            height: 68,
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.grey200,
             ),
           ),
           const SizedBox(width: AppConstants.spacing16),
           const CircularProgressIndicator(),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Bottom sheet — Mon identité ───────────────────────────────
+class _IdentityBottomSheet extends StatefulWidget {
+  final String initialName;
+  final String initialJobTitle;
+  final String initialCompany;
+  final String initialTagline;
+  final Future<void> Function(
+    String name,
+    String jobTitle,
+    String company,
+    String tagline,
+  ) onSave;
+
+  const _IdentityBottomSheet({
+    required this.initialName,
+    required this.initialJobTitle,
+    required this.initialCompany,
+    required this.initialTagline,
+    required this.onSave,
+  });
+
+  @override
+  State<_IdentityBottomSheet> createState() => _IdentityBottomSheetState();
+}
+
+class _IdentityBottomSheetState extends State<_IdentityBottomSheet> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _jobCtrl;
+  late final TextEditingController _companyCtrl;
+  late final TextEditingController _taglineCtrl;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController(text: widget.initialName);
+    _jobCtrl = TextEditingController(text: widget.initialJobTitle);
+    _companyCtrl = TextEditingController(text: widget.initialCompany);
+    _taglineCtrl = TextEditingController(text: widget.initialTagline);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _jobCtrl.dispose();
+    _companyCtrl.dispose();
+    _taglineCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) return;
+    setState(() => _saving = true);
+    try {
+      await widget.onSave(
+        name,
+        _jobCtrl.text.trim(),
+        _companyCtrl.text.trim(),
+        _taglineCtrl.text.trim(),
+      );
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomPad = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceElevatedDark : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomPad),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Poignée
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.grey400.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          Text(
+            'Mon identité',
+            style: AppTextStyles.headingSmall(
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Ces informations s\'affichent sur ton profil',
+            style: AppTextStyles.bodySmall(color: AppColors.grey400),
+          ),
+          const SizedBox(height: 24),
+
+          _IdentityField(
+            controller: _nameCtrl,
+            label: 'Prénom ou nom affiché',
+            hint: 'Ex. Cassandre',
+            icon: Icons.person_outline_rounded,
+            isDark: isDark,
+            capitalization: TextCapitalization.words,
+          ),
+          const SizedBox(height: 16),
+          _IdentityField(
+            controller: _jobCtrl,
+            label: 'Métier / Fonction',
+            hint: 'Ex. Graphiste freelance, Coach business',
+            icon: Icons.work_outline_rounded,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 16),
+          _IdentityField(
+            controller: _companyCtrl,
+            label: 'Entreprise ou nom de ton activité',
+            hint: 'Ex. Studio Lumière (optionnel)',
+            icon: Icons.business_outlined,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 16),
+          _IdentityField(
+            controller: _taglineCtrl,
+            label: 'Ta phrase (optionnel)',
+            hint: 'Ex. Je crée des marques qui ont du sens',
+            icon: Icons.format_quote_outlined,
+            isDark: isDark,
+            maxLength: 80,
+          ),
+          const SizedBox(height: 28),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _saving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: const StadiumBorder(),
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Enregistrer'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IdentityField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final IconData icon;
+  final bool isDark;
+  final TextCapitalization capitalization;
+  final int? maxLength;
+
+  const _IdentityField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    required this.isDark,
+    this.capitalization = TextCapitalization.sentences,
+    this.maxLength,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.labelMedium(
+            color: isDark ? AppColors.textDark : AppColors.textLight,
+          ).copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          textCapitalization: capitalization,
+          maxLength: maxLength,
+          style: AppTextStyles.bodyMedium(
+            color: isDark ? AppColors.textDark : AppColors.textLight,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTextStyles.bodyMedium(color: AppColors.grey400),
+            prefixIcon: Icon(icon, color: AppColors.grey400, size: 20),
+            counterText: '',
+            filled: true,
+            fillColor: isDark
+                ? AppColors.surfaceDark
+                : AppColors.backgroundLight,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark
+                    ? AppColors.grey400.withValues(alpha: 0.2)
+                    : AppColors.grey200,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark
+                    ? AppColors.grey400.withValues(alpha: 0.2)
+                    : AppColors.grey200,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Section abonnement ────────────────────────────────────────
+class _SubscriptionSection extends StatelessWidget {
+  final bool isDark;
+
+  const _SubscriptionSection({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        border: Border.all(
+          color: isDark
+              ? AppColors.grey400.withValues(alpha: 0.15)
+              : AppColors.grey200,
+        ),
+      ),
+      child: Column(
+        children: [
+          // Plan actuel
+          Padding(
+            padding: const EdgeInsets.all(AppConstants.spacing16),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.workspace_premium_outlined,
+                    color: AppColors.primaryLight,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: AppConstants.spacing16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Plan Gratuit',
+                        style: AppTextStyles.bodyMedium(
+                          color: isDark
+                              ? AppColors.textDark
+                              : AppColors.textLight,
+                        ).copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        '3 posts/semaine · fonctionnalités de base',
+                        style:
+                            AppTextStyles.caption(color: AppColors.grey400),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.grey400.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Gratuit',
+                    style: AppTextStyles.caption(color: AppColors.grey400)
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // CTA passer à Pro
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppConstants.spacing16,
+              0,
+              AppConstants.spacing16,
+              AppConstants.spacing16,
+            ),
+            child: GestureDetector(
+              onTap: () => context.push('/paywall'),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryLight],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('✨', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Passer à Pro · 14,99 €/mois',
+                      style: AppTextStyles.bodyMedium(
+                        color: Colors.white,
+                      ).copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          Divider(
+            height: 1,
+            indent: 16,
+            endIndent: 16,
+            color: isDark
+                ? AppColors.grey400.withValues(alpha: 0.15)
+                : AppColors.grey200,
+          ),
+
+          // Restaurer les achats
+          InkWell(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'La restauration des achats sera disponible prochainement.'),
+                ),
+              );
+            },
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(AppConstants.radiusLarge),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spacing16,
+                vertical: AppConstants.spacing16,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.restore_rounded,
+                    color: AppColors.grey400,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppConstants.spacing16),
+                  Expanded(
+                    child: Text(
+                      'Restaurer mes achats',
+                      style: AppTextStyles.bodyMedium(
+                        color: isDark
+                            ? AppColors.textDark
+                            : AppColors.textLight,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.grey400,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -334,34 +860,48 @@ class _StatsCard extends StatelessWidget {
 
   const _StatsCard({required this.stats, required this.isDark});
 
-  // Seuils de progression par niveau
   double get _levelProgress {
     switch (stats.level) {
-      case 1: return (stats.totalPoints / 100).clamp(0.0, 1.0);
-      case 2: return ((stats.totalPoints - 101) / 199).clamp(0.0, 1.0);
-      case 3: return ((stats.totalPoints - 301) / 299).clamp(0.0, 1.0);
-      case 4: return ((stats.totalPoints - 601) / 399).clamp(0.0, 1.0);
-      default: return 1.0;
+      case 1:
+        return (stats.totalPoints / 100).clamp(0.0, 1.0);
+      case 2:
+        return ((stats.totalPoints - 101) / 199).clamp(0.0, 1.0);
+      case 3:
+        return ((stats.totalPoints - 301) / 299).clamp(0.0, 1.0);
+      case 4:
+        return ((stats.totalPoints - 601) / 399).clamp(0.0, 1.0);
+      default:
+        return 1.0;
     }
   }
 
   int get _nextLevelPoints {
     switch (stats.level) {
-      case 1: return 101;
-      case 2: return 301;
-      case 3: return 601;
-      case 4: return 1001;
-      default: return stats.totalPoints;
+      case 1:
+        return 101;
+      case 2:
+        return 301;
+      case 3:
+        return 601;
+      case 4:
+        return 1001;
+      default:
+        return stats.totalPoints;
     }
   }
 
   String get _nextLevelLabel {
     switch (stats.level) {
-      case 1: return 'Indépendant';
-      case 2: return 'Entrepreneur';
-      case 3: return 'Bâtisseur';
-      case 4: return 'Visionnaire';
-      default: return '';
+      case 1:
+        return 'Indépendant';
+      case 2:
+        return 'Entrepreneur';
+      case 3:
+        return 'Bâtisseur';
+      case 4:
+        return 'Visionnaire';
+      default:
+        return '';
     }
   }
 
@@ -389,7 +929,6 @@ class _StatsCard extends StatelessWidget {
           ),
           const SizedBox(height: AppConstants.spacing16),
 
-          // 3 stats
           Row(
             children: [
               _StatItem(
@@ -419,7 +958,6 @@ class _StatsCard extends StatelessWidget {
           ),
           const SizedBox(height: AppConstants.spacing16),
 
-          // Barre de progression du niveau
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -560,17 +1098,15 @@ class _ThemePicker extends ConsumerWidget {
             label: '🌙 Sombre',
             selected: themeMode == ThemeMode.dark,
             isDark: isDark,
-            onTap: () => ref
-                .read(themeModeProvider.notifier)
-                .setTheme(ThemeMode.dark),
+            onTap: () =>
+                ref.read(themeModeProvider.notifier).setTheme(ThemeMode.dark),
           ),
           _ThemeChip(
             label: '☀️ Clair',
             selected: themeMode == ThemeMode.light,
             isDark: isDark,
-            onTap: () => ref
-                .read(themeModeProvider.notifier)
-                .setTheme(ThemeMode.light),
+            onTap: () =>
+                ref.read(themeModeProvider.notifier).setTheme(ThemeMode.light),
           ),
           _ThemeChip(
             label: '⚙️ Auto',
@@ -620,10 +1156,10 @@ class _ThemeChip extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall(
-              color: selected
-                  ? AppColors.primary
-                  : AppColors.grey400,
-            ).copyWith(fontWeight: selected ? FontWeight.w600 : FontWeight.w400),
+              color: selected ? AppColors.primary : AppColors.grey400,
+            ).copyWith(
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            ),
           ),
         ),
       ),
@@ -634,9 +1170,18 @@ class _ThemeChip extends StatelessWidget {
 // ── Section compte ────────────────────────────────────────────
 class _AccountSection extends ConsumerWidget {
   final String fullName;
+  final String jobTitle;
+  final String company;
+  final String tagline;
   final bool isDark;
 
-  const _AccountSection({required this.fullName, required this.isDark});
+  const _AccountSection({
+    required this.fullName,
+    required this.jobTitle,
+    required this.company,
+    required this.tagline,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -658,39 +1203,21 @@ class _AccountSection extends ConsumerWidget {
             isDark: isDark,
             onTap: () => context.push(AppRoutes.rewards),
           ),
-          Divider(
-            height: 1,
-            indent: 52,
-            color: isDark
-                ? AppColors.grey400.withValues(alpha: 0.15)
-                : AppColors.grey200,
-          ),
+          _divider(isDark),
           _AccountTile(
             icon: Icons.notifications_outlined,
             label: 'Notifications',
             isDark: isDark,
             onTap: () => context.push(AppRoutes.notificationSettings),
           ),
-          Divider(
-            height: 1,
-            indent: 52,
-            color: isDark
-                ? AppColors.grey400.withValues(alpha: 0.15)
-                : AppColors.grey200,
-          ),
+          _divider(isDark),
           _AccountTile(
-            icon: Icons.person_outline_rounded,
-            label: 'Modifier mon prénom',
+            icon: Icons.badge_outlined,
+            label: 'Mon identité',
             isDark: isDark,
-            onTap: () => _showEditNameDialog(context, ref, fullName),
+            onTap: () => _openIdentitySheet(context, ref),
           ),
-          Divider(
-            height: 1,
-            indent: 52,
-            color: isDark
-                ? AppColors.grey400.withValues(alpha: 0.15)
-                : AppColors.grey200,
-          ),
+          _divider(isDark),
           _AccountTile(
             icon: Icons.lock_outline_rounded,
             label: 'Réinitialiser mon mot de passe',
@@ -702,50 +1229,40 @@ class _AccountSection extends ConsumerWidget {
     );
   }
 
-  void _showEditNameDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String currentName,
-  ) {
-    final ctrl = TextEditingController(text: currentName);
+  Widget _divider(bool isDark) => Divider(
+        height: 1,
+        indent: 52,
+        color: isDark
+            ? AppColors.grey400.withValues(alpha: 0.15)
+            : AppColors.grey200,
+      );
 
-    showDialog(
+  void _openIdentitySheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Modifier mon prénom'),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            hintText: 'Ton prénom ou pseudo',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annuler'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final name = ctrl.text.trim();
-              if (name.isEmpty) return;
-              Navigator.pop(ctx);
-              await ref
-                  .read(profileActionsProvider.notifier)
-                  .updateName(name);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Prénom mis à jour ✅'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-              }
-            },
-            child: const Text('Enregistrer'),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _IdentityBottomSheet(
+        initialName: fullName,
+        initialJobTitle: jobTitle,
+        initialCompany: company,
+        initialTagline: tagline,
+        onSave: (name, job, comp, tag) async {
+          await ref.read(profileActionsProvider.notifier).updateProfile(
+                fullName: name,
+                jobTitle: job,
+                company: comp,
+                tagline: tag,
+              );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profil mis à jour'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -755,7 +1272,7 @@ class _AccountSection extends ConsumerWidget {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Email envoyé — vérifie ta boîte 📧'),
+          content: Text('Email envoyé, vérifie ta boîte 📧'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -788,11 +1305,7 @@ class _AccountTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: AppColors.grey400,
-              size: 20,
-            ),
+            Icon(icon, color: AppColors.grey400, size: 20),
             const SizedBox(width: AppConstants.spacing16),
             Expanded(
               child: Text(
@@ -827,9 +1340,7 @@ class _SignOutButton extends ConsumerWidget {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: isLoading
-            ? null
-            : () => _confirmSignOut(context, ref),
+        onPressed: isLoading ? null : () => _confirmSignOut(context, ref),
         style: OutlinedButton.styleFrom(
           side: BorderSide(
             color: AppColors.secondary.withValues(alpha: 0.5),
@@ -878,4 +1389,3 @@ class _SignOutButton extends ConsumerWidget {
     );
   }
 }
-

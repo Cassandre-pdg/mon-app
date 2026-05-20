@@ -5,6 +5,9 @@ import 'package:logger/logger.dart';
 class ProfileStats {
   final String? fullName;
   final String email;
+  final String? jobTitle;
+  final String? company;
+  final String? tagline;
   final int currentStreak;
   final int longestStreak;
   final int totalPoints;
@@ -14,6 +17,9 @@ class ProfileStats {
   const ProfileStats({
     required this.fullName,
     required this.email,
+    this.jobTitle,
+    this.company,
+    this.tagline,
     required this.currentStreak,
     required this.longestStreak,
     required this.totalPoints,
@@ -48,9 +54,13 @@ class ProfileRepository {
           .single();
 
       final level = (data['level'] as int?) ?? 1;
+      final meta = user.userMetadata ?? {};
       return ProfileStats(
-        fullName: user.userMetadata?['full_name'] as String?,
+        fullName: meta['full_name'] as String?,
         email: user.email ?? '',
+        jobTitle: meta['job_title'] as String?,
+        company: meta['company'] as String?,
+        tagline: meta['tagline'] as String?,
         currentStreak: (data['current_streak'] as int?) ?? 0,
         longestStreak: (data['longest_streak'] as int?) ?? 0,
         totalPoints: (data['total_points'] as int?) ?? 0,
@@ -72,6 +82,29 @@ class ProfileRepository {
       _logger.i('Nom mis à jour : $name');
     } catch (e) {
       _logger.e('Erreur mise à jour nom : $e');
+      rethrow;
+    }
+  }
+
+  /// Met à jour l'identité complète (nom, métier, entreprise, tagline)
+  Future<void> updateProfile({
+    required String fullName,
+    required String jobTitle,
+    required String company,
+    required String tagline,
+  }) async {
+    try {
+      await _supabase.auth.updateUser(
+        UserAttributes(data: {
+          'full_name': fullName,
+          'job_title': jobTitle,
+          'company': company,
+          'tagline': tagline,
+        }),
+      );
+      _logger.i('Profil mis à jour');
+    } catch (e) {
+      _logger.e('Erreur mise à jour profil : $e');
       rethrow;
     }
   }

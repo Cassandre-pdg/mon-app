@@ -25,6 +25,28 @@ class ProfileActionsNotifier extends StateNotifier<AsyncValue<void>> {
   ProfileActionsNotifier(this._repo, this._ref)
       : super(const AsyncValue.data(null));
 
+  /// Met à jour l'identité complète
+  Future<void> updateProfile({
+    required String fullName,
+    required String jobTitle,
+    required String company,
+    required String tagline,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repo.updateProfile(
+        fullName: fullName,
+        jobTitle: jobTitle,
+        company: company,
+        tagline: tagline,
+      );
+      _ref.invalidate(profileStatsProvider);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
   /// Met à jour le nom affiché
   Future<void> updateName(String name) async {
     state = const AsyncValue.loading();
