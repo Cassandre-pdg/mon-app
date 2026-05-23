@@ -8,6 +8,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/constants/app_strings.dart';
+import '../../../../shared/services/celebration_service.dart';
 import '../../../../shared/widgets/aurora_background.dart';
 import '../providers/planner_provider.dart';
 import '../providers/kanban_provider.dart';
@@ -887,9 +888,14 @@ class _TaskList extends ConsumerWidget {
                 GestureDetector(
                   onTap: task.isCompleted
                       ? null
-                      : () => ref
-                          .read(plannerProvider.notifier)
-                          .completeTask(task.id),
+                      : () {
+                          ref
+                              .read(plannerProvider.notifier)
+                              .completeTask(task.id);
+                          ref
+                              .read(celebrationProvider.notifier)
+                              .celebrate(CelebrationEvent.taskCompleted);
+                        },
                   child: AnimatedContainer(
                     duration: AppConstants.animFast,
                     width: 28,

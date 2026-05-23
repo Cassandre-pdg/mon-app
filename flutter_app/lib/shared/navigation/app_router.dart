@@ -23,6 +23,8 @@ import '../../features/wellness/presentation/screens/breathing_exercise_screen.d
 import '../../features/wellness/data/models/meditation.dart';
 import '../constants/app_strings.dart';
 import '../theme/app_colors.dart';
+import '../services/celebration_service.dart';
+import '../widgets/celebration_overlay.dart';
 import '../../features/capture/presentation/providers/capture_provider.dart';
 import '../../features/capture/presentation/widgets/capture_bottom_sheet.dart';
 
@@ -185,8 +187,11 @@ class _ScaffoldWithNav extends ConsumerWidget {
     final currentIndex =
         _routes.indexWhere((r) => location.startsWith(r)).clamp(0, 4);
     final pendingCount = ref.watch(pendingCapturesCountProvider);
+    final celebration = ref.watch(celebrationProvider);
 
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
       body: Stack(
         children: [
           child,
@@ -257,6 +262,16 @@ class _ScaffoldWithNav extends ConsumerWidget {
         currentIndex: currentIndex,
         onTap: (i) => context.go(_routes[i]),
       ),
+        ),
+
+        // ── Overlay de célébration (par-dessus tout, y compris la nav bar) ──
+        if (celebration != null)
+          CelebrationOverlay(
+            event: celebration,
+            onDismiss: () =>
+                ref.read(celebrationProvider.notifier).dismiss(),
+          ),
+      ],
     );
   }
 }

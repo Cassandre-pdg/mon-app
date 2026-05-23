@@ -11,6 +11,7 @@ import 'shared/navigation/app_router.dart';
 import 'shared/constants/app_constants.dart';
 import 'shared/services/notification_service.dart';
 import 'shared/services/flow_notification_service.dart';
+import 'shared/services/monthly_reminders_service.dart';
 import 'features/subscription/data/subscription_repository.dart';
 
 Future<void> main() async {
@@ -24,6 +25,8 @@ Future<void> main() async {
     await Firebase.initializeApp();
     await NotificationService.instance.init();
     await FlowNotificationService.instance.init();
+    await MonthlyRemindersService.instance.init();
+    await MonthlyRemindersService.instance.scheduleAll();
   }
 
   // Initialisation Supabase (EU Frankfurt — RGPD)

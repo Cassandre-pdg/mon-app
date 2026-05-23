@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
+import '../../../../shared/services/celebration_service.dart';
 import '../../../../shared/widgets/kolyb_loader.dart';
 import '../../../../shared/widgets/project_config_sheet.dart';
 import '../../data/objective_model.dart';
@@ -1078,7 +1079,16 @@ class _HabitCard extends ConsumerWidget {
     final done = habit.isCompletedToday;
 
     return GestureDetector(
-      onTap: muted ? null : () => ref.read(habitsProvider.notifier).toggle(habit.id),
+      onTap: muted
+          ? null
+          : () {
+              if (!habit.isCompletedToday) {
+                ref
+                    .read(celebrationProvider.notifier)
+                    .celebrate(CelebrationEvent.habitCompleted);
+              }
+              ref.read(habitsProvider.notifier).toggle(habit.id);
+            },
       child: AnimatedContainer(
         duration: AppConstants.animNormal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -1552,9 +1562,14 @@ class _ObjectiveListTile extends ConsumerWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => ref
-                      .read(objectivesProvider.notifier)
-                      .complete(objective.id),
+                  onTap: () {
+                    ref
+                        .read(objectivesProvider.notifier)
+                        .complete(objective.id);
+                    ref
+                        .read(celebrationProvider.notifier)
+                        .celebrate(CelebrationEvent.objectiveCompleted);
+                  },
                   child: Container(
                     width: 28,
                     height: 28,

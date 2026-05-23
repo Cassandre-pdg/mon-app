@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
+import '../../../../shared/services/celebration_service.dart';
 import '../providers/flash_provider.dart';
 import '../providers/kanban_provider.dart';
 
@@ -328,11 +329,17 @@ class _FlashBlocModeState extends ConsumerState<_FlashBlocMode> {
 
   Future<void> _markDone() async {
     final task = _remaining.first;
+    final isLastTask = _remaining.length == 1;
     await ref.read(flashProvider.notifier).toggleDone(task.id);
     setState(() {
       _remaining.removeAt(0);
       _doneCount++;
     });
+    ref.read(celebrationProvider.notifier).celebrate(
+      isLastTask
+          ? CelebrationEvent.flashBlocCompleted
+          : CelebrationEvent.flashTaskDone,
+    );
   }
 
   void _skip() {
@@ -747,8 +754,14 @@ class _FlashTaskTile extends ConsumerWidget {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () =>
-                    ref.read(flashProvider.notifier).toggleDone(task.id),
+                onTap: () {
+                  if (!task.isDone) {
+                    ref
+                        .read(celebrationProvider.notifier)
+                        .celebrate(CelebrationEvent.flashTaskDone);
+                  }
+                  ref.read(flashProvider.notifier).toggleDone(task.id);
+                },
                 child: AnimatedContainer(
                   duration: AppConstants.animFast,
                   width: 26, height: 26,
