@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : mai 2026 — Fix planner : rendu conditionnel (plus de Stack overlay), cards Flow/Pomodoro sans overflow, Podfile Firebase fix. Refonte Le Salon : fond AppBackground DA cohérent, onglet Défis hero card + Ma progression + Classement compétitif. Refonte Mon Profil : header cliquable identité enrichie, section abonnement, ShareCard remontée.*
+*Dernière mise à jour : mai 2026 — Fix planner : rendu conditionnel (plus de Stack overlay), cards Flow/Pomodoro sans overflow, Podfile Firebase fix. Refonte Le Salon : fond AppBackground DA cohérent, onglet Défis hero card + Ma progression + Classement compétitif. Refonte Mon Profil : header cliquable identité enrichie, section abonnement, ShareCard remontée. Système de célébrations in-app (badge hexagonal + confettis) + rappels mensuels URSSAF/compta.*
 
 ---
 
@@ -267,10 +267,19 @@ flutter_app/lib/
     │   ├── app_constants.dart    ← spacing, radius, durées d'animation, freeWeeklyPosts=3
     │   └── app_strings.dart      ← tous les textes de l'app (jamais hardcodé dans les widgets)
     ├── navigation/
-    │   └── app_router.dart       ← GoRouter + AppRoutes + _ScaffoldWithNav (bouton capture)
+    │   └── app_router.dart       ← GoRouter + AppRoutes + _ScaffoldWithNav (bouton capture +
+    │                                CelebrationOverlay au-dessus de tout via celebrationProvider)
     ├── services/
+    │   ├── celebration_service.dart      ← CelebrationEvent enum + CelebrationNotifier
+    │   │                                    (StateNotifierProvider) — appeler
+    │   │                                    ref.read(celebrationProvider.notifier).celebrate(event)
+    │   │                                    depuis n'importe quel écran pour déclencher un popup
     │   ├── flow_notification_service.dart
     │   ├── focus_audio_service.dart
+    │   ├── monthly_reminders_service.dart ← rappels mensuels auto-entrepreneur (local notifs)
+    │   │                                    ID 30 : URSSAF le 1er du mois à 9h00
+    │   │                                    ID 31 : suivi recettes/compta le 15 du mois à 9h00
+    │   │                                    Planifiés au démarrage dans main.dart (scheduleAll)
     │   ├── notification_service.dart
     │   ├── pomodoro_notification_service.dart
     │   └── share_service.dart
@@ -285,6 +294,14 @@ flutter_app/lib/
         ├── focus_audio_toggle.dart       ← toggle musique focus
         ├── glass_card.dart               ← BackdropFilter glass morphism
         ├── kolyb_loader.dart             ← loading screen branded
+        ├── celebration_overlay.dart      ← ⭐ popup achievement déclenché par celebrationProvider
+        │                                    Badge hexagonal (CustomPainter + gradient) flottant
+        │                                    au-dessus d'une card glassmorphism. Confettis via
+        │                                    _ConfettiPainter (CustomPainter). Auto-dismiss + timer
+        │                                    bar. 6 configs : taskCompleted · flashTaskDone ·
+        │                                    flashBlocCompleted · habitCompleted · objectiveCompleted
+        │                                    · checkinDone (couleurs, icône, durée différentes)
+        │                                    NE PAS appeler directement — passer par celebrationProvider
         ├── project_config_sheet.dart     ← ⭐ sheet config projet PARTAGÉE (utilisée depuis
         │                                    objectives_screen ET kanban_screen)
         │                                    Champs : Nom → Catégorie → Pourquoi → Vision →
@@ -525,6 +542,8 @@ Récompenses  → "Mes Badges"
 | Le Salon — Fond | `community_screen.dart` | Utilise `AppBackground` (jamais de gradient custom) — identique à toutes les autres pages |
 | Profil | `profile_screen.dart` | REFONTE mai 2026 — Header cliquable (identité enrichie : métier, entreprise, tagline dans user_metadata) · Stats gamification · Section abonnement (plan Gratuit + CTA Pro + Restaurer achats) · Apparence · Mon compte (Badges / Notifs / Mon identité / Mot de passe) · ShareCard remontée · Déconnexion |
 | Notifs settings | `notification_settings_screen.dart` | 6 types de notifs |
+| Rappels mensuels | `monthly_reminders_service.dart` | URSSAF 1er du mois 9h · Compta 15 du mois 9h · planifiés au démarrage dans main.dart |
+| Célébrations in-app | `celebration_overlay.dart` + `celebration_service.dart` | Badge hexagonal + confettis · 6 events · déclenché via `ref.read(celebrationProvider.notifier).celebrate(event)` depuis planner/flash/objectifs |
 | Capture brain-dump | `capture_bottom_sheet.dart` | Bouton haut-droite, badge pending |
 | Badges/Récompenses | `rewards_screen.dart` | Streaks, niveaux, badges |
 | Paywall | `paywall_screen.dart` | Pro V2 (affiché sans fonctionnel) |
