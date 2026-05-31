@@ -1517,6 +1517,20 @@ class _ObjectiveListTile extends ConsumerWidget {
     }
   }
 
+  Future<void> _showProgressSheet(BuildContext context, WidgetRef ref) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _ProgressUpdateSheet(
+        objective: objective,
+        color: _color,
+        onSave: (value) =>
+            ref.read(objectivesProvider.notifier).updateProgress(objective.id, value),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Dismissible(
@@ -1597,22 +1611,295 @@ class _ObjectiveListTile extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 10),
-            // Barre de progression
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: objective.progressPercent,
-                backgroundColor: _color.withValues(alpha: 0.12),
-                valueColor: AlwaysStoppedAnimation(_color),
-                minHeight: 4,
+            // Barre de progression — tappable pour modifier
+            GestureDetector(
+              onTap: () => _showProgressSheet(context, ref),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: objective.progressPercent,
+                      backgroundColor: _color.withValues(alpha: 0.12),
+                      valueColor: AlwaysStoppedAnimation(_color),
+                      minHeight: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      Text(
+                        '${(objective.progressPercent * 100).round()}% accompli',
+                        style: AppTextStyles.caption(color: AppColors.grey400),
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          Icon(Icons.touch_app_rounded,
+                              size: 11, color: AppColors.grey400.withValues(alpha: 0.6)),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Mettre à jour',
+                            style: AppTextStyles.caption(
+                              color: AppColors.grey400.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              '${(objective.progressPercent * 100).round()}% accompli',
-              style: AppTextStyles.caption(color: AppColors.grey400),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bottom sheet : mise à jour de la progression ─────────────
+class _ProgressUpdateSheet extends StatefulWidget {
+  const _ProgressUpdateSheet({
+    required this.objective,
+    required this.color,
+    required this.onSave,
+  });
+  final Objective objective;
+  final Color color;
+  final ValueChanged<double> onSave;
+
+  @override
+  State<_ProgressUpdateSheet> createState() => _ProgressUpdateSheetState();
+}
+
+class _ProgressUpdateSheetState extends State<_ProgressUpdateSheet>
+    with SingleTickerProviderStateMixin {
+  late double _value;
+  late AnimationController _bounceCtrl;
+  late Animation<double> _bounceAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _value = widget.objective.progressPercent;
+    _bounceCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _bounceAnim = CurvedAnimation(parent: _bounceCtrl, curve: Curves.elasticOut);
+    _bounceCtrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _bounceCtrl.dispose();
+    super.dispose();
+  }
+
+  String get _emoji {
+    if (_value >= 1.0) return '🏆';
+    if (_value >= 0.75) return '🔥';
+    if (_value >= 0.5) return '💪';
+    if (_value >= 0.25) return '🌱';
+    return '🎯';
+  }
+
+  String get _encouragement {
+    if (_value >= 1.0) return 'Objectif atteint ! Félicitations !';
+    if (_value >= 0.75) return 'Tu es sur la bonne voie, continue !';
+    if (_value >= 0.5) return 'La moitié du chemin est faite.';
+    if (_value >= 0.25) return 'Chaque pas compte. Tu avances !';
+    if (_value > 0.0) return 'Le départ, c\'est déjà beaucoup.';
+    return 'Prêt à démarrer ? Tu peux le faire !';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
+    final textColor = isDark ? AppColors.textDark : AppColors.textLight;
+    final bottomPad = MediaQuery.of(context).padding.bottom;
+
+    return ScaleTransition(
+      scale: _bounceAnim,
+      child: Container(
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withValues(alpha: 0.18),
+              blurRadius: 40,
+              offset: const Offset(0, -4),
             ),
           ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(24, 0, 24, bottomPad + 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : Colors.black.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+
+                // Emoji animé
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, anim) => ScaleTransition(
+                    scale: anim,
+                    child: child,
+                  ),
+                  child: Text(
+                    _emoji,
+                    key: ValueKey(_emoji),
+                    style: const TextStyle(fontSize: 48),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Titre objectif
+                Text(
+                  widget.objective.title,
+                  style: AppTextStyles.headingSmall(color: textColor),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+
+                // Encouragement dynamique
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  child: Text(
+                    _encouragement,
+                    key: ValueKey(_encouragement),
+                    style: AppTextStyles.bodySmall(color: AppColors.grey400),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // Pourcentage affiché
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 150),
+                  child: Text(
+                    '${(_value * 100).round()}%',
+                    key: ValueKey((_value * 100).round()),
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 52,
+                      fontWeight: FontWeight.w800,
+                      color: widget.color,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Barre de progression live
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: _value,
+                    backgroundColor: widget.color.withValues(alpha: 0.12),
+                    valueColor: AlwaysStoppedAnimation(widget.color),
+                    minHeight: 10,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Slider
+                SliderTheme(
+                  data: SliderThemeData(
+                    activeTrackColor: Colors.transparent,
+                    inactiveTrackColor: Colors.transparent,
+                    thumbColor: widget.color,
+                    overlayColor: widget.color.withValues(alpha: 0.15),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 14,
+                      elevation: 4,
+                    ),
+                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 26),
+                    trackHeight: 0,
+                  ),
+                  child: Slider(
+                    value: _value,
+                    min: 0.0,
+                    max: 1.0,
+                    divisions: 20,
+                    onChanged: (v) => setState(() => _value = v),
+                  ),
+                ),
+
+                // Labels min/max
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('0%', style: AppTextStyles.caption(color: AppColors.grey400)),
+                      Text('100%', style: AppTextStyles.caption(color: AppColors.grey400)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // Bouton Confirmer
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          widget.color,
+                          widget.color.withValues(alpha: 0.75),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.color.withValues(alpha: 0.35),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        widget.onSave(_value);
+                        Navigator.of(context).pop();
+                      },
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        _value >= 1.0 ? 'Marquer comme atteint !' : 'Enregistrer',
+                        style: AppTextStyles.bodyLarge(color: Colors.white)
+                            .copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
