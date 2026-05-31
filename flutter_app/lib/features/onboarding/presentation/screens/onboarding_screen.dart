@@ -13,20 +13,20 @@ const String _kOnboardingDone = 'onboarding_done';
 // Config des 4 pages — aurora unique par page
 const _pages = [
   _OnboardingPage(
-    icon: Icons.bolt_rounded,
+    icon: Icons.rocket_launch_rounded,
     title: 'Bienvenue dans Kolyb',
     subtitle:
-        'Ton compagnon de route.\nTon élan, au quotidien, à ton rythme, jamais seul.',
+        'Pose tes objectifs à court, moyen et long terme.\nCrée tes projets. Chaque jour, 3 priorités claires pour avancer vraiment.',
     orb1: AppColors.auroraViolet,
     orb2: AppColors.auroraPink,
     orb3: AppColors.auroraTeal,
     accentColor: AppColors.primaryLight,
   ),
   _OnboardingPage(
-    icon: Icons.psychology_rounded,
-    title: 'Reste concentré',
+    icon: Icons.bolt_rounded,
+    title: 'Exécute, sans te disperser',
     subtitle:
-        'Définis 3 priorités. Exécute sans te disperser.\nChaque jour compte.',
+        'Timer Flow (90 min) ou Pomodoro, ambiance sonore incluse.\nCapture rapide pour noter à la volée.\nFlash : toutes tes petites tâches en un seul bloc, plié d\'un coup.',
     orb1: Color(0x7A5B5FFF),
     orb2: AppColors.auroraViolet,
     orb3: Color(0x4D8B7FE8),
@@ -34,19 +34,19 @@ const _pages = [
   ),
   _OnboardingPage(
     icon: Icons.people_rounded,
-    title: 'Accès au Salon',
+    title: 'Le Salon, ton espace commun',
     subtitle:
-        'Pose tes questions. Partage tes idées.\nÉchange avec des entrepreneurs qui avancent, vraiment.',
+        'Pose tes questions, partage tes avancées.\nRejoins le défi du mois avec la communauté.\nIci, tu n\'avances plus seul.',
     orb1: AppColors.auroraCorail,
     orb2: AppColors.auroraAmber,
     orb3: AppColors.auroraPink,
     accentColor: AppColors.secondary,
   ),
   _OnboardingPage(
-    icon: Icons.emoji_events_rounded,
-    title: 'Mesure ta progression',
+    icon: Icons.favorite_rounded,
+    title: 'Prends soin de toi',
     subtitle:
-        'Un système pour avancer chaque jour.\nMoins de distraction. Plus de résultats.',
+        'Check-in matin et soir pour suivre ton état.\nMéditation, respiration guidée.\nChaque habitude tenue : des points, un niveau, des badges.',
     orb1: AppColors.auroraTeal,
     orb2: AppColors.auroraAmber,
     orb3: AppColors.auroraViolet,

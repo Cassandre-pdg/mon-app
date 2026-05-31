@@ -61,8 +61,14 @@ post_install do |installer|
       # Aligne le déploiement iOS minimum pour éviter les warnings
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']       = '16.0'
       # Empêche firebase_core 3.x de bloquer la build sur Xcode récent
-      config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS']     = 'NO'
-      config.build_settings['SWIFT_TREAT_WARNINGS_AS_ERRORS']   = 'NO'
+      config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS']              = 'NO'
+      config.build_settings['SWIFT_TREAT_WARNINGS_AS_ERRORS']            = 'NO'
+      # Supprime les warnings deprecated (Firebase, FCM, flutter_local_notifications, RevenueCat)
+      config.build_settings['GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS']       = 'NO'
+      config.build_settings['CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS'] = 'NO'
+      config.build_settings['CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF']      = 'NO'
+      # Fix "Stale file outside allowed root paths" (bundles _Privacy dans DerivedData)
+      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING']             = 'NO'
     end
   end
 end

@@ -37,11 +37,16 @@ class PaywallScreen extends ConsumerWidget {
             message: AppStrings.paywallErrorGeneric,
             onRetry: () => ref.invalidate(activeOfferingProvider),
           ),
-          data: (offering) => _PaywallBody(
-            offering:      offering,
-            isDismissible: isDismissible,
-            isDark:        isDark,
-          ),
+          data: (offering) => offering == null
+              ? _ComingSoonBody(
+                  isDismissible: isDismissible,
+                  isDark:        isDark,
+                )
+              : _PaywallBody(
+                  offering:      offering,
+                  isDismissible: isDismissible,
+                  isDark:        isDark,
+                ),
         ),
       ),
     );
@@ -674,6 +679,156 @@ class _CtaButton extends StatelessWidget {
                 ),
               ),
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Écran "bientôt disponible" — affiché quand RevenueCat
+// n'est pas encore configuré (V1). Aucun achat ne peut être
+// déclenché. Remplacé automatiquement par _PaywallBody en V2.
+// ─────────────────────────────────────────────────────────────
+
+class _ComingSoonBody extends StatelessWidget {
+  final bool isDismissible;
+  final bool isDark;
+
+  const _ComingSoonBody({
+    required this.isDismissible,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isDark ? AppColors.textDark : AppColors.textLight;
+    final mutedColor = isDark ? AppColors.textDarkMuted : AppColors.grey400;
+
+    return Column(
+      children: [
+        if (isDismissible)
+          Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, right: 8),
+              child: IconButton(
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: mutedColor,
+                ),
+                onPressed: () => context.pop(),
+              ),
+            ),
+          ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: isDismissible ? 4 : AppConstants.spacing32,
+                ),
+
+                // Badge "Bientôt"
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.chartAmber.withAlpha(30),
+                    borderRadius:
+                        BorderRadius.circular(AppConstants.radiusPill),
+                    border: Border.all(
+                      color: AppColors.chartAmber.withAlpha(80),
+                    ),
+                  ),
+                  child: Text(
+                    'Bientôt disponible',
+                    style: AppTextStyles.caption().copyWith(
+                      color: AppColors.chartAmber,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: AppConstants.spacing16),
+
+                Text(
+                  AppStrings.paywallTitle,
+                  style: AppTextStyles.displayLarge().copyWith(color: textColor),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: AppConstants.spacing8),
+
+                Text(
+                  'Kolyb Pro arrive très bientôt.\nPour l\'instant, profite de toutes les fonctionnalités gratuites.',
+                  style: AppTextStyles.bodyMedium().copyWith(color: mutedColor),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: AppConstants.spacing32),
+
+                _SectionTitle(
+                  label: 'Inclus dans Kolyb Free',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: AppConstants.spacing12),
+                _FeaturesSection(
+                  features: _freeFeatures,
+                  isDark:   isDark,
+                  style:    _FeatureStyle.free,
+                ),
+
+                const SizedBox(height: AppConstants.spacing24),
+
+                _SectionTitle(
+                  label: 'En plus avec Pro',
+                  isDark:    isDark,
+                  highlight: true,
+                ),
+                const SizedBox(height: AppConstants.spacing12),
+                _FeaturesSection(
+                  features: _proFeatures,
+                  isDark:   isDark,
+                  style:    _FeatureStyle.pro,
+                ),
+
+                const SizedBox(height: AppConstants.spacing32),
+
+                // CTA retour gratuit
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: AppConstants.buttonMinWidth,
+                    maxWidth: AppConstants.buttonMaxWidth,
+                  ),
+                  child: FilledButton(
+                    onPressed: () => context.pop(),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                    ),
+                    child: Text(
+                      'Continuer en gratuit',
+                      style: AppTextStyles.labelMedium().copyWith(
+                        color: Colors.white,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: AppConstants.spacing24),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
