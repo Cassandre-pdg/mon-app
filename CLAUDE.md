@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : mai 2026 — Fix planner : rendu conditionnel (plus de Stack overlay), cards Flow/Pomodoro sans overflow, Podfile Firebase fix. Refonte Le Salon : fond AppBackground DA cohérent, onglet Défis hero card + Ma progression + Classement compétitif. Refonte Mon Profil : header cliquable identité enrichie, section abonnement, ShareCard remontée. Système de célébrations in-app (badge hexagonal + confettis) + rappels mensuels URSSAF/compta.*
+*Dernière mise à jour : juin 2026 — Connexion timers Flow/Pomodoro au système de tâches (SessionContextPicker + SessionEndPopup + timer_sessions Supabase). Fix CelebrationOverlay (margin négative → Stack+Positioned). Curseur de progression interactif sur les objectifs (slider bottom sheet avec emoji dynamique). Refonte onboarding textes/icônes. Refonte rewards (BadgeCategory étendu, BadgeTier, nouveaux repos). Fix share_plus, fix notification settings overlap, fix IdentityBottomSheet overflow clavier.*
 
 ---
 
@@ -164,22 +164,39 @@ flutter_app/lib/
 │   │   │   │                                    enums : KanbanStatus, ProjectStatus, ProjectCategory (5 valeurs)
 │   │   │   ├── kanban_repository.dart
 │   │   │   ├── planner_model.dart            ← PlannerTask {projectId, projectName, ...}
-│   │   │   └── planner_repository.dart       ← select avec join kanban_projects(name)
+│   │   │   ├── planner_repository.dart       ← select avec join kanban_projects(name)
+│   │   │   ├── session_context_model.dart    ← SessionContextType (priority/flash/other) + SessionContext
+│   │   │   └── timer_session_repository.dart ← save() vers Supabase timer_sessions (fail silencieux)
+│   │   │                                        Migration SQL documentée en commentaire dans le fichier
 │   │   └── presentation/
 │   │       ├── providers/
 │   │       │   ├── eisenhower_provider.dart
 │   │       │   ├── flash_provider.dart       ← AsyncNotifierProvider Supabase + flashPendingCountProvider
 │   │       │   ├── flow_provider.dart        ← WidgetsBindingObserver + selectProject()
 │   │       │   ├── kanban_provider.dart      ← focusProjectProvider + activeProjectsProvider
-│   │       │   └── planner_provider.dart     ← addTask/editTask avec projectId
+│   │       │   ├── planner_provider.dart     ← addTask/editTask avec projectId
+│   │       │   └── timer_session_provider.dart ← timerSessionRepositoryProvider
+│   │       ├── widgets/
+│   │       │   ├── session_context_picker.dart ← ⭐ picker affiché avant chaque session Flow/Pomodoro
+│   │       │   │                                  3 sections : MIT du jour · Bloc Flash · Autre (texte libre)
+│   │       │   │                                  static Future<SessionContext?> show(context, {timerType})
+│   │       │   │                                  Couleur : violet (flow) ou corail/amber (pomodoro)
+│   │       │   └── session_end_popup.dart      ← ⭐ popup de fin de session (après Flow 90min ou Pomodoro 25min)
+│   │       │                                      Animations : SlideTransition + FadeTransition + emoji elastic
+│   │       │                                      3 boutons : Compléter / Pause et relancer / Plus tard
+│   │       │                                      static Future<SessionEndAction?> show(...)
 │   │       └── screens/
 │   │           ├── planner_screen.dart       ← ÉCRAN PRINCIPAL : 5 onglets intégrés
 │   │           │                               Priorités (MIT badge + liens Kanban/Revue)
 │   │           │                               Flow · Pomodoro · Flash · Matrice
-│   │           ├── flow_screen.dart          ← FlowTab : aurora, arc timer 90min, sélecteur projet,
-│   │           │                               _FlowProjectPicker (activeProjectsProvider)
+│   │           ├── flow_screen.dart          ← FlowTab : aurora, arc timer 90min
+│   │           │                               SessionContextPicker au 1er démarrage (FlowTimerState.idle)
+│   │           │                               SessionEndPopup via ref.listen(flowProvider) à completion
+│   │           │                               Session sauvegardée via timerSessionRepositoryProvider
 │   │           ├── pomodoro_screen.dart      ← PomodoroContent (ConsumerStatefulWidget) : timer 25/5,
-│   │           │                               WidgetsBindingObserver, sélecteur projet, dialogue absence ≥ 3min
+│   │           │                               WidgetsBindingObserver, dialogue absence >= 3min
+│   │           │                               SessionContextPicker au 1er démarrage phase travail
+│   │           │                               SessionEndPopup à la fin de chaque phase travail
 │   │           ├── flash_screen.dart         ← FlashTab : file Supabase par catégorie, bouton "Lancer un bloc
 │   │           │                               Flash", _FlashBlocMode (tâches une par une + bilan), lien projet
 │   │           ├── eisenhower_screen.dart    ← EisenhowerTab (matrice urgence/importance)
@@ -302,6 +319,8 @@ flutter_app/lib/
         │                                    flashBlocCompleted · habitCompleted · objectiveCompleted
         │                                    · checkinDone (couleurs, icône, durée différentes)
         │                                    NE PAS appeler directement — passer par celebrationProvider
+        │                                    ⚠️ Badge positionné via Stack+Positioned(top:0),
+        │                                    PAS de margin négative (assertion Flutter)
         ├── project_config_sheet.dart     ← ⭐ sheet config projet PARTAGÉE (utilisée depuis
         │                                    objectives_screen ET kanban_screen)
         │                                    Champs : Nom → Catégorie → Pourquoi → Vision →
@@ -374,6 +393,10 @@ kanban_tasks           → tâches Kanban (project_id, title, status, completed_
 flash_tasks            → micro-tâches Flash (title, category, estimated_minutes, is_done,
                          project_id nullable, done_at, created_at) — RLS activé
                          Migration : 007 (création + RLS + project_id sur planner_tasks)
+timer_sessions         → sessions Flow/Pomodoro (type, duration_minutes, context_type,
+                         context_label, project_id nullable, completed_at) — RLS activé
+                         Migration SQL dans timer_session_repository.dart (commentaire)
+                         ⚠️ À créer manuellement dans Supabase si pas encore fait
 ```
 
 **Règle RGPD absolue :** Row Level Security activé sur TOUTES les tables. Ne jamais créer une table sans activer RLS immédiatement.
@@ -522,13 +545,14 @@ Récompenses  → "Mes Badges"
 | Feature | Écran principal | État |
 |---------|----------------|------|
 | Auth | `auth_screen.dart` | Email + Google + Apple |
-| Onboarding | `onboarding_screen.dart` | 4 écrans |
+| Onboarding | `onboarding_screen.dart` | 4 écrans — textes/icônes mis à jour juin 2026 (Flash, Flow/Pomodoro, défi communauté) |
 | Check-in matin/soir | `checkin_screen.dart` | 3 questions + animation |
 | Dashboard | `dashboard_screen.dart` | Streak · Anneaux suivi (Focus/Habitudes/Check-ins) · Check-ins gradient · Card projet · Bien-être · Niveau |
-| Objectifs | `objectives_screen.dart` | sections Objectifs/Projets/Habitudes/Suivi, ProjectConfigSheet (partagé), glassmorphism |
+| Objectifs | `objectives_screen.dart` | sections Objectifs/Projets/Habitudes/Suivi, ProjectConfigSheet (partagé), glassmorphism · Barre de progression tappable : _ProgressUpdateSheet (slider 0-100%, emoji dynamique 🎯🌱💪🔥🏆, encouragement contextuel, bouton "Marquer comme atteint" à 100%) |
 | Planner — Priorités | `planner_screen.dart` | MIT badge, 3 tâches, Kanban/Revue links · lien projet (badge violet) · bandeau projet focus (focusProjectProvider) |
-| Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90min, overlay, config · sélecteur projet (_FlowProjectPicker) · timer background (WidgetsBindingObserver, SharedPreferences startedAt) |
-| Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5, notifications · ConsumerStatefulWidget · WidgetsBindingObserver · sélecteur projet · dialogue absence ≥ 3min |
+| Planner — Flow | `flow_screen.dart` | Aurora, arc timer 90min · SessionContextPicker au 1er démarrage · SessionEndPopup à completion via ref.listen · session sauvegardée (timer_sessions) |
+| Planner — Pomodoro | `pomodoro_screen.dart` | Timer 25/5 · WidgetsBindingObserver · dialogue absence >= 3min · SessionContextPicker au 1er démarrage phase travail · SessionEndPopup à fin de chaque phase travail |
+| Session context | `session_context_picker.dart` + `session_end_popup.dart` | Picker : MIT du jour / Bloc Flash / Autre · Popup fin : emoji elastic, encouragement, 3 actions (compléter/pause/plus tard) |
 | Planner — Flash | `flash_screen.dart` | File persistante Supabase (flash_tasks) · lien projet optionnel · bouton "Lancer un bloc Flash" · _FlashBlocMode : tâches une par une (✓ / → / 🗑) + bilan · flashPendingCountProvider |
 | Planner — Matrice | `eisenhower_screen.dart` | Eisenhower 4 quadrants |
 | Kanban | `kanban_screen.dart` | Colonnes todo/en cours/terminé, lien objectifs (objectiveId) |
@@ -540,13 +564,13 @@ Récompenses  → "Mes Badges"
 | Le Salon — Groupes | `community_screen.dart` | 5 groupes V1, rejoindre/quitter |
 | Le Salon — Défis | `community_screen.dart` | Hero card (emoji + étapes + badge + CTA) · Ma progression (cercle % + barre + label dynamique) · Classement du mois (top 10 médailles + ligne "Toi" violette + badge rang) |
 | Le Salon — Fond | `community_screen.dart` | Utilise `AppBackground` (jamais de gradient custom) — identique à toutes les autres pages |
-| Profil | `profile_screen.dart` | REFONTE mai 2026 — Header cliquable (identité enrichie : métier, entreprise, tagline dans user_metadata) · Stats gamification · Section abonnement (plan Gratuit + CTA Pro + Restaurer achats) · Apparence · Mon compte (Badges / Notifs / Mon identité / Mot de passe) · ShareCard remontée · Déconnexion |
+| Profil | `profile_screen.dart` | Header cliquable (identité enrichie) · Stats gamification · Section abonnement · Apparence · Mon compte · ShareCard · Déconnexion |
 | Notifs settings | `notification_settings_screen.dart` | 6 types de notifs |
 | Rappels mensuels | `monthly_reminders_service.dart` | URSSAF 1er du mois 9h · Compta 15 du mois 9h · planifiés au démarrage dans main.dart |
-| Célébrations in-app | `celebration_overlay.dart` + `celebration_service.dart` | Badge hexagonal + confettis · 6 events · déclenché via `ref.read(celebrationProvider.notifier).celebrate(event)` depuis planner/flash/objectifs |
+| Célébrations in-app | `celebration_overlay.dart` + `celebration_service.dart` | Badge hexagonal + confettis · 6 events · déclenché via `ref.read(celebrationProvider.notifier).celebrate(event)` · badge via Stack+Positioned (PAS de margin négative) |
 | Capture brain-dump | `capture_bottom_sheet.dart` | Bouton haut-droite, badge pending |
-| Badges/Récompenses | `rewards_screen.dart` | Streaks, niveaux, badges |
-| Paywall | `paywall_screen.dart` | Pro V2 (affiché sans fonctionnel) |
+| Badges/Récompenses | `rewards_screen.dart` | BadgeCategory : streak/level/flash/checkin/project/community/special · BadgeTier · badge_preferences_repository · rewards_repository · badge_hex_widget partagé |
+| Paywall | `paywall_screen.dart` | Pro V2 (affiché sans fonctionnel) — enrichi juin 2026 |
 | Méditation | `meditation_library_screen.dart` | Bibliothèque |
 | Player méditation | `meditation_player_screen.dart` | Player avec audio |
 | Respiration | `breathing_exercise_screen.dart` | Exercices guidés |
