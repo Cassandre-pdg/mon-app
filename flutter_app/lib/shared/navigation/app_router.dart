@@ -298,14 +298,14 @@ class _KolybNavBar extends StatelessWidget {
 
     return Container(
       color: Colors.transparent,
-      padding: EdgeInsets.fromLTRB(16, 6, 16, bottomPad + 10),
+      padding: EdgeInsets.fromLTRB(20, 6, 20, bottomPad + 10),
       child: Container(
-        height: 64,
+        height: 68,
         decoration: BoxDecoration(
           color: isDark
               ? const Color(0xF20A0B1A)
               : const Color(0xF5FFFFFF),
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(32),
           border: Border.all(
             color: isDark
                 ? const Color(0x18FFFFFF)
@@ -320,22 +320,25 @@ class _KolybNavBar extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          children: List.generate(_items.length, (i) {
-            final (icon, label) = _items[i];
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => onTap(i),
-                behavior: HitTestBehavior.opaque,
-                child: _NavItem(
-                  icon: icon,
-                  label: label,
-                  isActive: i == currentIndex,
-                  isDark: isDark,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            children: List.generate(_items.length, (i) {
+              final (icon, label) = _items[i];
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => onTap(i),
+                  behavior: HitTestBehavior.opaque,
+                  child: _NavItem(
+                    icon: icon,
+                    label: label,
+                    isActive: i == currentIndex,
+                    isDark: isDark,
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         ),
       ),
     );
@@ -370,7 +373,7 @@ class _NavItem extends StatelessWidget {
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeInOut,
           padding: EdgeInsets.symmetric(
-            horizontal: isActive ? 14 : 10,
+            horizontal: isActive ? 12 : 8,
             vertical: 6,
           ),
           decoration: BoxDecoration(
