@@ -348,15 +348,13 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
       onTap: () {},
       child: SizedBox(
         width: 280,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topCenter,
           children: [
-            // Badge flottant
-            _buildBadge(),
-
-            // Body de la card (le badge déborde en haut via margin négative)
+            // Body de la card avec padding haut pour laisser place au badge
             Container(
-              margin: const EdgeInsets.only(top: -44),
+              margin: const EdgeInsets.only(top: 44),
               decoration: BoxDecoration(
                 color: const Color(0xF5161432),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
@@ -493,6 +491,12 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                   ],
                 ),
               ),
+            ),
+
+            // Badge flottant centré en haut, par-dessus la card
+            Positioned(
+              top: 0,
+              child: _buildBadge(),
             ),
           ],
         ),
