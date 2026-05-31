@@ -8,8 +8,12 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/services/focus_audio_service.dart';
 import '../../data/flow_model.dart';
+import '../../data/session_context_model.dart';
 import '../providers/flow_provider.dart';
 import '../providers/kanban_provider.dart';
+import '../providers/timer_session_provider.dart';
+import '../widgets/session_context_picker.dart';
+import '../widgets/session_end_popup.dart';
 
 // ── Onglet Flow ────────────────────────────────────────────────
 class FlowTab extends ConsumerWidget {
@@ -108,6 +112,8 @@ class _FlowTimer extends ConsumerStatefulWidget {
 class _FlowTimerState extends ConsumerState<_FlowTimer>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseCtrl;
+  SessionContext? _sessionContext;
+  bool _popupShown = false;
 
   @override
   void initState() {
@@ -129,6 +135,54 @@ class _FlowTimerState extends ConsumerState<_FlowTimer>
     final flow   = widget.flow;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isRunning = flow.timerState == FlowTimerState.running;
+
+    // Popup de fin de session
+    ref.listen(flowProvider, (prev, next) {
+      if (prev?.timerState != FlowTimerState.completed &&
+          next.timerState == FlowTimerState.completed &&
+          !_popupShown) {
+        _popupShown = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted) return;
+          final repo = ref.read(timerSessionRepositoryProvider);
+          await repo.save(
+            type: 'flow',
+            durationMinutes: FlowState.sessionDurationSeconds ~/ 60,
+            context: _sessionContext,
+          );
+          if (!mounted) return;
+          final action = await SessionEndPopup.show(
+            context,
+            timerType: 'flow',
+            durationMinutes: FlowState.sessionDurationSeconds ~/ 60,
+            sessionContext: _sessionContext,
+          );
+          if (!mounted) return;
+          _popupShown = false;
+          setState(() => _sessionContext = null);
+          ref.read(flowProvider.notifier).dismissCompletion();
+          if (action == SessionEndAction.restart) {
+            // Petite pause visuelle puis proposition de relancer
+            Future.delayed(const Duration(seconds: 1), () {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Pause terminée. Prêt pour la prochaine session ?'),
+                    action: SnackBarAction(
+                      label: 'Démarrer',
+                      onPressed: () =>
+                          ref.read(flowProvider.notifier).startPause(),
+                    ),
+                    duration: const Duration(seconds: 10),
+                    backgroundColor: AppColors.surfaceElevatedDark,
+                  ),
+                );
+              }
+            });
+          }
+        });
+      }
+    });
 
     // Couleur selon état
     final ringColor = flow.allSessionsDone
@@ -231,7 +285,22 @@ class _FlowTimerState extends ConsumerState<_FlowTimer>
               child: ElevatedButton.icon(
                 onPressed: flow.allSessionsDone
                     ? null
-                    : () => ref.read(flowProvider.notifier).startPause(),
+                    : () async {
+                        if (isRunning) {
+                          ref.read(flowProvider.notifier).startPause();
+                          return;
+                        }
+                        // Picker uniquement au premier démarrage d'une session
+                        if (flow.timerState == FlowTimerState.idle) {
+                          final ctx = await SessionContextPicker.show(
+                            context,
+                            timerType: 'flow',
+                          );
+                          if (!mounted) return;
+                          setState(() => _sessionContext = ctx);
+                        }
+                        ref.read(flowProvider.notifier).startPause();
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ringColor,
                   disabledBackgroundColor: AppColors.grey200,

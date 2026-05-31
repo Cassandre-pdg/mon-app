@@ -5,7 +5,10 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/services/focus_audio_service.dart';
-import '../providers/kanban_provider.dart';
+import '../providers/timer_session_provider.dart';
+import '../../data/session_context_model.dart';
+import '../widgets/session_context_picker.dart';
+import '../widgets/session_end_popup.dart';
 
 enum PomodoroPhase { work, shortBreak }
 
@@ -30,9 +33,9 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
   late AnimationController _pulseCtrl;
   FocusAudio _selectedAudio = FocusAudio.silence;
 
-  // Projet lié
-  String? _selectedProjectId;
-  String? _selectedProjectName;
+  // Contexte de session
+  SessionContext? _sessionContext;
+  bool _isFirstStart = true;
 
   // Suivi background
   DateTime? _backgroundAt;
@@ -133,43 +136,96 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
   }
 
   // ── Timer ────────────────────────────────────────────────────
-  void _startPause() {
+  Future<void> _startPause() async {
     if (_isRunning) {
       _timer?.cancel();
       setState(() => _isRunning = false);
       FocusAudioService.instance.pause();
-    } else {
-      final wasPaused = !_isRunning && _secondsLeft < _workSeconds;
-      setState(() => _isRunning = true);
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (_secondsLeft > 0) {
-          setState(() => _secondsLeft--);
-        } else {
-          _onPhaseComplete();
-        }
+      return;
+    }
+
+    final wasPaused = _secondsLeft < _workSeconds;
+
+    // Picker uniquement au tout premier démarrage d'une session de travail
+    if (_isFirstStart && _phase == PomodoroPhase.work) {
+      final ctx = await SessionContextPicker.show(context, timerType: 'pomodoro');
+      if (!mounted) return;
+      setState(() {
+        _sessionContext = ctx;
+        _isFirstStart = false;
       });
-      if (wasPaused) {
-        FocusAudioService.instance.resume();
+    }
+
+    setState(() => _isRunning = true);
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_secondsLeft > 0) {
+        setState(() => _secondsLeft--);
       } else {
-        FocusAudioService.instance.play();
+        _onPhaseComplete();
       }
+    });
+    if (wasPaused) {
+      FocusAudioService.instance.resume();
+    } else {
+      FocusAudioService.instance.play();
     }
   }
 
   void _onPhaseComplete() {
     _timer?.cancel();
     FocusAudioService.instance.stop();
-    setState(() {
-      _isRunning = false;
-      if (_phase == PomodoroPhase.work) {
-        _completedPomodoros++;
-        _phase = PomodoroPhase.shortBreak;
-        _secondsLeft = _breakSeconds;
-      } else {
+
+    if (_phase == PomodoroPhase.work) {
+      // Fin de phase travail : afficher le popup avant de passer à la pause
+      setState(() => _isRunning = false);
+      _completedPomodoros++;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        final repo = ref.read(timerSessionRepositoryProvider);
+        await repo.save(
+          type: 'pomodoro',
+          durationMinutes: _workSeconds ~/ 60,
+          context: _sessionContext,
+        );
+        if (!mounted) return;
+        final action = await SessionEndPopup.show(
+          context,
+          timerType: 'pomodoro',
+          durationMinutes: _workSeconds ~/ 60,
+          sessionContext: _sessionContext,
+        );
+        if (!mounted) return;
+
+        // Passer en mode pause dans tous les cas
+        setState(() {
+          _phase = PomodoroPhase.shortBreak;
+          _secondsLeft = _breakSeconds;
+          _isFirstStart = true;
+        });
+
+        if (action == SessionEndAction.restart) {
+          // Démarrer la pause automatiquement
+          setState(() => _isRunning = true);
+          _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+            if (_secondsLeft > 0) {
+              setState(() => _secondsLeft--);
+            } else {
+              _onPhaseComplete();
+            }
+          });
+          FocusAudioService.instance.play();
+        }
+        // completed ou later : pause manuelle, l'utilisateur démarre quand il veut
+      });
+    } else {
+      // Fin de pause : retour en mode travail
+      setState(() {
+        _isRunning = false;
         _phase = PomodoroPhase.work;
         _secondsLeft = _workSeconds;
-      }
-    });
+        _isFirstStart = true;
+      });
+    }
   }
 
   void _reset() {
@@ -177,8 +233,9 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
     FocusAudioService.instance.stop();
     setState(() {
       _isRunning = false;
-      _secondsLeft =
-          _phase == PomodoroPhase.work ? _workSeconds : _breakSeconds;
+      _secondsLeft = _phase == PomodoroPhase.work ? _workSeconds : _breakSeconds;
+      _sessionContext = null;
+      _isFirstStart = true;
     });
   }
 
@@ -200,8 +257,7 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
 
   @override
   Widget build(BuildContext context) {
-    final isDark         = Theme.of(context).brightness == Brightness.dark;
-    final activeProjects = ref.watch(activeProjectsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppConstants.spacing24),
@@ -209,52 +265,10 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
         children: [
           const SizedBox(height: AppConstants.spacing16),
 
-          // ── Sélecteur projet (avant démarrage) ───────────────
-          if (!_isRunning && _completedPomodoros == 0) ...[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Sur quoi tu travailles ?',
-                style: AppTextStyles.labelMedium(color: AppColors.grey400),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 36,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _ProjectChip(
-                    label: 'Libre',
-                    isSelected: _selectedProjectId == null,
-                    onTap: () => setState(() {
-                      _selectedProjectId = null;
-                      _selectedProjectName = null;
-                    }),
-                  ),
-                  const SizedBox(width: 8),
-                  ...activeProjects.map((p) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _ProjectChip(
-                          label: p.name,
-                          isSelected: _selectedProjectId == p.id,
-                          onTap: () => setState(() {
-                            _selectedProjectId = p.id;
-                            _selectedProjectName = p.name;
-                          }),
-                        ),
-                      )),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacing24),
-          ],
-
-          // Projet en cours affiché pendant la session
-          if (_isRunning && _selectedProjectName != null) ...[
+          // Contexte de session affiché pendant la session
+          if (_sessionContext != null) ...[
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.secondary.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(20),
@@ -262,10 +276,18 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
                   color: AppColors.secondary.withValues(alpha: 0.25),
                 ),
               ),
-              child: Text(
-                '📌 $_selectedProjectName',
-                style: AppTextStyles.caption(
-                    color: AppColors.secondary),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.push_pin_rounded,
+                      size: 12, color: AppColors.secondary),
+                  const SizedBox(width: 6),
+                  Text(
+                    _sessionContext!.label,
+                    style: AppTextStyles.caption(color: AppColors.secondary)
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppConstants.spacing16),
@@ -408,52 +430,6 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
           ),
           const SizedBox(height: AppConstants.spacing24),
         ],
-      ),
-    );
-  }
-}
-
-// ── Chip sélecteur projet ─────────────────────────────────────
-class _ProjectChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ProjectChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppConstants.animFast,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.secondary.withValues(alpha: 0.15)
-              : Colors.transparent,
-          border: Border.all(
-            color: isSelected
-                ? AppColors.secondary
-                : AppColors.grey200,
-            width: isSelected ? 1.5 : 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.caption(
-            color:
-                isSelected ? AppColors.secondary : AppColors.grey400,
-          ).copyWith(
-            fontWeight:
-                isSelected ? FontWeight.w600 : FontWeight.w400,
-          ),
-        ),
       ),
     );
   }
