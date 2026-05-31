@@ -321,7 +321,7 @@ class _KolybNavBar extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Row(
             children: List.generate(_items.length, (i) {
               final (icon, label) = _items[i];
@@ -390,15 +390,20 @@ class _NavItem extends StatelessWidget {
         AnimatedOpacity(
           opacity: isActive ? 1.0 : 0.0,
           duration: const Duration(milliseconds: 180),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: isDark
-                  ? const Color(0xFFEDEDFF)
-                  : const Color(0xFF12122A),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? const Color(0xFFEDEDFF)
+                    : const Color(0xFF12122A),
+              ),
             ),
           ),
         ),
