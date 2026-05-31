@@ -18,10 +18,10 @@ class NotificationSettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor:
-          isDark ? Colors.transparent : AppColors.backgroundLight,
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       appBar: AppBar(
         backgroundColor:
-            isDark ? Colors.transparent : AppColors.backgroundLight,
+            isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
         elevation: 0,
         leading: IconButton(
           icon: Icon(

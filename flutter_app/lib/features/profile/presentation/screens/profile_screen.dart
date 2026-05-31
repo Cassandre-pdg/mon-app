@@ -7,9 +7,13 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/theme/theme_provider.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/widgets/share_card.dart';
+import '../../../../shared/widgets/badge_hex_widget.dart';
 import '../../../../shared/constants/app_strings.dart';
 import '../../../../shared/navigation/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../rewards/data/badge_model.dart';
+import '../../../rewards/data/badge_preferences_repository.dart';
+import '../../../rewards/presentation/providers/rewards_provider.dart';
 import '../../data/profile_repository.dart';
 import '../providers/profile_provider.dart';
 
@@ -95,6 +99,12 @@ class ProfileScreen extends ConsumerWidget {
                   error: (_, __) => const SizedBox.shrink(),
                   data: (stats) => _StatsCard(stats: stats, isDark: isDark),
                 ),
+                const SizedBox(height: AppConstants.spacing24),
+
+                // ── Trophées (badges épinglés) ──────────────────
+                _SectionTitle(title: 'Mes trophées', isDark: isDark),
+                const SizedBox(height: AppConstants.spacing12),
+                _TrophyShowcase(isDark: isDark),
                 const SizedBox(height: AppConstants.spacing24),
 
                 // ── Mon abonnement ──────────────────────────────
@@ -500,13 +510,16 @@ class _IdentityBottomSheetState extends State<_IdentityBottomSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bottomPad = MediaQuery.of(context).viewInsets.bottom;
 
-    return Container(
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomPad),
+      child: Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceElevatedDark : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomPad),
-      child: Column(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -594,6 +607,8 @@ class _IdentityBottomSheetState extends State<_IdentityBottomSheet> {
             ),
           ),
         ],
+        ),
+      ),
       ),
     );
   }
@@ -1386,6 +1401,189 @@ class _SignOutButton extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Vitrine trophées (badges épinglés sur le profil) ─────────
+class _TrophyShowcase extends ConsumerWidget {
+  final bool isDark;
+  const _TrophyShowcase({required this.isDark});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pinnedAsync = ref.watch(pinnedBadgesProvider);
+    final badgesAsync = ref.watch(badgesProvider);
+
+    return pinnedAsync.when(
+      loading: () => const SizedBox(height: 100),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (pinnedIds) => badgesAsync.when(
+        loading: () => const SizedBox(height: 100),
+        error: (_, __) => const SizedBox.shrink(),
+        data: (allBadges) {
+          final pinned = pinnedIds
+              .map((id) => allBadges.firstWhere(
+                    (b) => b.id == id,
+                    orElse: () => allBadges.first,
+                  ))
+              .where((b) => pinnedIds.contains(b.id))
+              .toList();
+
+          final cardColor = isDark ? AppColors.surfaceDark : Colors.white;
+          final borderColor = isDark
+              ? AppColors.surfaceElevatedDark.withValues(alpha: 0.5)
+              : AppColors.grey200;
+
+          return Container(
+            padding: const EdgeInsets.all(AppConstants.spacing16),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+              border: Border.all(color: borderColor),
+            ),
+            child: Column(
+              children: [
+                if (pinned.isEmpty)
+                  _EmptyTrophy(isDark: isDark)
+                else
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      for (final badge in pinned)
+                        _PinnedBadgeTile(badge: badge, isDark: isDark),
+                      // Slots vides
+                      for (int i = pinned.length;
+                          i < BadgePreferencesRepository.maxPinned;
+                          i++)
+                        _EmptySlot(isDark: isDark),
+                    ],
+                  ),
+                const SizedBox(height: AppConstants.spacing12),
+                GestureDetector(
+                  onTap: () => context.push(AppRoutes.rewards),
+                  child: Text(
+                    pinned.isEmpty
+                        ? 'Choisir mes trophées dans Mes Badges'
+                        : 'Modifier mes trophées',
+                    style: AppTextStyles.bodySmall(
+                      color: AppColors.primaryLight,
+                    ).copyWith(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PinnedBadgeTile extends StatelessWidget {
+  final AppBadge badge;
+  final bool isDark;
+  const _PinnedBadgeTile({required this.badge, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        BadgeHexWidget(
+          gradientColors: badge.gradientColors,
+          icon: badge.icon,
+          isUnlocked: true,
+          isLegendary: badge.tier == BadgeTier.legendary,
+          isRare: badge.tier == BadgeTier.rare,
+          categoryColor: badge.categoryColor,
+          size: 56,
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          width: 72,
+          child: Text(
+            badge.name,
+            style: AppTextStyles.caption(color: badge.categoryColor)
+                .copyWith(fontWeight: FontWeight.w600),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EmptySlot extends StatelessWidget {
+  final bool isDark;
+  const _EmptySlot({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: (isDark ? Colors.white : Colors.black)
+                  .withValues(alpha: 0.1),
+              width: 1.5,
+            ),
+          ),
+          child: Icon(
+            Icons.add_rounded,
+            color: (isDark ? Colors.white : Colors.black)
+                .withValues(alpha: 0.2),
+            size: 22,
+          ),
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          width: 72,
+          child: Text(
+            'Ajouter',
+            style: AppTextStyles.caption(
+              color: (isDark ? Colors.white : Colors.black)
+                  .withValues(alpha: 0.22),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EmptyTrophy extends StatelessWidget {
+  final bool isDark;
+  const _EmptyTrophy({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(
+          Icons.workspace_premium_rounded,
+          size: 36,
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.15),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Épingle ici tes 3 badges préférés',
+          style: AppTextStyles.bodySmall(
+            color: (isDark ? Colors.white : Colors.black)
+                .withValues(alpha: 0.35),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }
