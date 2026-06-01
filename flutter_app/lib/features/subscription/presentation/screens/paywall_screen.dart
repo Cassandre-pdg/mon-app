@@ -54,7 +54,7 @@ class PaywallScreen extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Corps — StatefulWidget pour gérer la sélection mensuel/annuel
+// Corps : StatefulWidget pour gérer la sélection mensuel/annuel
 // ─────────────────────────────────────────────────────────────
 
 class _PaywallBody extends ConsumerStatefulWidget {
@@ -258,18 +258,18 @@ class _PaywallBodyState extends ConsumerState<_PaywallBody> {
 // ─────────────────────────────────────────────────────────────
 
 const _freeFeatures = [
-  ('Check-in quotidien — humeur et énergie', '🌱'),
+  ('Check-in quotidien : humeur et énergie', '🌱'),
   ('Timer Pomodoro simple',                  '⏱'),
-  ('Suivi du sommeil — saisie manuelle',     '😴'),
+  ('Suivi du sommeil : saisie manuelle',     '😴'),
   ('Tableau de bord personnel 7 jours',      '🏠'),
 ];
 
 const _proFeatures = [
   ('Accès complet à la communauté',              '💬'),
-  ('Sondage groupes — tu choisis ce qui existe', '🗳'),
-  ('Tracking avancé — 30 et 90 jours',           '📈'),
-  ('Alertes tendance basse — prévention burnout', '🔔'),
-  ('Pomodoro personnalisé — cycles et durées',   '⏱'),
+  ('Sondage groupes : tu choisis ce qui existe', '🗳'),
+  ('Tracking avancé : 30 et 90 jours',           '📈'),
+  ('Alertes tendance basse : prévention burnout', '🔔'),
+  ('Pomodoro personnalisé : cycles et durées',   '⏱'),
   ('Rapport hebdo bien-être par email',          '📧'),
 ];
 
@@ -298,7 +298,7 @@ class _Header extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppConstants.radiusPill),
           ),
           child: Text(
-            'Pro v1 — recommandé',
+            'Pro v1 : recommandé',
             style: AppTextStyles.caption().copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -459,7 +459,7 @@ class _PackageSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Annuel — en premier car recommandé par défaut
+        // Annuel : en premier car recommandé par défaut
         _PackageCard(
           type:       PackageType.annual,
           selected:   selected == PackageType.annual,
@@ -467,7 +467,7 @@ class _PackageSelector extends StatelessWidget {
           price:      annualPackage?.storeProduct.priceString
               ?? AppConstants.priceAnnual,
           pricePerMonth: AppConstants.priceAnnualMonthly,
-          caption:    'Économie de 34\u202f% — le meilleur tarif',
+          caption:    'Économie de 34\u202f% : le meilleur tarif',
           savingBadge: AppStrings.paywallPriceAnnualSaving,
           onTap:      () => onSelect(PackageType.annual),
         ),
@@ -684,7 +684,7 @@ class _CtaButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Écran "bientôt disponible" — affiché quand RevenueCat
+// Écran "bientôt disponible" : affiché quand RevenueCat
 // n'est pas encore configuré (V1). Aucun achat ne peut être
 // déclenché. Remplacé automatiquement par _PaywallBody en V2.
 // ─────────────────────────────────────────────────────────────

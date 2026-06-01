@@ -5,113 +5,110 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/services/focus_audio_service.dart';
 import '../../data/flow_model.dart';
 import '../../data/session_context_model.dart';
 import '../providers/flow_provider.dart';
-import '../providers/kanban_provider.dart';
 import '../providers/timer_session_provider.dart';
 import '../widgets/session_context_picker.dart';
 import '../widgets/session_end_popup.dart';
 
-// ── Onglet Flow ────────────────────────────────────────────────
-class FlowTab extends ConsumerWidget {
+// ── Arc gradient + glow CustomPainter ────────────────────────────────────────
+class _ArcPainter extends CustomPainter {
+  const _ArcPainter({
+    required this.progress,
+    required this.colors,
+    required this.trackColor,
+    required this.strokeWidth,
+    required this.glowOpacity,
+  });
+
+  final double progress;
+  final List<Color> colors;
+  final Color trackColor;
+  final double strokeWidth;
+  final double glowOpacity;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - strokeWidth;
+    final rect   = Rect.fromCircle(center: center, radius: radius);
+    const startAngle = -math.pi / 2;
+
+    // Track
+    canvas.drawArc(
+      rect, 0, 2 * math.pi, false,
+      Paint()
+        ..color      = trackColor
+        ..strokeWidth = strokeWidth
+        ..style      = PaintingStyle.stroke
+        ..strokeCap  = StrokeCap.round,
+    );
+
+    if (progress <= 0.005) return;
+    final sweep = 2 * math.pi * progress.clamp(0.0, 1.0);
+
+    // Glow couche extérieure
+    canvas.drawArc(
+      rect, startAngle, sweep, false,
+      Paint()
+        ..color      = colors.last.withValues(alpha: glowOpacity * 0.45)
+        ..strokeWidth = strokeWidth * 2.8
+        ..style      = PaintingStyle.stroke
+        ..strokeCap  = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+
+    // Arc gradient principal
+    canvas.drawArc(
+      rect, startAngle, sweep, false,
+      Paint()
+        ..shader = SweepGradient(
+          startAngle: startAngle,
+          endAngle: startAngle + 2 * math.pi,
+          colors: [...colors, colors.first],
+        ).createShader(rect)
+        ..strokeWidth = strokeWidth
+        ..style      = PaintingStyle.stroke
+        ..strokeCap  = StrokeCap.round,
+    );
+
+    // Point lumineux au bout de l'arc
+    final tipAngle = startAngle + sweep;
+    final tipX = center.dx + radius * math.cos(tipAngle);
+    final tipY = center.dy + radius * math.sin(tipAngle);
+    canvas.drawCircle(
+      Offset(tipX, tipY),
+      strokeWidth / 2 + 1.5,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.9)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+    );
+    canvas.drawCircle(
+      Offset(tipX, tipY),
+      strokeWidth / 2,
+      Paint()..color = Colors.white,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ArcPainter old) =>
+      old.progress != progress || old.glowOpacity != glowOpacity;
+}
+
+// ── Onglet Flow ───────────────────────────────────────────────────────────────
+class FlowTab extends ConsumerStatefulWidget {
   const FlowTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final flow = ref.watch(flowProvider);
-
-    return Stack(
-      children: [
-        // Contenu principal
-        SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Pills sessions ─────────────────────────────
-              _SessionPills(flow: flow),
-              const SizedBox(height: AppConstants.spacing32),
-
-              // ── Timer ──────────────────────────────────────
-              _FlowTimer(flow: flow),
-              const SizedBox(height: AppConstants.spacing32),
-
-              // ── Configuration ──────────────────────────────
-              _FlowConfig(flow: flow),
-            ],
-          ),
-        ),
-
-        // Overlay de célébration (affiché quand session complète)
-        if (flow.timerState == FlowTimerState.completed)
-          _CompletionOverlay(flow: flow),
-      ],
-    );
-  }
+  ConsumerState<FlowTab> createState() => _FlowTabState();
 }
 
-// ── Pills indicatrices de sessions ────────────────────────────
-class _SessionPills extends StatelessWidget {
-  final FlowState flow;
-  const _SessionPills({required this.flow});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Row(
-      children: [
-        Text(
-          'Sessions du jour',
-          style: AppTextStyles.labelMedium(color: AppColors.grey400),
-        ),
-        const SizedBox(width: 12),
-        ...List.generate(flow.sessionsPerDay, (i) {
-          final done = i < flow.completedToday;
-          return Container(
-            margin: const EdgeInsets.only(right: 6),
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: done
-                  ? AppColors.primary
-                  : (isDark ? AppColors.surfaceDark : AppColors.grey100),
-              border: Border.all(
-                color: done ? AppColors.primary : AppColors.grey200,
-                width: 1.5,
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: done
-                ? const Icon(Icons.bolt_rounded,
-                    color: Colors.white, size: 16)
-                : Center(
-                    child: Text(
-                      '${i + 1}',
-                      style: AppTextStyles.caption(color: AppColors.grey400),
-                    ),
-                  ),
-          );
-        }),
-      ],
-    );
-  }
-}
-
-// ── Timer circulaire 90 min ────────────────────────────────────
-class _FlowTimer extends ConsumerStatefulWidget {
-  final FlowState flow;
-  const _FlowTimer({required this.flow});
-
-  @override
-  ConsumerState<_FlowTimer> createState() => _FlowTimerState();
-}
-
-class _FlowTimerState extends ConsumerState<_FlowTimer>
-    with SingleTickerProviderStateMixin {
+class _FlowTabState extends ConsumerState<FlowTab>
+    with TickerProviderStateMixin {
   late AnimationController _pulseCtrl;
+  late AnimationController _glowCtrl;
   SessionContext? _sessionContext;
   bool _popupShown = false;
 
@@ -120,21 +117,48 @@ class _FlowTimerState extends ConsumerState<_FlowTimer>
     super.initState();
     _pulseCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+    _glowCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
     )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
     _pulseCtrl.dispose();
+    _glowCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleStartPause(FlowState flow) async {
+    final isRunning = flow.timerState == FlowTimerState.running;
+    if (isRunning) {
+      ref.read(flowProvider.notifier).startPause();
+      return;
+    }
+    if (flow.timerState == FlowTimerState.idle) {
+      final ctx = await SessionContextPicker.show(context, timerType: 'flow');
+      if (!mounted) return;
+      setState(() => _sessionContext = ctx);
+    }
+    ref.read(flowProvider.notifier).startPause();
+  }
+
+  void _openConfig(FlowState flow) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _FlowConfigSheet(flow: flow),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final flow   = widget.flow;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final flow      = ref.watch(flowProvider);
     final isRunning = flow.timerState == FlowTimerState.running;
+    final isPaused  = flow.timerState == FlowTimerState.paused;
 
     // Popup de fin de session
     ref.listen(flowProvider, (prev, next) {
@@ -144,6 +168,7 @@ class _FlowTimerState extends ConsumerState<_FlowTimer>
         _popupShown = true;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (!mounted) return;
+          final ctx  = context;
           final repo = ref.read(timerSessionRepositoryProvider);
           await repo.save(
             type: 'flow',
@@ -152,7 +177,7 @@ class _FlowTimerState extends ConsumerState<_FlowTimer>
           );
           if (!mounted) return;
           final action = await SessionEndPopup.show(
-            context,
+            ctx,
             timerType: 'flow',
             durationMinutes: FlowState.sessionDurationSeconds ~/ 60,
             sessionContext: _sessionContext,
@@ -162,16 +187,14 @@ class _FlowTimerState extends ConsumerState<_FlowTimer>
           setState(() => _sessionContext = null);
           ref.read(flowProvider.notifier).dismissCompletion();
           if (action == SessionEndAction.restart) {
-            // Petite pause visuelle puis proposition de relancer
             Future.delayed(const Duration(seconds: 1), () {
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                ScaffoldMessenger.of(ctx).showSnackBar(
                   SnackBar(
                     content: const Text('Pause terminée. Prêt pour la prochaine session ?'),
                     action: SnackBarAction(
                       label: 'Démarrer',
-                      onPressed: () =>
-                          ref.read(flowProvider.notifier).startPause(),
+                      onPressed: () => ref.read(flowProvider.notifier).startPause(),
                     ),
                     duration: const Duration(seconds: 10),
                     backgroundColor: AppColors.surfaceElevatedDark,
@@ -184,420 +207,331 @@ class _FlowTimerState extends ConsumerState<_FlowTimer>
       }
     });
 
-    // Couleur selon état
-    final ringColor = flow.allSessionsDone
-        ? AppColors.success
-        : AppColors.primary;
+    final arcColors = flow.allSessionsDone
+        ? [AppColors.accent, AppColors.primaryLight]
+        : [AppColors.primaryLight, AppColors.primary];
 
     return Column(
       children: [
-        // ── Cercle timer ────────────────────────────────────
-        Center(
-          child: SizedBox(
-            width: 240,
-            height: 240,
-            child: Stack(
-              alignment: Alignment.center,
+          // ── Ligne dots + ⚙ (pas de top bar — le header vient de planner_screen) ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Row(
               children: [
-                // Halo pulsant (actif seulement quand le timer tourne)
-                if (isRunning)
-                  AnimatedBuilder(
-                    animation: _pulseCtrl,
-                    builder: (_, __) => Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: ringColor
-                                .withValues(alpha: 0.1 + 0.1 * _pulseCtrl.value),
-                            blurRadius: 30 + 10 * _pulseCtrl.value,
-                            spreadRadius: 5,
-                          ),
-                        ],
+                // ⚙ à gauche — ne conflicte pas avec le bouton capture (haut-droite)
+                GestureDetector(
+                  onTap: () => _openConfig(flow),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
                       ),
                     ),
-                  ),
-
-                // Arc de progression
-                SizedBox.expand(
-                  child: CircularProgressIndicator(
-                    value: flow.sessionProgress,
-                    strokeWidth: 10,
-                    backgroundColor: ringColor.withValues(alpha: 0.12),
-                    valueColor: AlwaysStoppedAnimation(ringColor),
-                    strokeCap: StrokeCap.round,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.tune_rounded,
+                            size: 15, color: AppColors.textDarkMuted),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Config',
+                          style: AppTextStyles.caption(
+                              color: AppColors.textDarkMuted),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                const Spacer(),
+                // Dots sessions centrées à droite
+                _SessionDots(flow: flow),
+              ],
+            ),
+          ),
 
-                // Affichage central
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _pulseCtrl,
-                      builder: (_, child) => Opacity(
-                        opacity: isRunning
-                            ? 0.75 + 0.25 * _pulseCtrl.value
-                            : 1.0,
-                        child: child,
-                      ),
-                      child: Text(
-                        flow.timeDisplay,
-                        style: AppTextStyles.displayLarge(
-                          color: isDark
-                              ? AppColors.textDark
-                              : AppColors.textLight,
-                        ).copyWith(
-                          fontSize: 46,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -1,
+          // ── Timer hero ─────────────────────────────────────────────
+          Expanded(
+            child: Center(
+              child: AnimatedBuilder(
+                animation: Listenable.merge([_pulseCtrl, _glowCtrl]),
+                builder: (context, _) {
+                  final glowAlpha = isRunning
+                      ? 0.18 + 0.12 * _glowCtrl.value
+                      : 0.08;
+                  final timeOpacity = isRunning
+                      ? 0.8 + 0.2 * _pulseCtrl.value
+                      : 1.0;
+
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Halo de fond pulsant
+                      Container(
+                        width: 320,
+                        height: 320,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              AppColors.primary.withValues(alpha: glowAlpha),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.75],
+                          ),
                         ),
                       ),
+
+                      // Arc
+                      SizedBox(
+                        width: 280,
+                        height: 280,
+                        child: CustomPaint(
+                          painter: _ArcPainter(
+                            progress: flow.sessionProgress,
+                            colors: arcColors,
+                            trackColor: AppColors.primary.withValues(alpha: 0.12),
+                            strokeWidth: 12,
+                            glowOpacity: isRunning
+                                ? 0.5 + 0.3 * _glowCtrl.value
+                                : 0.3,
+                          ),
+                        ),
+                      ),
+
+                      // Contenu central
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Opacity(
+                            opacity: timeOpacity,
+                            child: Text(
+                              flow.timeDisplay,
+                              style: const TextStyle(
+                                fontSize: 68,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textDark,
+                                letterSpacing: -2,
+                                fontFamily: 'Inter',
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _statusLabel(flow),
+                            style: AppTextStyles.bodySmall(
+                              color: isRunning
+                                  ? AppColors.primaryLight
+                                  : AppColors.textDarkMuted,
+                            ).copyWith(letterSpacing: 0.5),
+                          ),
+                          // Pill contexte de tâche
+                          if (_sessionContext != null) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.push_pin_rounded,
+                                      size: 11,
+                                      color: AppColors.primaryLight),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    _sessionContext!.label,
+                                    style: AppTextStyles.caption(
+                                      color: AppColors.primaryLight,
+                                    ).copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+
+          // ── Zone basse : audio + boutons ───────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            child: Column(
+              children: [
+                // Résumé focus du jour
+                if (flow.totalFocusMinutesToday > 0) ...[
+                  _FocusPill(minutes: flow.totalFocusMinutesToday),
+                  const SizedBox(height: 14),
+                ],
+
+                // Audio chips
+                _AudioChips(
+                  selected: FocusAudioService.instance.current,
+                  color: AppColors.primary,
+                  onSelect: (audio) =>
+                      FocusAudioService.instance.select(audio),
+                ),
+                const SizedBox(height: 16),
+
+                // Boutons contrôle
+                Row(
+                  children: [
+                    // Reset
+                    _CircleButton(
+                      icon: Icons.refresh_rounded,
+                      onTap: () => ref.read(flowProvider.notifier).reset(),
+                      color: AppColors.textDarkMuted,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _statusLabel(flow),
-                      style: AppTextStyles.bodySmall(
-                          color: AppColors.grey400),
+                    const SizedBox(width: 12),
+                    // Play / Pause
+                    Expanded(
+                      child: _MainButton(
+                        isRunning: isRunning,
+                        isPaused: isPaused,
+                        disabled: flow.allSessionsDone,
+                        color: AppColors.primary,
+                        onTap: flow.allSessionsDone
+                            ? null
+                            : () => _handleStartPause(flow),
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-        ),
-
-        const SizedBox(height: AppConstants.spacing32),
-
-        // ── Boutons contrôle ────────────────────────────────
-        Row(
-          children: [
-            // Reset
-            IconButton.outlined(
-              onPressed: () => ref.read(flowProvider.notifier).reset(),
-              icon: const Icon(Icons.refresh_rounded),
-              style: IconButton.styleFrom(padding: const EdgeInsets.all(14)),
-            ),
-            const SizedBox(width: AppConstants.spacing16),
-
-            // Play / Pause
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: flow.allSessionsDone
-                    ? null
-                    : () async {
-                        if (isRunning) {
-                          ref.read(flowProvider.notifier).startPause();
-                          return;
-                        }
-                        // Picker uniquement au premier démarrage d'une session
-                        if (flow.timerState == FlowTimerState.idle) {
-                          final ctx = await SessionContextPicker.show(
-                            context,
-                            timerType: 'flow',
-                          );
-                          if (!mounted) return;
-                          setState(() => _sessionContext = ctx);
-                        }
-                        ref.read(flowProvider.notifier).startPause();
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ringColor,
-                  disabledBackgroundColor: AppColors.grey200,
-                ),
-                icon: Icon(isRunning
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded),
-                label: Text(isRunning ? 'Pause' : 'Démarrer'),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: AppConstants.spacing12),
-        Text(
-          '90 min de focus profond',
-          style: AppTextStyles.caption(),
-          textAlign: TextAlign.center,
-        ),
-
-        // Résumé du jour
-        if (flow.totalFocusMinutesToday > 0) ...[
-          const SizedBox(height: AppConstants.spacing8),
-          _FocusSummaryPill(minutes: flow.totalFocusMinutesToday),
-        ],
       ],
     );
   }
 
   String _statusLabel(FlowState flow) {
-    if (flow.allSessionsDone) return 'Objectif atteint 🏆';
+    if (flow.allSessionsDone) return 'Objectif du jour atteint 🏆';
     switch (flow.timerState) {
       case FlowTimerState.running: return 'En cours...';
       case FlowTimerState.paused:  return 'En pause';
-      default:                     return 'Prêt';
+      default:                     return 'Prêt à démarrer';
     }
   }
 }
 
-// ── Pill résumé focus ─────────────────────────────────────────
-class _FocusSummaryPill extends StatelessWidget {
+// ── Dots de sessions ──────────────────────────────────────────────────────────
+class _SessionDots extends StatelessWidget {
+  const _SessionDots({required this.flow});
+  final FlowState flow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(flow.sessionsPerDay, (i) {
+        final done = i < flow.completedToday;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutBack,
+          margin: const EdgeInsets.symmetric(horizontal: 5),
+          width:  done ? 28 : 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: done
+                ? AppColors.primary
+                : AppColors.primary.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(5),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+// ── Pill résumé focus ─────────────────────────────────────────────────────────
+class _FocusPill extends StatelessWidget {
+  const _FocusPill({required this.minutes});
   final int minutes;
-  const _FocusSummaryPill({required this.minutes});
 
   @override
   Widget build(BuildContext context) {
     final h = minutes ~/ 60;
     final m = minutes % 60;
     final label = h > 0
-        ? '${h}h${m.toString().padLeft(2, '0')} de focus aujourd\'hui ⚡'
-        : '${m}min de focus aujourd\'hui ⚡';
-
+        ? '⚡  ${h}h${m.toString().padLeft(2, '0')} de focus aujourd\'hui'
+        : '⚡  $m min de focus aujourd\'hui';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.12),
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(label,
-          style: AppTextStyles.caption(color: AppColors.primary)),
+          style: AppTextStyles.caption(color: AppColors.primaryLight)),
     );
   }
 }
 
-// ── Section configuration ─────────────────────────────────────
-class _FlowConfig extends ConsumerWidget {
-  final FlowState flow;
-  const _FlowConfig({required this.flow});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.spacing16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-        border: Border.all(
-          color: isDark
-              ? const Color(0x0FFFFFFF)
-              : const Color(0x14000000),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Ma configuration',
-            style: AppTextStyles.headingSmall(
-              color: isDark ? AppColors.textDark : AppColors.textLight,
-            ),
-          ),
-          const SizedBox(height: AppConstants.spacing16),
-
-          // Sélecteur 1x / 4x
-          Text(
-            'Sessions par jour',
-            style: AppTextStyles.labelMedium(color: AppColors.grey400),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _SessionOption(
-                label: '1×  par jour',
-                subtitle: '1 session · 09:00',
-                selected: flow.sessionsPerDay == 1,
-                onTap: () =>
-                    ref.read(flowProvider.notifier).setSessionsPerDay(1),
-              ),
-              const SizedBox(width: AppConstants.spacing12),
-              _SessionOption(
-                label: '4×  par jour',
-                subtitle: '09h · 11h30 · 14h · 16h30',
-                selected: flow.sessionsPerDay == 4,
-                onTap: () =>
-                    ref.read(flowProvider.notifier).setSessionsPerDay(4),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppConstants.spacing16),
-
-          // ── Sélecteur projet ─────────────────────────────────
-          Text(
-            'Projet en cours',
-            style: AppTextStyles.labelMedium(color: AppColors.grey400),
-          ),
-          const SizedBox(height: 8),
-          _FlowProjectPicker(flow: flow),
-
-          const SizedBox(height: AppConstants.spacing16),
-
-          // ── Sélecteur d'ambiance sonore ──────────────────────
-          Text(
-            'Ambiance sonore',
-            style: AppTextStyles.labelMedium(color: AppColors.grey400),
-          ),
-          const SizedBox(height: 8),
-          _AudioPicker(
-            selected: flow.selectedAudio,
-            onSelect: (audio) =>
-                ref.read(flowProvider.notifier).selectAudio(audio),
-          ),
-
-          const SizedBox(height: AppConstants.spacing16),
-
-          // Notifications planifiées
-          Row(
-            children: [
-              const Icon(Icons.notifications_outlined,
-                  size: 16, color: AppColors.grey400),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  'Rappels à : ${flow.notificationTimes.join(' · ')}',
-                  style: AppTextStyles.caption(color: AppColors.grey400),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Sélecteur projet pour Flow ────────────────────────────────
-class _FlowProjectPicker extends ConsumerWidget {
-  final FlowState flow;
-  const _FlowProjectPicker({required this.flow});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final activeProjects = ref.watch(activeProjectsProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return SizedBox(
-      height: 36,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          _FlowProjectChip(
-            label: 'Libre',
-            isSelected: flow.selectedProjectId == null,
-            isDark: isDark,
-            onTap: () => ref
-                .read(flowProvider.notifier)
-                .selectProject(id: null, name: null),
-          ),
-          const SizedBox(width: 8),
-          ...activeProjects.map((p) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: _FlowProjectChip(
-                  label: p.name,
-                  isSelected: flow.selectedProjectId == p.id,
-                  isDark: isDark,
-                  onTap: () => ref
-                      .read(flowProvider.notifier)
-                      .selectProject(id: p.id, name: p.name),
-                ),
-              )),
-        ],
-      ),
-    );
-  }
-}
-
-class _FlowProjectChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _FlowProjectChip({
-    required this.label,
-    required this.isSelected,
-    required this.isDark,
-    required this.onTap,
+// ── Chips audio compactes ─────────────────────────────────────────────────────
+class _AudioChips extends StatelessWidget {
+  const _AudioChips({
+    required this.selected,
+    required this.color,
+    required this.onSelect,
   });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppConstants.animFast,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.18)
-              : (isDark ? AppColors.surfaceDark : AppColors.grey100),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : AppColors.grey400.withValues(alpha: 0.2),
-            width: isSelected ? 1.5 : 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.caption(
-            color:
-                isSelected ? AppColors.primaryLight : AppColors.grey400,
-          ).copyWith(
-            fontWeight:
-                isSelected ? FontWeight.w600 : FontWeight.w400,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Sélecteur d'ambiance sonore (partagé Flow + Pomodoro) ────────
-class _AudioPicker extends StatelessWidget {
   final FocusAudio selected;
+  final Color color;
   final ValueChanged<FocusAudio> onSelect;
 
-  const _AudioPicker({required this.selected, required this.onSelect});
-
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
         children: FocusAudio.values.map((audio) {
-          final isSelected = audio == selected;
+          final on = audio == selected;
           return GestureDetector(
             onTap: () => onSelect(audio),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
+              duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.18)
-                    : Colors.transparent,
-                border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.grey200,
-                  width: isSelected ? 1.5 : 1,
-                ),
+                color: on
+                    ? color.withValues(alpha: 0.18)
+                    : Colors.white.withValues(alpha: 0.04),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: on
+                      ? color.withValues(alpha: 0.5)
+                      : Colors.white.withValues(alpha: 0.07),
+                  width: on ? 1.5 : 1,
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(audio.emoji, style: const TextStyle(fontSize: 14)),
+                  Text(audio.emoji,
+                      style: const TextStyle(fontSize: 12)),
                   const SizedBox(width: 5),
                   Text(
                     audio.label,
                     style: AppTextStyles.caption(
-                      color: isSelected ? AppColors.primary : AppColors.grey400,
-                    ).copyWith(fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400),
+                      color: on ? color : AppColors.textDarkMuted,
+                    ).copyWith(
+                      fontWeight:
+                          on ? FontWeight.w600 : FontWeight.w400,
+                    ),
                   ),
                 ],
               ),
@@ -609,57 +543,244 @@ class _AudioPicker extends StatelessWidget {
   }
 }
 
-// ── Option de session (carte sélectionnable) ──────────────────
-class _SessionOption extends StatelessWidget {
-  final String label;
-  final String subtitle;
-  final bool selected;
+// ── Bouton reset rond ─────────────────────────────────────────────────────────
+class _CircleButton extends StatelessWidget {
+  const _CircleButton({
+    required this.icon,
+    required this.onTap,
+    required this.color,
+  });
+  final IconData icon;
   final VoidCallback onTap;
+  final Color color;
 
-  const _SessionOption({
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Icon(icon, color: color, size: 22),
+      ),
+    );
+  }
+}
+
+// ── Bouton principal Play/Pause ───────────────────────────────────────────────
+class _MainButton extends StatelessWidget {
+  const _MainButton({
+    required this.isRunning,
+    required this.isPaused,
+    required this.disabled,
+    required this.color,
+    required this.onTap,
+  });
+  final bool isRunning;
+  final bool isPaused;
+  final bool disabled;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = isRunning
+        ? 'Pause'
+        : isPaused
+            ? 'Reprendre'
+            : 'Démarrer';
+    final icon = isRunning
+        ? Icons.pause_rounded
+        : Icons.play_arrow_rounded;
+
+    return GestureDetector(
+      onTap: disabled ? null : onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        height: 52,
+        decoration: BoxDecoration(
+          gradient: disabled
+              ? null
+              : LinearGradient(
+                  colors: [
+                    color,
+                    color.withValues(alpha: 0.7),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+          color: disabled ? Colors.white12 : null,
+          borderRadius: BorderRadius.circular(26),
+          boxShadow: disabled
+              ? null
+              : [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Inter',
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bottom sheet de configuration Flow ───────────────────────────────────────
+class _FlowConfigSheet extends ConsumerWidget {
+  const _FlowConfigSheet({required this.flow});
+  final FlowState flow;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1A1836),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+          24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Configuration Flow',
+            style: AppTextStyles.headingSmall(color: AppColors.textDark),
+          ),
+          const SizedBox(height: 20),
+
+          // Sessions par jour
+          Text(
+            'Sessions par jour',
+            style: AppTextStyles.caption(color: AppColors.textDarkMuted),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _SessionOptionTile(
+                label: '1 session',
+                subtitle: '09:00',
+                selected: flow.sessionsPerDay == 1,
+                onTap: () => ref
+                    .read(flowProvider.notifier)
+                    .setSessionsPerDay(1),
+              ),
+              const SizedBox(width: 10),
+              _SessionOptionTile(
+                label: '4 sessions',
+                subtitle: '09h · 11h30 · 14h · 16h30',
+                selected: flow.sessionsPerDay == 4,
+                onTap: () => ref
+                    .read(flowProvider.notifier)
+                    .setSessionsPerDay(4),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Rappels
+          Row(
+            children: [
+              Icon(Icons.notifications_outlined,
+                  size: 15, color: AppColors.textDarkMuted),
+              const SizedBox(width: 6),
+              Text(
+                'Rappels : ${flow.notificationTimes.join(' · ')}',
+                style: AppTextStyles.caption(color: AppColors.textDarkMuted),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SessionOptionTile extends StatelessWidget {
+  const _SessionOptionTile({
     required this.label,
     required this.subtitle,
     required this.selected,
     required this.onTap,
   });
+  final String label;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: AppConstants.animFast,
+          duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: selected
-                ? AppColors.primary.withValues(alpha: 0.12)
-                : Colors.transparent,
+                ? AppColors.primary.withValues(alpha: 0.15)
+                : Colors.white.withValues(alpha: 0.05),
             border: Border.all(
-              color: selected ? AppColors.primary : AppColors.grey200,
-              width: selected ? 2 : 1,
+              color: selected
+                  ? AppColors.primary.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.08),
+              width: selected ? 1.5 : 1,
             ),
-            borderRadius:
-                BorderRadius.circular(AppConstants.radiusMedium),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: AppTextStyles.bodyMedium(
+                style: AppTextStyles.bodySmall(
                   color: selected
-                      ? AppColors.primary
-                      : isDark
-                          ? AppColors.textDark
-                          : AppColors.textLight,
+                      ? AppColors.primaryLight
+                      : AppColors.textDark,
                 ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: AppTextStyles.caption(color: AppColors.grey400),
+                style: AppTextStyles.caption(
+                    color: AppColors.textDarkMuted),
               ),
             ],
           ),
@@ -667,259 +788,4 @@ class _SessionOption extends StatelessWidget {
       ),
     );
   }
-}
-
-// ── Overlay de célébration ─────────────────────────────────────
-class _CompletionOverlay extends ConsumerStatefulWidget {
-  final FlowState flow;
-  const _CompletionOverlay({required this.flow});
-
-  @override
-  ConsumerState<_CompletionOverlay> createState() =>
-      _CompletionOverlayState();
-}
-
-class _CompletionOverlayState extends ConsumerState<_CompletionOverlay>
-    with TickerProviderStateMixin {
-  late AnimationController _cardCtrl;
-  late AnimationController _particlesCtrl;
-  late Animation<double> _scaleAnim;
-  late Animation<double> _fadeAnim;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _cardCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _particlesCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-
-    _scaleAnim = CurvedAnimation(parent: _cardCtrl, curve: Curves.elasticOut);
-    _fadeAnim  = CurvedAnimation(parent: _cardCtrl, curve: Curves.easeOut);
-
-    _cardCtrl.forward();
-    _particlesCtrl.forward();
-  }
-
-  @override
-  void dispose() {
-    _cardCtrl.dispose();
-    _particlesCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final flow   = widget.flow;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final h = (FlowState.sessionDurationSeconds ~/ 60) ~/ 60;
-    final m = (FlowState.sessionDurationSeconds ~/ 60) % 60;
-    final durLabel = h > 0
-        ? '${h}h${m.toString().padLeft(2, '0')}'
-        : '${m}min';
-
-    final allDone = flow.allSessionsDone;
-
-    return Container(
-      color: Colors.black.withValues(alpha: 0.75),
-      child: Stack(
-        children: [
-          // ── Particules d'éclat ────────────────────────────
-          AnimatedBuilder(
-            animation: _particlesCtrl,
-            builder: (_, __) => CustomPaint(
-              size: MediaQuery.of(context).size,
-              painter: _ParticlesPainter(
-                  progress: _particlesCtrl.value),
-            ),
-          ),
-
-          // ── Carte de célébration ──────────────────────────
-          Center(
-            child: FadeTransition(
-              opacity: _fadeAnim,
-              child: ScaleTransition(
-                scale: _scaleAnim,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 32),
-                  padding: const EdgeInsets.all(AppConstants.spacing32),
-                  decoration: BoxDecoration(
-                    color:
-                        isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusLarge + 4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 40,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Emoji
-                      const Text('⚡', style: TextStyle(fontSize: 56)),
-                      const SizedBox(height: AppConstants.spacing16),
-
-                      // Titre
-                      Text(
-                        allDone
-                            ? 'Objectif atteint !'
-                            : 'Flow accompli !',
-                        style: AppTextStyles.headingLarge(
-                          color: isDark
-                              ? AppColors.textDark
-                              : AppColors.textLight,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Belle avancée — tu avances à ton rythme 💪',
-                        style: AppTextStyles.bodySmall(
-                            color: AppColors.grey400),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: AppConstants.spacing24),
-
-                      // Stats
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _StatChip(
-                            label: 'Focus',
-                            value: durLabel,
-                            color: AppColors.primary,
-                          ),
-                          _StatChip(
-                            label: 'Session',
-                            value:
-                                '${flow.completedToday}/${flow.sessionsPerDay}',
-                            color: AppColors.accent,
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: AppConstants.spacing24),
-
-                      // CTA
-                      ElevatedButton(
-                        onPressed: () =>
-                            ref.read(flowProvider.notifier).dismissCompletion(),
-                        child: Text(
-                          allDone
-                              ? 'Terminé pour aujourd\'hui 🏆'
-                              : 'Session suivante',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Chip stat dans la carte ───────────────────────────────────
-class _StatChip extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: AppTextStyles.displayLarge(color: color)
-                .copyWith(fontSize: 24, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 2),
-          Text(label, style: AppTextStyles.caption(color: color)),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Peintre de particules ─────────────────────────────────────
-class _ParticlesPainter extends CustomPainter {
-  final double progress;
-
-  static final _rng = math.Random(42);
-  static final _particles = List.generate(30, (_) {
-    final angle  = _rng.nextDouble() * 2 * math.pi;
-    final speed  = 0.3 + _rng.nextDouble() * 0.7;
-    final size   = 3.0 + _rng.nextDouble() * 5.0;
-    final colors = [
-      AppColors.primary,
-      AppColors.accent,
-      AppColors.chartAmber,
-      AppColors.secondary,
-    ];
-    final color = colors[_rng.nextInt(colors.length)];
-    return _Particle(angle: angle, speed: speed, size: size, color: color);
-  });
-
-  _ParticlesPainter({required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final maxDist = size.shortestSide * 0.65;
-
-    for (final p in _particles) {
-      final dist   = maxDist * p.speed * progress;
-      final opacity = (1.0 - progress).clamp(0.0, 1.0);
-      final pos    = center +
-          Offset(math.cos(p.angle) * dist, math.sin(p.angle) * dist);
-
-      final paint = Paint()
-        ..color = p.color.withValues(alpha: opacity)
-        ..style = PaintingStyle.fill;
-
-      canvas.drawCircle(pos, p.size * (1 - progress * 0.5), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ParticlesPainter old) => old.progress != progress;
-}
-
-class _Particle {
-  final double angle;
-  final double speed;
-  final double size;
-  final Color color;
-  const _Particle({
-    required this.angle,
-    required this.speed,
-    required this.size,
-    required this.color,
-  });
 }

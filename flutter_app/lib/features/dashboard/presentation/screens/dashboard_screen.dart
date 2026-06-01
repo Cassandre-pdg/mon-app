@@ -441,7 +441,7 @@ class _LevelCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Niveau ${data.level} — ${data.levelLabel}',
+                'Niveau ${data.level} : ${data.levelLabel}',
                 style: AppTextStyles.headingSmall(
                   color: isDark ? AppColors.textDark : AppColors.textLight,
                 ),
@@ -486,13 +486,13 @@ class _MotivationBanner extends StatelessWidget {
     String message;
 
     if (data.currentStreak == 0) {
-      message = 'Commence aujourd\'hui — chaque grand voyage commence par un premier pas 🌱';
+      message = 'Commence aujourd\'hui, chaque grand voyage commence par un premier pas 🌱';
     } else if (data.currentStreak < 3) {
-      message = 'Tu avances — continue à ton rythme, ça compte 💪';
+      message = 'Tu avances, continue à ton rythme, ça compte 💪';
     } else if (data.currentStreak < 7) {
-      message = '${data.currentStreak} jours de suite — tu construis quelque chose de solide 🔥';
+      message = '${data.currentStreak} jours de suite, tu construis quelque chose de solide 🔥';
     } else {
-      message = '${data.currentStreak} jours — tu es en train de créer une vraie habitude 🏆';
+      message = '${data.currentStreak} jours : tu es en train de créer une vraie habitude 🏆';
     }
 
     return Container(

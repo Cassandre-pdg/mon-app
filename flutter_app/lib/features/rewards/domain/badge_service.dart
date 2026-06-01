@@ -29,7 +29,7 @@ class BadgeService {
       AppBadge(
         id: 'streak_3',
         name: 'Premier élan',
-        description: 'Tu avances à ton rythme — et ça se ressent.',
+        description: 'Tu avances à ton rythme, et ça se ressent.',
         hint: 'Reviens 3 jours de suite',
         category: BadgeCategory.streak,
         tier: BadgeTier.common,

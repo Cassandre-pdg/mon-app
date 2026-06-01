@@ -186,7 +186,7 @@ class _NotificationSettingsList extends ConsumerWidget {
         Center(
           child: Text(
             'Tu peux modifier ces préférences à tout moment.\n'
-            'Les notifications sont opt-in — jamais de spam.',
+            'Les notifications sont opt-in : jamais de spam.',
             style: AppTextStyles.caption(color: AppColors.grey400),
             textAlign: TextAlign.center,
           ),
@@ -323,7 +323,7 @@ class _ToggleTile extends StatelessWidget {
   }
 }
 
-// ── Sélecteur d'heure — row cliquable ─────────────────────────
+// ── Sélecteur d'heure : row cliquable ─────────────────────────
 
 class _WheelTimeTile extends StatelessWidget {
   final String label;

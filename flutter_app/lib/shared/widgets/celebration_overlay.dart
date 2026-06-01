@@ -370,6 +370,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 58, 24, 24),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Label
                     Text(
@@ -380,6 +381,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                         letterSpacing: 1.5,
                         color: _config.accentColor,
                         fontFamily: 'Inter',
+                        decoration: TextDecoration.none,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -393,6 +395,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                         color: Color(0xFFEDEDFF),
                         letterSpacing: -0.4,
                         fontFamily: 'Inter',
+                        decoration: TextDecoration.none,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -405,6 +408,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                         color: Color(0x80EDEDFF),
                         height: 1.55,
                         fontFamily: 'Inter',
+                        decoration: TextDecoration.none,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -430,6 +434,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                           fontWeight: FontWeight.w700,
                           color: _config.accentColor,
                           fontFamily: 'Inter',
+                          decoration: TextDecoration.none,
                         ),
                       ),
                     ),
@@ -465,6 +470,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               fontFamily: 'Inter',
+                              decoration: TextDecoration.none,
                             ),
                           ),
                         ),

@@ -7,8 +7,17 @@ import '../services/share_service.dart';
 class ShareCard extends StatelessWidget {
   const ShareCard({super.key});
 
+  // Retourne le Rect du widget pour positionner le popover iOS
+  Rect? _getShareRect(GlobalKey key) {
+    final box = key.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return null;
+    final offset = box.localToGlobal(Offset.zero);
+    return offset & box.size;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final shareButtonKey = GlobalKey();
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -69,9 +78,11 @@ class ShareCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
+              key: shareButtonKey,
               onPressed: () async {
                 await ShareService.shareText(
                   'Je te recommande Kolyb, l\'app pour avancer au quotidien en tant qu\'indépendant. Télécharge-la sur kolyb.app 🚀',
+                  sharePositionOrigin: _getShareRect(shareButtonKey),
                 );
               },
               icon: const Icon(Icons.share_rounded, size: 18),

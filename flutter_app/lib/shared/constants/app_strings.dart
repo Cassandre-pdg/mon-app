@@ -37,7 +37,7 @@ class AppStrings {
   static const String plannerTitle         = 'Ma Journée';
   static const String plannerEmptyState    = 'Ajoute tes 3 priorités du jour, à ton rythme 🎯';
   static const String plannerTaskDone      = 'Belle avancée ! ✅';
-  static const String plannerAllDone       = 'Journée accomplie — tu avances 🚀';
+  static const String plannerAllDone       = 'Journée accomplie, tu avances 🚀';
   static const String plannerMaxTasks      = 'Concentre-toi sur tes 3 priorités du jour !';
 
   // ── STREAKS ─────────────────────────────────────────────────
@@ -53,19 +53,19 @@ class AppStrings {
   static const String level5 = 'Visionnaire';
 
   // ── ÉTATS VIDES (bienveillants) ─────────────────────────────
-  static const String emptyCheckins  = 'Commence ton premier check-in — ça prend 1 minute 🌱';
+  static const String emptyCheckins  = 'Commence ton premier check-in, ça prend 1 minute 🌱';
   static const String emptyCommunity = 'Le Salon t\'attend, dis bonjour 👋';
   static const String emptySleep     = 'Note ton sommeil pour suivre ton énergie 😴';
-  static const String emptyBadges    = 'Tes premiers badges arrivent — continue comme ça 🔥';
+  static const String emptyBadges    = 'Tes premiers badges arrivent, continue comme ça 🔥';
 
   // ── ERREURS ─────────────────────────────────────────────────
   static const String errorGeneric     = 'Oops, quelque chose s\'est mal passé. Réessaie !';
-  static const String errorNetwork     = 'Pas de connexion — vérifie ton réseau.';
+  static const String errorNetwork     = 'Pas de connexion, vérifie ton réseau.';
   static const String errorAuth        = 'Connexion impossible. Vérifie tes identifiants.';
 
   // ── PAYWALL ───────────────────────────────────────────────────
   static const String paywallNudgePost =
-      'Tu as posté 3 fois — avec Pro, c\'est illimité 🚀';
+      'Tu as posté 3 fois. Avec Pro, c\'est illimité 🚀';
 
   static const String paywallTitle    = 'Kolyb Pro';
   static const String paywallSubtitle =
@@ -73,7 +73,7 @@ class AppStrings {
 
   // Mensuel
   static const String paywallPriceMonthly        = '9,99\u202f€';
-  static const String paywallPriceMonthlyCaption  = '0,33\u202f€ par jour — moins qu\'un café';
+  static const String paywallPriceMonthlyCaption  = '0,33\u202f€ par jour, moins qu\'un café';
 
   // Annuel
   static const String paywallPriceAnnual         = '79\u202f€\u202f/\u202fan';

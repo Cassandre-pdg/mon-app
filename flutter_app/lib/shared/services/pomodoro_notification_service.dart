@@ -55,7 +55,7 @@ class PomodoroNotificationService {
         hour:  totalMinutes ~/ 60,
         min:   totalMinutes % 60,
         title: '🍅 Ton Pomodoro commence bientôt !',
-        body:  'Dans 15 min — prépare ton espace et ferme tes distractions.',
+        body:  'Dans 15 min, prépare ton espace et ferme tes distractions.',
       );
     }
   }

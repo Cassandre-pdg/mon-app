@@ -76,7 +76,7 @@ class FlowNotificationService {
         hour:  totalMinutes ~/ 60,
         min:   totalMinutes % 60,
         title: '⚡ Ton Flow démarre dans 15 min !',
-        body:  'Prépare ton espace — 90 min de focus profond t\'attendent.',
+        body:  'Prépare ton espace, 90 min de focus profond t\'attendent.',
       );
     }
   }

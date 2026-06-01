@@ -165,7 +165,7 @@ class _ObjectivesContent extends ConsumerWidget {
       children: [
         // ── 1. Mes Objectifs ──────────────────────────────────
         _SectionLabel('Mes Objectifs', isDark: isDark),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         objectivesAsync.when(
           loading: () => const _LoadingCard(),
           error: (e, _) => _ErrorCard(
@@ -174,24 +174,24 @@ class _ObjectivesContent extends ConsumerWidget {
           data: (_) => _ObjectivesHorizonGrid(isDark: isDark),
         ),
 
-        const SizedBox(height: 28),
+        const SizedBox(height: 40),
 
         // ── 2. Mes Projets ────────────────────────────────────
         _SectionLabel('Mes Projets', isDark: isDark),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         _ProjectHubCard(isDark: isDark),
 
-        const SizedBox(height: 28),
+        const SizedBox(height: 40),
 
         // ── 3. Mon Suivi ──────────────────────────────────────
         _SectionLabel('Mon Suivi', isDark: isDark),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         habitsAsync.when(
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
           data: (habits) => _MomentumLineChart(habits: habits, isDark: isDark),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         habitsAsync.when(
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
@@ -200,11 +200,11 @@ class _ObjectivesContent extends ConsumerWidget {
               : _HabitStreakChart(habits: habits, isDark: isDark),
         ),
 
-        const SizedBox(height: 28),
+        const SizedBox(height: 40),
 
         // ── 4. Mes Habitudes ──────────────────────────────────
         _SectionLabel('Mes Habitudes', isDark: isDark),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         habitsAsync.when(
           loading: () => const _LoadingCard(),
           error: (e, _) => _ErrorCard(
@@ -214,10 +214,10 @@ class _ObjectivesContent extends ConsumerWidget {
               ? _HabitsEmptyCard(isDark: isDark)
               : _HabitsList(habits: habits, isDark: isDark),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         _AddHabitButton(isDark: isDark),
 
-        const SizedBox(height: 40),
+        const SizedBox(height: 56),
       ],
     );
   }
@@ -1040,7 +1040,7 @@ class _HabitsList extends ConsumerWidget {
       children: [
         if (today.isNotEmpty) ...[
           ...today.map((h) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 14),
                 child: _HabitCard(habit: h, isDark: isDark),
               )),
         ],
@@ -1054,7 +1054,7 @@ class _HabitsList extends ConsumerWidget {
             ),
           ),
           ...other.map((h) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 14),
                 child: _HabitCard(habit: h, isDark: isDark, muted: true),
               )),
         ],

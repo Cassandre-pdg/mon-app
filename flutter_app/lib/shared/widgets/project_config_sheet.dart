@@ -445,7 +445,7 @@ class _ProjectConfigSheetState extends ConsumerState<ProjectConfigSheet> {
                     // ── 7. Blocage actuel ─────────────────────
                     _SectionLabel(
                       label: 'Blocage actuel',
-                      subtitle: 'Optionnel — nommer un blocage aide à le surmonter',
+                      subtitle: 'Optionnel : nommer un blocage aide à le surmonter',
                       isDark: isDark,
                     ),
                     _TextField(

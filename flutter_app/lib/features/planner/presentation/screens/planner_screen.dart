@@ -9,7 +9,6 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/constants/app_strings.dart';
 import '../../../../shared/services/celebration_service.dart';
-import '../../../../shared/widgets/aurora_background.dart';
 import '../providers/planner_provider.dart';
 import '../providers/kanban_provider.dart';
 import '../providers/flash_provider.dart';
@@ -181,18 +180,17 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       isDark: isDark,
     );
 
-    // Flow : fond aurora animé
+    // Flow : fond sombre unifié (pas d'aurora — le glow du timer suffit)
     if (section == 'flow') {
       return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: AuroraBackground(
-          child: SafeArea(
-            child: Column(
-              children: [
-                header,
-                const Expanded(child: FlowTab()),
-              ],
-            ),
+        backgroundColor:
+            isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        body: SafeArea(
+          child: Column(
+            children: [
+              header,
+              const Expanded(child: FlowTab()),
+            ],
           ),
         ),
       );
@@ -421,7 +419,9 @@ class _FlowCard extends ConsumerWidget {
             ),
           ],
         ),
-        child: Stack(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          child: Stack(
           children: [
             // Orbe décorative fond
             Positioned(
@@ -449,6 +449,7 @@ class _FlowCard extends ConsumerWidget {
                     children: [
                       Text(
                         'Flow',
+
                         style: AppTextStyles.headingMedium(
                             color: Colors.white),
                       ),
@@ -525,6 +526,7 @@ class _FlowCard extends ConsumerWidget {
             ),
           ],
         ),
+        ), // ClipRRect
       ),
     );
   }
@@ -556,7 +558,9 @@ class _PomodoroCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Stack(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          child: Stack(
           children: [
             // Orbe décorative fond
             Positioned(
@@ -648,6 +652,7 @@ class _PomodoroCard extends StatelessWidget {
             ),
           ],
         ),
+        ), // ClipRRect
       ),
     );
   }

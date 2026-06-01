@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -23,9 +24,14 @@ class ShareService {
   }
 
   /// Partage un texte simple (bilan hebdo, stats, etc.)
-  static Future<void> shareText(String text) async {
+  /// [sharePositionOrigin] requis sur iPad/iOS pour positionner le popover natif
+  static Future<void> shareText(String text, {Rect? sharePositionOrigin}) async {
     try {
-      await Share.share(text, subject: 'Kolyb');
+      await Share.share(
+        text,
+        subject: 'Kolyb',
+        sharePositionOrigin: sharePositionOrigin,
+      );
     } catch (e) {
       _log.e('ShareService.shareText', error: e);
     }

@@ -7,7 +7,7 @@ import '../../../shared/constants/app_constants.dart';
 import '../domain/subscription_status.dart';
 
 /// Toutes les interactions avec le SDK RevenueCat
-/// Jamais appelé directement depuis un widget — passer par subscription_provider.dart
+/// Jamais appelé directement depuis un widget : passer par subscription_provider.dart
 class SubscriptionRepository {
   SubscriptionRepository._();
   static final SubscriptionRepository instance = SubscriptionRepository._();
@@ -33,7 +33,7 @@ class SubscriptionRepository {
       await identifyUser(userId);
     }
 
-    _log.i('[RevenueCat] initialisé — userId: ${userId ?? "anonyme"}');
+    _log.i('[RevenueCat] initialisé : userId: ${userId ?? "anonyme"}');
   }
 
   /// Associe un userId Supabase à RevenueCat (à appeler après login)
@@ -95,7 +95,7 @@ class SubscriptionRepository {
       _log.i('[RevenueCat] achat réussi: ${package.identifier}');
       return _mapToStatus(result.customerInfo);
     } on PurchasesErrorCode catch (e) {
-      // Annulation volontaire par l'utilisateur — pas une vraie erreur
+      // Annulation volontaire par l'utilisateur : pas une vraie erreur
       if (e == PurchasesErrorCode.purchaseCancelledError) {
         _log.i('[RevenueCat] achat annulé par l\'utilisateur');
         return const SubscriptionStatus.free();

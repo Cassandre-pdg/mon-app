@@ -76,7 +76,7 @@ class _BadgesBody extends StatelessWidget {
     (BadgeCategory.streak,    '🔥 Régularité',  'Ta constance, jour après jour'),
     (BadgeCategory.level,     '⭐ Progression',  'Chaque action te rapproche du prochain palier'),
     (BadgeCategory.flash,     '⚡ Flash',         'Tes micro-victoires s\'accumulent vite'),
-    (BadgeCategory.checkin,   '🌅 Check-ins',    'Tu prends soin de toi — et ça compte'),
+    (BadgeCategory.checkin,   '🌅 Check-ins',    'Tu prends soin de toi, et ça compte'),
     (BadgeCategory.project,   '🚀 Projets',      'Tu livres ce que tu commences'),
     (BadgeCategory.community, '💬 Communauté',   'Ta voix enrichit Le Salon'),
     (BadgeCategory.special,   '✨ Spéciaux',      'Des moments uniques qui méritent d\'être célébrés'),
@@ -113,7 +113,7 @@ class _BadgesBody extends StatelessWidget {
           if (unlocked < total)
             Center(
               child: Text(
-                'Continue à avancer — chaque badge arrive à son rythme 🌱',
+                'Continue à avancer, chaque badge arrive à son rythme 🌱',
                 style: AppTextStyles.bodySmall(
                   color: isDark
                       ? AppColors.textDark.withValues(alpha: 0.38)

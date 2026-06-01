@@ -45,7 +45,7 @@ class EisenhowerTab extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Structure tes projets à moyen terme — classe chaque tâche selon son urgence et son importance.',
+                    'Structure tes projets à moyen terme : classe chaque tâche selon son urgence et son importance.',
                     style: AppTextStyles.bodySmall(
                       color: isDark
                           ? AppColors.textDark
