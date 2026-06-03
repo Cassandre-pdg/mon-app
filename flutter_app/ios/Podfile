@@ -67,6 +67,10 @@ post_install do |installer|
       config.build_settings['GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS']       = 'NO'
       config.build_settings['CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS'] = 'NO'
       config.build_settings['CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF']      = 'NO'
+      # Fix nanopb / GoogleDataTransport incompatible avec Xcode 26 (clang C99 strict)
+      if target.name == 'GoogleDataTransport'
+        config.build_settings['OTHER_CFLAGS'] = '$(inherited) -Wno-implicit-function-declaration -Wno-strict-prototypes'
+      end
       # Fix "Stale file outside allowed root paths" (bundles _Privacy dans DerivedData)
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING']             = 'NO'
     end

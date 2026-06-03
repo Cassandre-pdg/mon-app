@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../shared/theme/app_colors.dart';
@@ -11,6 +12,7 @@ import '../../data/community_model.dart';
 import '../../data/challenge_model.dart';
 import '../providers/community_provider.dart';
 import '../providers/challenge_provider.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
 
 // ─────────────────────────────────────────────────────────────
 // ÉCRAN PRINCIPAL
@@ -131,9 +133,10 @@ class _MessagesTabState extends ConsumerState<_MessagesTab> {
   }
 
   void _openCompose(BuildContext context, {PostType? forcedType}) {
-    final weeklyCount =
-        ref.read(weeklyPostCountProvider).value ?? 0;
-    final canPost = weeklyCount < AppConstants.freeWeeklyPosts;
+    // Les abonnés Pro peuvent toujours poster, sans limite hebdomadaire
+    final isPro = ref.read(isProProvider);
+    final weeklyCount = ref.read(weeklyPostCountProvider).value ?? 0;
+    final canPost = isPro || weeklyCount < AppConstants.freeWeeklyPosts;
 
     showModalBottomSheet(
       context: context,
@@ -974,6 +977,7 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
   }
 
   Widget _buildPaywallNudge() {
+    final context = this.context;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 36),
       child: Column(
@@ -987,10 +991,39 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Passe à Pro pour des échanges illimités 🚀',
-            style:
-                AppTextStyles.bodyMedium(color: AppColors.primaryPale),
+            'Passe à Pro pour des échanges illimités dans Le Salon.',
+            style: AppTextStyles.bodyMedium(color: AppColors.primaryPale),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+              context.push('/paywall');
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6D28D9), Color(0xFF8B7FE8)],
+                ),
+                borderRadius:
+                    BorderRadius.circular(AppConstants.radiusPill),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.workspace_premium_rounded,
+                      color: Colors.white, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Découvrir Kolyb Pro',
+                    style: AppTextStyles.bodyLarge(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

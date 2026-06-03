@@ -1,6 +1,6 @@
 # 🧭 CLAUDE.md — Instructions pour Claude Code
 *Ce fichier est lu par Claude Code à chaque session. Ne jamais le supprimer.*
-*Dernière mise à jour : juin 2026 — Connexion timers Flow/Pomodoro au système de tâches (SessionContextPicker + SessionEndPopup + timer_sessions Supabase). Fix CelebrationOverlay (margin négative → Stack+Positioned). Curseur de progression interactif sur les objectifs (slider bottom sheet avec emoji dynamique). Refonte onboarding textes/icônes. Refonte rewards (BadgeCategory étendu, BadgeTier, nouveaux repos). Fix share_plus, fix notification settings overlap, fix IdentityBottomSheet overflow clavier.*
+*Dernière mise à jour : juin 2026 — Intégration RevenueCat iOS (clé appl_CjgBABjtgFqoVdKYVGXvUiLgumg, entitlement "Kolyb Pro", produits kolyb_pro_monthly 9,99€/kolyb_pro_annual 79,99€). Blocage features payantes : méditations (2 gratuites isComingSoon + 8 Pro), Eisenhower (ProGate overlay), Le Salon (posts illimités Pro / limité 3/semaine gratuit + bouton paywall), bannière Pro dashboard. Nouveau widget partagé ProGate + ProBadge (shared/widgets/pro_gate.dart). Correction prix paywall (79,99€ au lieu de 79€, 6,67€/mois) et profil (9,99€ au lieu de 14,99€).*
 
 ---
 
@@ -326,6 +326,12 @@ flutter_app/lib/
         │                                    Champs : Nom → Catégorie → Pourquoi → Vision →
         │                                    Date cible → Critères de réussite (3 défaut + ajouter) →
         │                                    Blocage actuel
+        ├── pro_gate.dart                 ← ⭐ widget cadenas Pro réutilisable
+        │                                    ProGate(child, title, subtitle, emoji) : enveloppe
+        │                                    n'importe quel widget — contenu flouté (Opacity 0.25)
+        │                                    avec overlay cadenas + CTA paywall si !isPro.
+        │                                    ProBadge() : petit badge gradient violet inline.
+        │                                    Utilisé dans : eisenhower_screen, meditation_library
         └── shareable_card.dart           ← carte partage réseaux sociaux
 ```
 
@@ -570,7 +576,9 @@ Récompenses  → "Mes Badges"
 | Célébrations in-app | `celebration_overlay.dart` + `celebration_service.dart` | Badge hexagonal + confettis · 6 events · déclenché via `ref.read(celebrationProvider.notifier).celebrate(event)` · badge via Stack+Positioned (PAS de margin négative) |
 | Capture brain-dump | `capture_bottom_sheet.dart` | Bouton haut-droite, badge pending |
 | Badges/Récompenses | `rewards_screen.dart` | BadgeCategory : streak/level/flash/checkin/project/community/special · BadgeTier · badge_preferences_repository · rewards_repository · badge_hex_widget partagé |
-| Paywall | `paywall_screen.dart` | Pro V2 (affiché sans fonctionnel) — enrichi juin 2026 |
+| RevenueCat | `subscription_repository.dart` + `app_constants.dart` | Clé iOS appl_CjgBABjtgFqoVdKYVGXvUiLgumg intégrée. Entitlement "Kolyb Pro", produits kolyb_pro_monthly (9,99€) + kolyb_pro_annual (79,99€), offering "default" configuré |
+| Paywall | `paywall_screen.dart` | Connecté RevenueCat — affiche vrais prix, achat fonctionnel. Prix corrigés : 9,99€/mois, 79,99€/an (6,67€/mois) |
+| Features Pro bloquées | `pro_gate.dart` + écrans | Eisenhower (ProGate overlay complet) · Méditations (2 gratuites isComingSoon + 8 Pro avec cadenas) · Le Salon (3 posts/semaine gratuit, illimité Pro) · Dashboard (bannière Pro _ProUpgradeBanner) |
 | Méditation | `meditation_library_screen.dart` | Bibliothèque |
 | Player méditation | `meditation_player_screen.dart` | Player avec audio |
 | Respiration | `breathing_exercise_screen.dart` | Exercices guidés |
@@ -627,7 +635,7 @@ Se relever après échec       → +15 pts (bonus bienveillance)
 ### Gratuit (toujours accessible)
 Check-in illimité · Dashboard · 3 priorités · Capture brain-dump · Feed Le Salon (lecture) · 3 posts/semaine · Badges & streaks · Pomodoro · Flow · Méditation basique
 
-### Pro 14,99 €/mois (V2 uniquement)
+### Pro 9,99 €/mois — 79,99 €/an (actif V1)
 Posts illimités · Création de groupe · Rapport PDF · Méditations Pro · Musiques focus · Statistiques avancées · Webinaires · Historique illimité
 
 ### Règle paywall

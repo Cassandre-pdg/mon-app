@@ -9,6 +9,7 @@ import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/navigation/app_router.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../../data/dashboard_repository.dart';
 import '../../../planner/presentation/providers/flow_provider.dart';
@@ -188,6 +189,10 @@ class _DashboardContent extends ConsumerWidget {
             child: _LevelCard(data: data),
           ),
           const SizedBox(height: AppConstants.spacing24),
+
+          // ── Bannière Pro (visible uniquement si pas abonné) ──
+          _ProUpgradeBanner(),
+          const SizedBox(height: AppConstants.spacing16),
 
           // ── Message bienveillant ─────────────────────────
           _MotivationBanner(data: data),
@@ -1529,6 +1534,96 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: AppConstants.spacing16),
             ElevatedButton(onPressed: onRetry, child: const Text('Réessayer')),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bannière upgrade Pro ────────────────────────────────────────
+/// Visible uniquement si l'utilisateur n'est pas abonné Pro.
+/// Disparaît automatiquement après souscription.
+class _ProUpgradeBanner extends ConsumerWidget {
+  const _ProUpgradeBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPro = ref.watch(isProProvider);
+    if (isPro) return const SizedBox.shrink(); // invisible si déjà Pro
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () => context.push('/paywall'),
+        child: Container(
+          padding: const EdgeInsets.all(AppConstants.spacing16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF3B1FA3), Color(0xFF6D28D9)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.35),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Icône
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: Text('✨', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: AppConstants.spacing12),
+
+              // Texte
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Passe à Kolyb Pro',
+                      style: AppTextStyles.headingSmall(color: Colors.white),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Historique, graphiques, méditations illimitées...',
+                      style: AppTextStyles.caption(
+                        color: Colors.white.withValues(alpha: 0.75),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Flèche
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
+import '../../../../shared/widgets/pro_gate.dart';
 import '../providers/eisenhower_provider.dart';
 
 // ── Onglet Matrice d'Eisenhower ───────────────────────────────
@@ -25,7 +26,11 @@ class EisenhowerTab extends ConsumerWidget {
     final tasks  = ref.watch(eisenhowerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Column(
+    return ProGate(
+      title: 'Matrice d\'Eisenhower',
+      subtitle: 'Classe tes tâches par urgence et importance pour décider quoi faire en premier.',
+      emoji: '🧭',
+      child: Column(
       children: [
         // ── En-tête explicatif ────────────────────────────
         Padding(
@@ -183,7 +188,8 @@ class EisenhowerTab extends ConsumerWidget {
         ),
         const SizedBox(height: AppConstants.spacing16),
       ],
-    );
+      ), // fin Column
+    ); // fin ProGate
   }
 }
 

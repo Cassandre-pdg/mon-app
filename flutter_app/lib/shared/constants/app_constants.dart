@@ -9,7 +9,7 @@ class AppConstants {
   // RevenueCat — remplacer par tes clés depuis app.revenuecat.com
   // iOS  : App Settings → API Keys → Public (commence par "appl_")
   // Android : App Settings → API Keys → Public (commence par "goog_")
-  static const String revenueCatApiKeyIos     = 'appl_REMPLACER_PAR_TA_CLE_IOS';
+  static const String revenueCatApiKeyIos     = 'appl_CjgBABjtgFqoVdKYVGXvUiLgumg';
   static const String revenueCatApiKeyAndroid = 'goog_REMPLACER_PAR_TA_CLE_ANDROID';
 
   // Identifiant de l'entitlement Pro dans le dashboard RevenueCat

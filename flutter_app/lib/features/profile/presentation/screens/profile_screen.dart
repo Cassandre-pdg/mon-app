@@ -797,7 +797,7 @@ class _SubscriptionSection extends StatelessWidget {
                     const Text('✨', style: TextStyle(fontSize: 16)),
                     const SizedBox(width: 8),
                     Text(
-                      'Passer à Pro · 14,99 €/mois',
+                      'Passer à Pro · 9,99 €/mois',
                       style: AppTextStyles.bodyMedium(
                         color: Colors.white,
                       ).copyWith(fontWeight: FontWeight.w600),

@@ -61,6 +61,12 @@ class Meditation {
   // Optionnel : image dans assets/images/meditations/
   final String? imageAssetPath;
 
+  /// true = réservé aux abonnés Pro
+  final bool isPro;
+
+  /// true = disponible gratuitement mais audio pas encore enregistré
+  final bool isComingSoon;
+
   const Meditation({
     required this.id,
     required this.title,
@@ -69,6 +75,8 @@ class Meditation {
     required this.durationMinutes,
     required this.audioAssetPath,
     this.imageAssetPath,
+    this.isPro = false,
+    this.isComingSoon = false,
   });
 
   String get durationLabel => '$durationMinutes min';
@@ -77,8 +85,34 @@ class Meditation {
   // Pour ajouter une méditation : copie un bloc et modifie les valeurs.
   // Place le fichier audio dans : assets/audio/meditations/
   // Place l'image (optionnel) dans : assets/images/meditations/
-  static const List<Meditation> catalog = [
-    // ── Focus ──────────────────────────────────────────────
+  static final List<Meditation> catalog = const [
+    // ── GRATUIT — Boost du matin (énergie) ───────────────
+    // Disponible gratuitement, audio en cours d'enregistrement
+    Meditation(
+      id: 'energy_3min',
+      title: 'Boost du matin',
+      description: 'Réveille ton énergie en 3 minutes et commence la journée avec élan.',
+      theme: MeditationTheme.energy,
+      durationMinutes: 3,
+      audioAssetPath: 'audio/meditations/energy_3min.mp3',
+      imageAssetPath: 'images/meditations/energy.jpg',
+      isComingSoon: true,
+    ),
+
+    // ── GRATUIT — Voyage nocturne (sommeil) ───────────────
+    // Disponible gratuitement, audio en cours d'enregistrement
+    Meditation(
+      id: 'sleep_7min',
+      title: 'Voyage nocturne',
+      description: 'Laisse ton corps se détendre et glisser doucement vers le sommeil.',
+      theme: MeditationTheme.sleep,
+      durationMinutes: 7,
+      audioAssetPath: 'audio/meditations/sleep_7min.mp3',
+      imageAssetPath: 'images/meditations/sleep.jpg',
+      isComingSoon: true,
+    ),
+
+    // ── PRO — Focus ───────────────────────────────────────
     Meditation(
       id: 'focus_3min',
       title: 'Clarté immédiate',
@@ -87,6 +121,7 @@ class Meditation {
       durationMinutes: 3,
       audioAssetPath: 'audio/meditations/focus_3min.mp3',
       imageAssetPath: 'images/meditations/focus.jpg',
+      isPro: true,
     ),
     Meditation(
       id: 'focus_7min',
@@ -96,9 +131,10 @@ class Meditation {
       durationMinutes: 7,
       audioAssetPath: 'audio/meditations/focus_7min.mp3',
       imageAssetPath: 'images/meditations/focus.jpg',
+      isPro: true,
     ),
 
-    // ── Anti-stress ───────────────────────────────────────
+    // ── PRO — Anti-stress ─────────────────────────────────
     Meditation(
       id: 'stress_5min',
       title: 'Lâcher prise',
@@ -107,6 +143,7 @@ class Meditation {
       durationMinutes: 5,
       audioAssetPath: 'audio/meditations/stress_5min.mp3',
       imageAssetPath: 'images/meditations/stress.jpg',
+      isPro: true,
     ),
     Meditation(
       id: 'stress_10min',
@@ -116,18 +153,10 @@ class Meditation {
       durationMinutes: 10,
       audioAssetPath: 'audio/meditations/stress_10min.mp3',
       imageAssetPath: 'images/meditations/stress.jpg',
+      isPro: true,
     ),
 
-    // ── Sommeil ───────────────────────────────────────────
-    Meditation(
-      id: 'sleep_7min',
-      title: 'Voyage nocturne',
-      description: 'Laisse ton corps se détendre et glisser doucement vers le sommeil.',
-      theme: MeditationTheme.sleep,
-      durationMinutes: 7,
-      audioAssetPath: 'audio/meditations/sleep_7min.mp3',
-      imageAssetPath: 'images/meditations/sleep.jpg',
-    ),
+    // ── PRO — Sommeil ─────────────────────────────────────
     Meditation(
       id: 'sleep_10min',
       title: 'Détente profonde',
@@ -136,9 +165,10 @@ class Meditation {
       durationMinutes: 10,
       audioAssetPath: 'audio/meditations/sleep_10min.mp3',
       imageAssetPath: 'images/meditations/sleep.jpg',
+      isPro: true,
     ),
 
-    // ── Confiance ─────────────────────────────────────────
+    // ── PRO — Confiance ───────────────────────────────────
     Meditation(
       id: 'confidence_5min',
       title: 'Ancrage intérieur',
@@ -147,6 +177,7 @@ class Meditation {
       durationMinutes: 5,
       audioAssetPath: 'audio/meditations/confidence_5min.mp3',
       imageAssetPath: 'images/meditations/confidence.jpg',
+      isPro: true,
     ),
     Meditation(
       id: 'confidence_10min',
@@ -156,18 +187,10 @@ class Meditation {
       durationMinutes: 10,
       audioAssetPath: 'audio/meditations/confidence_10min.mp3',
       imageAssetPath: 'images/meditations/confidence.jpg',
+      isPro: true,
     ),
 
-    // ── Énergie ───────────────────────────────────────────
-    Meditation(
-      id: 'energy_3min',
-      title: 'Boost du matin',
-      description: 'Réveille ton énergie en 3 minutes et commence la journée avec élan.',
-      theme: MeditationTheme.energy,
-      durationMinutes: 3,
-      audioAssetPath: 'audio/meditations/energy_3min.mp3',
-      imageAssetPath: 'images/meditations/energy.jpg',
-    ),
+    // ── PRO — Énergie ─────────────────────────────────────
     Meditation(
       id: 'energy_5min',
       title: 'Souffle vital',
@@ -176,6 +199,7 @@ class Meditation {
       durationMinutes: 5,
       audioAssetPath: 'audio/meditations/energy_5min.mp3',
       imageAssetPath: 'images/meditations/energy.jpg',
+      isPro: true,
     ),
   ];
 }
