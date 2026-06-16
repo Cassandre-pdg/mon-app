@@ -35,7 +35,7 @@ class CommunityScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                   child: Text(
                     'Le Salon',
-                    style: AppTextStyles.headingLarge(color: AppColors.textDark),
+                    style: AppTextStyles.displayLarge(color: AppColors.txt(context)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -133,10 +133,9 @@ class _MessagesTabState extends ConsumerState<_MessagesTab> {
   }
 
   void _openCompose(BuildContext context, {PostType? forcedType}) {
-    // Les abonnés Pro peuvent toujours poster, sans limite hebdomadaire
+    // Le Salon est en lecture seule en version gratuite — Pro uniquement pour poster
     final isPro = ref.read(isProProvider);
-    final weeklyCount = ref.read(weeklyPostCountProvider).value ?? 0;
-    final canPost = isPro || weeklyCount < AppConstants.freeWeeklyPosts;
+    final canPost = isPro;
 
     showModalBottomSheet(
       context: context,
@@ -199,7 +198,7 @@ class _WeeklyQuestionCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       currentWeeklyQuestion,
-                      style: AppTextStyles.bodySmall(color: AppColors.textDark),
+                      style: AppTextStyles.bodySmall(color: AppColors.txt(context)),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -270,7 +269,7 @@ class _TypeFilterPills extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected
                     ? color.withValues(alpha: 0.2)
-                    : AppColors.surfaceElevatedDark,
+                    : AppColors.surfaceEl(context),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isSelected
@@ -281,7 +280,7 @@ class _TypeFilterPills extends StatelessWidget {
               child: Text(
                 type == null ? 'Tout' : type.emoji,
                 style: AppTextStyles.labelMedium(
-                  color: isSelected ? color : AppColors.textDarkMuted,
+                  color: isSelected ? color : AppColors.txtMuted(context),
                 ),
               ),
             ),
@@ -408,7 +407,7 @@ class _MessageCardState extends ConsumerState<_MessageCard> {
           // ── Card principale ─────────────────────────────────
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
+              color: AppColors.surface(context),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _typeColor.withValues(alpha: 0.18),
@@ -456,7 +455,7 @@ class _MessageCardState extends ConsumerState<_MessageCard> {
                                 Text(
                                   widget.post.authorName,
                                   style: AppTextStyles.bodySmall(
-                                    color: AppColors.textDark,
+                                    color: AppColors.txt(context),
                                   ).copyWith(fontWeight: FontWeight.w600),
                                 ),
                                 if (widget.post.postType !=
@@ -482,7 +481,7 @@ class _MessageCardState extends ConsumerState<_MessageCard> {
                             Text(
                               _timeAgo(widget.post.createdAt),
                               style: AppTextStyles.caption(
-                                  color: AppColors.textDarkMuted),
+                                  color: AppColors.txtMuted(context)),
                             ),
                           ],
                         ),
@@ -501,7 +500,7 @@ class _MessageCardState extends ConsumerState<_MessageCard> {
                   child: Text(
                     widget.post.content,
                     style:
-                        AppTextStyles.bodyMedium(color: AppColors.textDark),
+                        AppTextStyles.bodyMedium(color: AppColors.txt(context)),
                   ),
                 ),
 
@@ -541,7 +540,7 @@ class _MessageCardState extends ConsumerState<_MessageCard> {
                               size: 14,
                               color: _expanded
                                   ? AppColors.primaryLight
-                                  : AppColors.textDarkMuted,
+                                  : AppColors.txtMuted(context),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -551,7 +550,7 @@ class _MessageCardState extends ConsumerState<_MessageCard> {
                               style: AppTextStyles.caption(
                                 color: _expanded
                                     ? AppColors.primaryLight
-                                    : AppColors.textDarkMuted,
+                                    : AppColors.txtMuted(context),
                               ),
                             ),
                           ],
@@ -609,8 +608,8 @@ class _ReactionChip extends StatelessWidget {
                 '$count',
                 style: AppTextStyles.caption(
                   color: isSelected
-                      ? AppColors.textDark
-                      : AppColors.textDarkMuted,
+                      ? AppColors.txt(context)
+                      : AppColors.txtMuted(context),
                 ).copyWith(
                   fontWeight:
                       isSelected ? FontWeight.w700 : FontWeight.w400,
@@ -664,7 +663,7 @@ class _RepliesSection extends ConsumerWidget {
               child: Text(
                 'Impossible de charger les réponses',
                 style:
-                    AppTextStyles.caption(color: AppColors.textDarkMuted),
+                    AppTextStyles.caption(color: AppColors.txtMuted(context)),
               ),
             ),
             data: (replies) => Column(
@@ -683,7 +682,7 @@ class _RepliesSection extends ConsumerWidget {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceElevatedDark,
+                    color: AppColors.surfaceEl(context),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: AppColors.primary.withValues(alpha: 0.22),
@@ -694,11 +693,11 @@ class _RepliesSection extends ConsumerWidget {
                     maxLines: 3,
                     minLines: 1,
                     style: AppTextStyles.bodySmall(
-                        color: AppColors.textDark),
+                        color: AppColors.txt(context)),
                     decoration: InputDecoration(
                       hintText: 'Ta réponse...',
                       hintStyle: AppTextStyles.bodySmall(
-                          color: AppColors.textDarkMuted),
+                          color: AppColors.txtMuted(context)),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 10),
@@ -780,9 +779,9 @@ class _ReplyItem extends StatelessWidget {
             Container(
               width: 24,
               height: 24,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.surfaceElevatedDark,
+                color: AppColors.surfaceEl(context),
               ),
               child: Center(
                 child: Text(
@@ -804,14 +803,14 @@ class _ReplyItem extends StatelessWidget {
                     children: [
                       Text(
                         reply.authorName,
-                        style: AppTextStyles.caption(color: AppColors.textDark)
+                        style: AppTextStyles.caption(color: AppColors.txt(context))
                             .copyWith(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         time,
                         style: AppTextStyles.caption(
-                            color: AppColors.textDarkMuted),
+                            color: AppColors.txtMuted(context)),
                       ),
                     ],
                   ),
@@ -819,7 +818,7 @@ class _ReplyItem extends StatelessWidget {
                   Text(
                     reply.content,
                     style:
-                        AppTextStyles.bodySmall(color: AppColors.textDark),
+                        AppTextStyles.bodySmall(color: AppColors.txt(context)),
                   ),
                 ],
               ),
@@ -849,8 +848,8 @@ class _ComposeBar extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             Colors.transparent,
-            AppColors.backgroundDark.withValues(alpha: 0.92),
-            AppColors.backgroundDark,
+            AppColors.bg(context).withValues(alpha: 0.92),
+            AppColors.bg(context),
           ],
           stops: const [0.0, 0.4, 1.0],
         ),
@@ -861,7 +860,7 @@ class _ComposeBar extends StatelessWidget {
           padding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surfaceDark,
+            color: AppColors.surface(context),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: AppColors.primary.withValues(alpha: 0.28),
@@ -879,7 +878,7 @@ class _ComposeBar extends StatelessWidget {
                 child: Text(
                   'Quoi de neuf ?',
                   style: AppTextStyles.bodyMedium(
-                      color: AppColors.textDarkMuted),
+                      color: AppColors.txtMuted(context)),
                 ),
               ),
               Icon(
@@ -938,9 +937,9 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceElevatedDark,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceEl(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SafeArea(
         top: false,
@@ -985,13 +984,13 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
           const Text('🔒', style: TextStyle(fontSize: 40)),
           const SizedBox(height: 12),
           Text(
-            'Tu as partagé 3 messages cette semaine',
-            style: AppTextStyles.headingSmall(color: AppColors.textDark),
+            'Le Salon est en lecture seule',
+            style: AppTextStyles.headingSmall(color: AppColors.txt(context)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            'Passe à Pro pour des échanges illimités dans Le Salon.',
+            'Passe à Pro pour rejoindre la conversation et partager avec la communauté.',
             style: AppTextStyles.bodyMedium(color: AppColors.primaryPale),
             textAlign: TextAlign.center,
           ),
@@ -1040,12 +1039,12 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
           Text(
             'Quel type de message ?',
             style:
-                AppTextStyles.headingMedium(color: AppColors.textDark),
+                AppTextStyles.headingMedium(color: AppColors.txt(context)),
           ),
           const SizedBox(height: 4),
           Text(
             'Choisis selon ce que tu veux partager',
-            style: AppTextStyles.bodySmall(color: AppColors.textDarkMuted),
+            style: AppTextStyles.bodySmall(color: AppColors.txtMuted(context)),
           ),
           const SizedBox(height: 20),
           GridView.count(
@@ -1083,10 +1082,10 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
             children: [
               GestureDetector(
                 onTap: () => setState(() => _step = 1),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_back_ios_rounded,
                   size: 18,
-                  color: AppColors.textDarkMuted,
+                  color: AppColors.txtMuted(context),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1097,7 +1096,7 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
                 Text(
                   _type!.label,
                   style: AppTextStyles.headingMedium(
-                      color: AppColors.textDark),
+                      color: AppColors.txt(context)),
                 ),
               ],
             ],
@@ -1107,7 +1106,7 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
           // Zone de texte
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surfaceDark,
+              color: AppColors.surface(context),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: AppColors.primary.withValues(alpha: 0.2),
@@ -1120,12 +1119,12 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
               minLines: 3,
               maxLength: 280,
               style:
-                  AppTextStyles.bodyMedium(color: AppColors.textDark),
+                  AppTextStyles.bodyMedium(color: AppColors.txt(context)),
               decoration: InputDecoration(
                 hintText: _type?.placeholder ??
                     'Partage quelque chose avec Le Salon...',
                 hintStyle: AppTextStyles.bodyMedium(
-                    color: AppColors.textDarkMuted),
+                    color: AppColors.txtMuted(context)),
                 counterText: '',
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(14),
@@ -1155,7 +1154,7 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.2)
-                          : AppColors.surfaceDark,
+                          : AppColors.surface(context),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isSelected
@@ -1168,7 +1167,7 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
                       style: AppTextStyles.caption(
                         color: isSelected
                             ? AppColors.primaryLight
-                            : AppColors.textDarkMuted,
+                            : AppColors.txtMuted(context),
                       ),
                     ),
                   ),
@@ -1185,7 +1184,7 @@ class _ComposeSheetState extends ConsumerState<_ComposeSheet> {
               Text(
                 '${_ctrl.text.length}/280',
                 style: AppTextStyles.caption(
-                    color: AppColors.textDarkMuted),
+                    color: AppColors.txtMuted(context)),
               ),
               ElevatedButton.icon(
                 onPressed: (_ctrl.text.trim().isEmpty || _sending)
@@ -1309,10 +1308,10 @@ class _PostMenu extends ConsumerWidget {
     return PopupMenuButton<String>(
       icon: Icon(
         Icons.more_horiz_rounded,
-        color: AppColors.textDarkMuted,
+        color: AppColors.txtMuted(context),
         size: 20,
       ),
-      color: AppColors.surfaceElevatedDark,
+      color: AppColors.surfaceEl(context),
       onSelected: (value) {
         if (value == 'delete') {
           showDialog(
@@ -1378,14 +1377,14 @@ class _FeedEmpty extends StatelessWidget {
             Text(
               'Le Salon est calme pour l\'instant',
               style: AppTextStyles.headingSmall(
-                  color: AppColors.textDarkMuted),
+                  color: AppColors.txtMuted(context)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Lance la conversation, tu seras le premier !',
               style: AppTextStyles.bodyMedium(
-                  color: AppColors.textDarkMuted),
+                  color: AppColors.txtMuted(context)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -1413,7 +1412,7 @@ class _FeedError extends StatelessWidget {
           Text(
             'Impossible de charger les messages',
             style: AppTextStyles.bodyMedium(
-                color: AppColors.textDarkMuted),
+                color: AppColors.txtMuted(context)),
           ),
           const SizedBox(height: AppConstants.spacing16),
           TextButton(
@@ -1448,7 +1447,7 @@ class _DefisTab extends ConsumerWidget {
               const SizedBox(height: 12),
               Text(
                 'Impossible de charger le défi du mois',
-                style: AppTextStyles.bodyMedium(color: AppColors.textDarkMuted),
+                style: AppTextStyles.bodyMedium(color: AppColors.txtMuted(context)),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -1468,14 +1467,14 @@ class _DefisTab extends ConsumerWidget {
                   Text(
                     'Pas de défi ce mois-ci',
                     style: AppTextStyles.headingSmall(
-                        color: AppColors.textDarkMuted),
+                        color: AppColors.txtMuted(context)),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Reviens bientôt, le prochain arrive !',
                     style: AppTextStyles.bodyMedium(
-                        color: AppColors.textDarkMuted),
+                        color: AppColors.txtMuted(context)),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -1546,7 +1545,7 @@ class _ChallengeHeroCard extends ConsumerWidget {
           end: Alignment.bottomRight,
           colors: [
             AppColors.primary.withValues(alpha: 0.28),
-            AppColors.surfaceDark,
+            AppColors.surface(context),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
@@ -1609,7 +1608,7 @@ class _ChallengeHeroCard extends ConsumerWidget {
                       Text(
                         challenge.title,
                         style: AppTextStyles.headingMedium(
-                            color: AppColors.textDark),
+                            color: AppColors.txt(context)),
                       ),
                     ],
                   ),
@@ -1621,7 +1620,7 @@ class _ChallengeHeroCard extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: daysLeft <= 7
                         ? AppColors.secondary.withValues(alpha: 0.15)
-                        : AppColors.surfaceElevatedDark,
+                        : AppColors.surfaceEl(context),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: daysLeft <= 7
@@ -1636,13 +1635,13 @@ class _ChallengeHeroCard extends ConsumerWidget {
                         style: AppTextStyles.bodySmall(
                           color: daysLeft <= 7
                               ? AppColors.secondary
-                              : AppColors.textDark,
+                              : AppColors.txt(context),
                         ).copyWith(fontWeight: FontWeight.w700),
                       ),
                       Text(
                         'restants',
                         style: AppTextStyles.caption(
-                            color: AppColors.textDarkMuted),
+                            color: AppColors.txtMuted(context)),
                       ),
                     ],
                   ),
@@ -1657,7 +1656,7 @@ class _ChallengeHeroCard extends ConsumerWidget {
             child: Text(
               challenge.description,
               style: AppTextStyles.bodySmall(
-                color: AppColors.textDark.withValues(alpha: 0.85),
+                color: AppColors.txt(context).withValues(alpha: 0.85),
               ),
             ),
           ),
@@ -1748,7 +1747,7 @@ class _ChallengeHeroCard extends ConsumerWidget {
                       Text(
                         challenge.rewardLabel,
                         style:
-                            AppTextStyles.bodySmall(color: AppColors.textDark),
+                            AppTextStyles.bodySmall(color: AppColors.txt(context)),
                       ),
                     ],
                   ),
@@ -1779,12 +1778,12 @@ class _ChallengeHeroCard extends ConsumerWidget {
                 Icon(
                   Icons.people_outline_rounded,
                   size: 14,
-                  color: AppColors.textDarkMuted,
+                  color: AppColors.txtMuted(context),
                 ),
                 const SizedBox(width: 6),
                 Text(
                   '${challenge.participantsCount} entrepreneurs relèvent ce défi',
-                  style: AppTextStyles.caption(color: AppColors.textDarkMuted),
+                  style: AppTextStyles.caption(color: AppColors.txtMuted(context)),
                 ),
               ],
             ),
@@ -1840,7 +1839,7 @@ class _StepRow extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: AppTextStyles.bodySmall(color: AppColors.textDark),
+            style: AppTextStyles.bodySmall(color: AppColors.txt(context)),
           ),
         ),
       ],
@@ -1958,7 +1957,7 @@ class _UserProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceDark,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.primary.withValues(alpha: 0.2),
@@ -1973,7 +1972,7 @@ class _UserProgressCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Ma progression',
-                style: AppTextStyles.headingSmall(color: AppColors.textDark),
+                style: AppTextStyles.headingSmall(color: AppColors.txt(context)),
               ),
             ],
           ),
@@ -1999,7 +1998,7 @@ class _UserProgressCard extends StatelessWidget {
                           TextSpan(
                             text: ' / $total jours',
                             style: AppTextStyles.bodyMedium(
-                              color: AppColors.textDarkMuted,
+                              color: AppColors.txtMuted(context),
                             ),
                           ),
                         ],
@@ -2023,7 +2022,7 @@ class _UserProgressCard extends StatelessWidget {
                   children: [
                     CircularProgressIndicator(
                       value: progress,
-                      backgroundColor: AppColors.surfaceElevatedDark,
+                      backgroundColor: AppColors.surfaceEl(context),
                       valueColor: AlwaysStoppedAnimation(
                         challenge.isCompleted
                             ? AppColors.chartAmber
@@ -2033,7 +2032,7 @@ class _UserProgressCard extends StatelessWidget {
                     ),
                     Text(
                       '${(progress * 100).round()}%',
-                      style: AppTextStyles.caption(color: AppColors.textDark)
+                      style: AppTextStyles.caption(color: AppColors.txt(context))
                           .copyWith(fontWeight: FontWeight.w700),
                     ),
                   ],
@@ -2049,7 +2048,7 @@ class _UserProgressCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppColors.surfaceElevatedDark,
+              backgroundColor: AppColors.surfaceEl(context),
               valueColor: AlwaysStoppedAnimation(
                 challenge.isCompleted ? AppColors.chartAmber : AppColors.primary,
               ),
@@ -2131,6 +2130,11 @@ class _LeaderboardSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Classement masqué tant qu'il n'y a pas assez de vrais participants
+    if (challenge.participantsCount < 5) {
+      return _buildEmptyLeaderboard(context);
+    }
+    // TODO V2 : remplacer par une vraie query Supabase
     final entries = _buildMockLeaderboard(challenge);
     final userRank = entries.indexWhere((e) => e.isCurrentUser) + 1;
     final top10 = entries.take(10).toList();
@@ -2144,7 +2148,7 @@ class _LeaderboardSection extends StatelessWidget {
           children: [
             Text(
               'Classement du mois',
-              style: AppTextStyles.headingSmall(color: AppColors.textDark),
+              style: AppTextStyles.headingSmall(color: AppColors.txt(context)),
             ),
             if (userRank > 0)
               Container(
@@ -2174,7 +2178,7 @@ class _LeaderboardSection extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'Prouve ce dont tu es capable 🔥',
-          style: AppTextStyles.caption(color: AppColors.textDarkMuted),
+          style: AppTextStyles.caption(color: AppColors.txtMuted(context)),
         ),
         const SizedBox(height: 16),
 
@@ -2191,19 +2195,19 @@ class _LeaderboardSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
               children: [
-                const Expanded(
-                  child: Divider(color: AppColors.surfaceElevatedDark),
+                Expanded(
+                  child: Divider(color: AppColors.surfaceEl(context)),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     '···',
                     style: AppTextStyles.caption(
-                        color: AppColors.textDarkMuted),
+                        color: AppColors.txtMuted(context)),
                   ),
                 ),
-                const Expanded(
-                  child: Divider(color: AppColors.surfaceElevatedDark),
+                Expanded(
+                  child: Divider(color: AppColors.surfaceEl(context)),
                 ),
               ],
             ),
@@ -2214,6 +2218,47 @@ class _LeaderboardSection extends StatelessWidget {
             totalDays: challenge.targetDays,
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildEmptyLeaderboard(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Classement du mois',
+          style: AppTextStyles.headingSmall(color: AppColors.txt(context)),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          decoration: BoxDecoration(
+            color: AppColors.surface(context),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Column(
+            children: [
+              const Text('🏆', style: TextStyle(fontSize: 36)),
+              const SizedBox(height: 12),
+              Text(
+                'Le classement se dévoile bientôt',
+                style: AppTextStyles.bodyLarge(color: AppColors.txt(context)),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Rejoins le défi et sois parmi les premiers à apparaître ici.',
+                style: AppTextStyles.bodyMedium(color: AppColors.txtMuted(context)),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -2279,14 +2324,14 @@ class _LeaderRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: entry.isCurrentUser
             ? AppColors.primary.withValues(alpha: 0.12)
-            : AppColors.surfaceDark,
+            : AppColors.surface(context),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: entry.isCurrentUser
               ? AppColors.primary.withValues(alpha: 0.35)
               : isTop3
                   ? AppColors.chartAmber.withValues(alpha: 0.2)
-                  : AppColors.surfaceElevatedDark,
+                  : AppColors.surfaceEl(context),
         ),
       ),
       child: Row(
@@ -2299,7 +2344,7 @@ class _LeaderRow extends StatelessWidget {
                 : Text(
                     '$rank',
                     style: AppTextStyles.bodySmall(
-                            color: AppColors.textDarkMuted)
+                            color: AppColors.txtMuted(context))
                         .copyWith(fontWeight: FontWeight.w600),
                     textAlign: TextAlign.center,
                   ),
@@ -2342,7 +2387,7 @@ class _LeaderRow extends StatelessWidget {
                         style: AppTextStyles.bodySmall(
                           color: entry.isCurrentUser
                               ? AppColors.primaryPale
-                              : AppColors.textDark,
+                              : AppColors.txt(context),
                         ).copyWith(fontWeight: FontWeight.w600),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -2353,7 +2398,7 @@ class _LeaderRow extends StatelessWidget {
                       style: AppTextStyles.caption(
                         color: entry.isCurrentUser
                             ? AppColors.primaryPale
-                            : AppColors.textDarkMuted,
+                            : AppColors.txtMuted(context),
                       ).copyWith(fontWeight: FontWeight.w700),
                     ),
                   ],
@@ -2363,7 +2408,7 @@ class _LeaderRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: progressRatio,
-                    backgroundColor: AppColors.surfaceElevatedDark,
+                    backgroundColor: AppColors.surfaceEl(context),
                     valueColor: AlwaysStoppedAnimation(
                       entry.isCurrentUser
                           ? AppColors.primaryLight

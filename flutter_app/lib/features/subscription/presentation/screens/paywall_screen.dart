@@ -40,13 +40,6 @@ const _proFeatures = [
   _Feature('🔔', 'Notifications intelligentes', 'Rappels adaptés à ton rythme'),
 ];
 
-const _proPlusTeaser = [
-  _Feature('🎙', 'Webinaires entrepreneurs', 'Avec des intervenants inspirants'),
-  _Feature('🤝', 'Matching par affinité', 'Mentorat pair-à-pair'),
-  _Feature('🤖', 'IA personnalisée', 'Suggestions basées sur ton historique'),
-  _Feature('📚', 'Contenu exclusif', 'Éditorial réservé Pro+'),
-];
-
 // ─────────────────────────────────────────────────────────────
 // Écran principal
 // ─────────────────────────────────────────────────────────────
@@ -72,11 +65,7 @@ class PaywallScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(activeOfferingProvider),
         ),
         data: (offering) => offering == null
-            ? _PaywallContent(
-                offering: null,
-                isDismissible: isDismissible,
-                isDark: isDark,
-              )
+            ? _ErrorBody(onRetry: () => ref.invalidate(activeOfferingProvider))
             : _PaywallContent(
                 offering: offering,
                 isDismissible: isDismissible,
@@ -92,7 +81,7 @@ class PaywallScreen extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────
 
 class _PaywallContent extends ConsumerStatefulWidget {
-  final Offering? offering;
+  final Offering offering;
   final bool isDismissible;
   final bool isDark;
 
@@ -112,18 +101,18 @@ class _PaywallContentState extends ConsumerState<_PaywallContent>
   bool _showAllProFeatures = false;
   late AnimationController _glowController;
 
-  Package? get _monthlyPackage => widget.offering?.availablePackages
+  Package? get _monthlyPackage => widget.offering.availablePackages
       .where((p) => p.packageType == PackageType.monthly)
       .firstOrNull;
 
-  Package? get _annualPackage => widget.offering?.availablePackages
+  Package? get _annualPackage => widget.offering.availablePackages
       .where((p) => p.packageType == PackageType.annual)
       .firstOrNull;
 
   Package? get _activePackage =>
       _selected == PackageType.annual ? _annualPackage : _monthlyPackage;
 
-  bool get _hasOffering => widget.offering != null;
+  bool get _hasOffering => true;
 
   String get _displayPrice {
     if (_selected == PackageType.annual) {
@@ -256,6 +245,7 @@ class _PaywallContentState extends ConsumerState<_PaywallContent>
                       _MainCta(
                         isLoading: isLoading,
                         isComingSoon: !_hasOffering,
+                        isAnnual: _selected == PackageType.annual,
                         onTap: _hasOffering && _activePackage != null && !isLoading
                             ? _purchase
                             : null,
@@ -278,10 +268,6 @@ class _PaywallContentState extends ConsumerState<_PaywallContent>
                             ),
                           ),
                         ),
-
-                      // ── Teaser Pro+ ──────────────────────────
-                      const SizedBox(height: AppConstants.spacing8),
-                      _ProPlusTeaser(isDark: widget.isDark),
 
                       const SizedBox(height: AppConstants.spacing24),
 
@@ -426,7 +412,7 @@ class _HeroSection extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   Text(
-                    'Deviens la meilleure\nversion de toi.',
+                    'Passe à la\nvitesse supérieure.',
                     style: AppTextStyles.displayLarge().copyWith(
                       color: Colors.white,
                       height: 1.15,
@@ -437,7 +423,7 @@ class _HeroSection extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   Text(
-                    'Les entrepreneurs qui progressent vraiment\nont un outil qui leur ressemble.',
+                    'Tout Kolyb, sans limites.\nAvance à ton rythme, pour de vrai.',
                     style: AppTextStyles.bodySmall().copyWith(
                       color: AppColors.primaryPale,
                       height: 1.5,
@@ -722,6 +708,35 @@ class _ProCard extends StatelessWidget {
               ],
             ),
 
+            const SizedBox(height: 12),
+
+            // Badge essai gratuit
+            if (!isComingSoon)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusPill),
+                  border: Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🎁', style: TextStyle(fontSize: 12)),
+                    const SizedBox(width: 6),
+                    Text(
+                      '7 jours gratuits, sans engagement',
+                      style: AppTextStyles.caption().copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             const SizedBox(height: 16),
 
             // Prix
@@ -998,11 +1013,13 @@ class _FeatureRow extends StatelessWidget {
 class _MainCta extends StatelessWidget {
   final bool isLoading;
   final bool isComingSoon;
+  final bool isAnnual;
   final VoidCallback? onTap;
 
   const _MainCta({
     required this.isLoading,
     required this.isComingSoon,
+    required this.isAnnual,
     required this.onTap,
   });
 
@@ -1051,11 +1068,11 @@ class _MainCta extends StatelessWidget {
                     Text(
                       isComingSoon
                           ? '✨  Bientôt disponible'
-                          : '✨  Commencer avec Pro',
+                          : '🎁  7 jours gratuits, puis ${isAnnual ? '79,99 €/an' : '9,99 €/mois'}',
                       style: AppTextStyles.labelMedium().copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
-                        fontSize: 16,
+                        fontSize: 15,
                       ),
                     ),
                     if (!isComingSoon) ...[
@@ -1071,87 +1088,6 @@ class _MainCta extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Teaser Pro+
-// ─────────────────────────────────────────────────────────────
-
-class _ProPlusTeaser extends StatelessWidget {
-  final bool isDark;
-  const _ProPlusTeaser({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: 0.55,
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceDark : Colors.white,
-          borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
-          border: Border.all(
-            color: isDark ? AppColors.glassBorder : AppColors.grey200,
-            style: BorderStyle.solid,
-          ),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.lock_rounded, size: 16, color: AppColors.grey400),
-                const SizedBox(width: 6),
-                Text(
-                  'Pro+',
-                  style: AppTextStyles.labelMedium().copyWith(
-                    color: isDark ? AppColors.textDark : AppColors.textLight,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.grey400.withValues(alpha: 0.15),
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusPill),
-                  ),
-                  child: Text(
-                    'Bientôt, 2026',
-                    style: AppTextStyles.caption().copyWith(
-                      color: AppColors.grey400,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ..._proPlusTeaser.map(
-              (f) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(
-                  children: [
-                    Text(f.emoji, style: const TextStyle(fontSize: 13)),
-                    const SizedBox(width: 10),
-                    Text(
-                      f.label,
-                      style: AppTextStyles.bodySmall().copyWith(
-                        color: isDark
-                            ? AppColors.textDarkMuted
-                            : AppColors.grey400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────────────────────
 // Écran succès après achat
