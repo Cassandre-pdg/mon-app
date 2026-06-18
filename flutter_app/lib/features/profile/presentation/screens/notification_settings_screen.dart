@@ -17,16 +17,14 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final state = ref.watch(notificationSettingsNotifierProvider);
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
-        backgroundColor:
-            isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        backgroundColor: AppColors.bg(context),
         elevation: 0,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: isDark ? AppColors.textDark : AppColors.textLight,
+            color: AppColors.txt(context),
             size: 20,
           ),
           onPressed: () => Navigator.of(context).pop(),
@@ -34,7 +32,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
         title: Text(
           'Notifications',
           style: AppTextStyles.headingSmall(
-            color: isDark ? AppColors.textDark : AppColors.textLight,
+            color: AppColors.txt(context),
           ),
         ),
       ),
@@ -227,12 +225,10 @@ class _NotificationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: Border.all(
-          color: isDark
-              ? AppColors.grey400.withValues(alpha: 0.15)
-              : AppColors.grey200,
+          color: AppColors.cardBorder(context),
         ),
       ),
       child: Column(children: children),
@@ -249,9 +245,7 @@ class _Separator extends StatelessWidget {
     return Divider(
       height: 1,
       indent: 52,
-      color: isDark
-          ? AppColors.grey400.withValues(alpha: 0.15)
-          : AppColors.grey200,
+      color: AppColors.cardBorder(context),
     );
   }
 }
@@ -301,7 +295,7 @@ class _ToggleTile extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium(
-                    color: isDark ? AppColors.textDark : AppColors.textLight,
+                    color: AppColors.txt(context),
                   ).copyWith(fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 2),
@@ -435,10 +429,8 @@ class _WheelPickerSheetState extends State<_WheelPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor =
-        widget.isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
-    final textColor =
-        widget.isDark ? AppColors.textDark : AppColors.textLight;
+    final bgColor = AppColors.surface(context);
+    final textColor = AppColors.txt(context);
 
     return Container(
       decoration: BoxDecoration(

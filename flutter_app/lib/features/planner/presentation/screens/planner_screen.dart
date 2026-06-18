@@ -67,7 +67,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     Text(
                       AppStrings.navPlanner,
                       style: AppTextStyles.displayLarge(
-                        color: isDark ? AppColors.textDark : AppColors.textLight,
+                        color: AppColors.txt(context),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -180,26 +180,24 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       isDark: isDark,
     );
 
-    // Flow : fond sombre unifié (pas d'aurora — le glow du timer suffit)
-    if (section == 'flow') {
+    // Flow et Pomodoro : toujours fond sombre — expérience immersive avec texte blanc
+    if (section == 'flow' || section == 'pomodoro') {
       return Scaffold(
-        backgroundColor:
-            isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        backgroundColor: AppColors.backgroundDark,
         body: SafeArea(
           child: Column(
             children: [
               header,
-              const Expanded(child: FlowTab()),
+              Expanded(child: content),
             ],
           ),
         ),
       );
     }
 
-    // Sections standard : fond uni
+    // Sections standard : fond adapté au thème
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: AppColors.bg(context),
       body: SafeArea(
         child: Column(
           children: [
@@ -262,7 +260,7 @@ class _SectionHeader extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.headingMedium(
-              color: isDark ? AppColors.textDark : AppColors.textLight,
+              color: AppColors.txt(context),
             ),
           ),
         ],
@@ -278,7 +276,6 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Container(
@@ -293,9 +290,7 @@ class _SectionLabel extends StatelessWidget {
         Text(
           label,
           style: AppTextStyles.labelMedium(
-            color: isDark
-                ? AppColors.textDarkMuted
-                : AppColors.textLight.withValues(alpha: 0.55),
+            color: AppColors.txtMuted(context),
           ),
         ),
       ],
@@ -328,7 +323,7 @@ class _PrioritiesSection extends ConsumerWidget {
                   Text(
                     'Mes 3 priorités',
                     style: AppTextStyles.headingMedium(
-                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                      color: AppColors.txt(context),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -666,7 +661,6 @@ class _FlashCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final flashAsync = ref.watch(flashProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final pendingTasks = flashAsync.value
             ?.where((t) => !t.isDone)
@@ -679,7 +673,7 @@ class _FlashCard extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(AppConstants.spacing16),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          color: AppColors.surface(context),
           borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
           border: Border.all(
             color: AppColors.warning.withValues(alpha: 0.4),
@@ -718,9 +712,7 @@ class _FlashCard extends ConsumerWidget {
                       Text(
                         'Flash',
                         style: AppTextStyles.headingSmall(
-                          color: isDark
-                              ? AppColors.textDark
-                              : AppColors.textLight,
+                          color: AppColors.txt(context),
                         ),
                       ),
                       if (count > 0) ...[
@@ -789,9 +781,7 @@ class _MatriceLink extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
               horizontal: AppConstants.spacing16, vertical: 14),
           decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.surfaceDark.withValues(alpha: 0.6)
-                : AppColors.surfaceLight,
+            color: AppColors.surface(context).withValues(alpha: isDark ? 0.6 : 1.0),
             borderRadius:
                 BorderRadius.circular(AppConstants.radiusMedium),
             border: Border.all(
@@ -876,9 +866,7 @@ class _TaskList extends ConsumerWidget {
             decoration: BoxDecoration(
               color: task.isCompleted
                   ? AppColors.success.withValues(alpha: 0.08)
-                  : isDark
-                      ? AppColors.surfaceDark
-                      : AppColors.surfaceLight,
+                  : AppColors.surface(context),
               border: Border.all(
                 color: task.isCompleted
                     ? AppColors.success
@@ -934,9 +922,7 @@ class _TaskList extends ConsumerWidget {
                         style: AppTextStyles.bodyLarge(
                           color: task.isCompleted
                               ? AppColors.grey400
-                              : isDark
-                                  ? AppColors.textDark
-                                  : AppColors.textLight,
+                              : AppColors.txt(context),
                         ).copyWith(
                           decoration: task.isCompleted
                               ? TextDecoration.lineThrough
@@ -1011,13 +997,10 @@ void _showTaskSheet(
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.55),
     builder: (ctx) {
-      final isDark = Theme.of(ctx).brightness == Brightness.dark;
       return StatefulBuilder(
         builder: (ctx, setState) => Container(
           decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.surfaceElevatedDark
-                : AppColors.surfaceLight,
+            color: AppColors.surfaceEl(ctx),
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(28)),
           ),
@@ -1050,9 +1033,7 @@ void _showTaskSheet(
                   Text(
                     isEdit ? 'Modifier la priorité' : 'Nouvelle priorité',
                     style: AppTextStyles.headingMedium(
-                      color: isDark
-                          ? AppColors.textDark
-                          : AppColors.textLight,
+                      color: AppColors.txt(ctx),
                     ),
                   ),
                   const SizedBox(height: AppConstants.spacing16),
@@ -1294,7 +1275,6 @@ class _FocusProjectBanner extends ConsumerWidget {
     final project = ref.watch(focusProjectProvider);
     if (project == null) return const SizedBox.shrink();
 
-    final isDark    = Theme.of(context).brightness == Brightness.dark;
     final daysLeft  = project.daysLeft;
 
     return Padding(
@@ -1325,9 +1305,7 @@ class _FocusProjectBanner extends ConsumerWidget {
                   Text(
                     project.name,
                     style: AppTextStyles.labelMedium(
-                      color: isDark
-                          ? AppColors.textDark
-                          : AppColors.textLight,
+                      color: AppColors.txt(context),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

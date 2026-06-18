@@ -102,38 +102,39 @@ class _MeditationLibraryScreenState
 
             const SizedBox(height: AppConstants.spacing16),
 
-            // ── Filtre thèmes ──────────────────────────────────
+            // ── Filtre thèmes — tuiles visuelles ──────────────
             SizedBox(
-              height: 40,
+              height: 86,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  _ThemeChip(
+                  _ThemeTile(
                     label: 'Tous',
                     emoji: '✨',
+                    gradient: [AppColors.primary, AppColors.primaryLight],
                     selected: _selectedTheme == null,
                     onTap: () => setState(() => _selectedTheme = null),
                   ),
-                  ...MeditationTheme.values.map((t) => _ThemeChip(
+                  ...MeditationTheme.values.map((t) => _ThemeTile(
                         label: t.label,
                         emoji: t.emoji,
+                        gradient: t.gradient,
                         selected: _selectedTheme == t,
                         onTap: () => setState(
                           () => _selectedTheme =
                               _selectedTheme == t ? null : t,
                         ),
-                        color: t.color,
                       )),
                 ],
               ),
             ),
 
-            const SizedBox(height: AppConstants.spacing12),
+            const SizedBox(height: AppConstants.spacing16),
 
             // ── Filtre durées ──────────────────────────────────
             SizedBox(
-              height: 36,
+              height: 34,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -156,17 +157,17 @@ class _MeditationLibraryScreenState
               ),
             ),
 
-            const SizedBox(height: AppConstants.spacing16),
+            const SizedBox(height: AppConstants.spacing32),
 
             // ── Résultats ──────────────────────────────────────
             Expanded(
               child: _filtered.isEmpty
                   ? _EmptyState()
                   : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                       itemCount: _filtered.length,
                       separatorBuilder: (_, __) =>
-                          const SizedBox(height: AppConstants.spacing12),
+                          const SizedBox(height: AppConstants.spacing16),
                       itemBuilder: (context, i) => _MeditationCard(
                         meditation: _filtered[i],
                         isPro: isPro,
@@ -222,45 +223,76 @@ class _MeditationLibraryScreenState
   }
 }
 
-// ── Chip thème ───────────────────────────────────────────────
-class _ThemeChip extends StatelessWidget {
+// ── Tuile thème — visuel gradient + emoji ────────────────────
+class _ThemeTile extends StatelessWidget {
   final String label;
   final String emoji;
+  final List<Color> gradient;
   final bool selected;
   final VoidCallback onTap;
-  final Color? color;
 
-  const _ThemeChip({
+  const _ThemeTile({
     required this.label,
     required this.emoji,
+    required this.gradient,
     required this.selected,
     required this.onTap,
-    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? AppColors.primary;
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.only(right: 10),
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
           duration: AppConstants.animFast,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          width: 72,
           decoration: BoxDecoration(
-            color: selected ? c.withValues(alpha: 0.18) : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppConstants.radiusPill),
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: selected
+                  ? gradient
+                  : [
+                      gradient[0].withValues(alpha: 0.25),
+                      gradient[1].withValues(alpha: 0.25),
+                    ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             border: Border.all(
-              color: selected ? c : AppColors.grey200,
-              width: selected ? 1.5 : 1,
+              color: selected
+                  ? gradient[1].withValues(alpha: 0.8)
+                  : Colors.transparent,
+              width: 1.5,
             ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: gradient[1].withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    )
+                  ]
+                : [],
           ),
-          child: Text(
-            '$emoji $label',
-            style: AppTextStyles.labelMedium(
-              color: selected ? c : AppColors.grey400,
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 26)),
+              const SizedBox(height: 5),
+              Text(
+                label,
+                style: AppTextStyles.caption(
+                  color: selected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.6),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
       ),
@@ -288,20 +320,23 @@ class _DurationChip extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: AppConstants.animFast,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
           decoration: BoxDecoration(
             color: selected
-                ? AppColors.primary.withValues(alpha: 0.15)
-                : Colors.transparent,
+                ? AppColors.primary
+                : AppColors.surfaceDark,
             borderRadius: BorderRadius.circular(AppConstants.radiusPill),
             border: Border.all(
-              color: selected ? AppColors.primary : AppColors.grey200,
+              color: selected
+                  ? AppColors.primary
+                  : AppColors.surfaceElevatedDark,
+              width: 1.5,
             ),
           ),
           child: Text(
             label,
             style: AppTextStyles.caption(
-              color: selected ? AppColors.primary : AppColors.grey400,
+              color: selected ? Colors.white : AppColors.textDarkMuted,
             ),
           ),
         ),
@@ -336,7 +371,7 @@ class _MeditationCard extends StatelessWidget {
       child: Opacity(
         opacity: isLocked ? 0.7 : 1.0,
         child: Container(
-          constraints: const BoxConstraints(minHeight: 100),
+          constraints: const BoxConstraints(minHeight: 112),
           decoration: BoxDecoration(
             color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
             borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
@@ -348,12 +383,13 @@ class _MeditationCard extends StatelessWidget {
                       : AppColors.grey200,
             ),
           ),
-          child: Row(
+          child: IntrinsicHeight(
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ── Illustration thème ──────────────────────────
               Container(
-                width: 90,
+                width: 96,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isLocked
@@ -384,7 +420,7 @@ class _MeditationCard extends StatelessWidget {
               // ── Contenu ─────────────────────────────────────
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -507,6 +543,7 @@ class _MeditationCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),

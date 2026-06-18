@@ -43,8 +43,27 @@ class ProfileRepository {
 
   ProfileRepository(this._supabase);
 
+  // 📸 MODE CAPTURES APP STORE — mettre à false avant de soumettre
+  static const bool screenshotMode = false;
+
   /// Récupère les stats de progression depuis la table profiles
   Future<ProfileStats> getProfileStats() async {
+    if (screenshotMode) {
+      final user = _supabase.auth.currentUser!;
+      final meta = user.userMetadata ?? {};
+      return ProfileStats(
+        fullName:     meta['full_name'] as String? ?? 'Cassandre',
+        email:        user.email ?? '',
+        jobTitle:     meta['job_title'] as String? ?? 'Designer & Fondatrice',
+        company:      meta['company'] as String? ?? 'Studio Indep',
+        tagline:      'Construire à mon rythme, avancer chaque jour.',
+        currentStreak: 12,
+        longestStreak: 21,
+        totalPoints:   340,
+        level:         2,
+        levelLabel:    'Indépendant',
+      );
+    }
     try {
       final user = _supabase.auth.currentUser!;
       final data = await _supabase

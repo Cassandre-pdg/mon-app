@@ -30,8 +30,16 @@ flutter_ios_podfile_setup
 # flutter_local_notifications 18.x utilise des guillemets dans ses headers umbrella,
 # incompatible avec use_frameworks! — on le force en bibliothèque statique.
 pre_install do |installer|
+  # Ces plugins utilisent le nouveau format Swift Package Manager
+  # incompatible avec use_frameworks! — on les force en bibliothèque statique
+  static_pods = %w[
+    flutter_local_notifications
+    share_plus
+    sqflite_darwin
+    in_app_review
+  ]
   installer.pod_targets.each do |pod|
-    if pod.name.eql?('flutter_local_notifications')
+    if static_pods.include?(pod.name)
       def pod.build_type
         Pod::BuildType.static_library
       end
@@ -71,6 +79,8 @@ post_install do |installer|
       if target.name == 'GoogleDataTransport'
         config.build_settings['OTHER_CFLAGS'] = '$(inherited) -Wno-implicit-function-declaration -Wno-strict-prototypes'
       end
+      # Fix nanopb pb.h "double-quoted include in framework header" (Xcode 26 / clang strict)
+      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
       # Fix "Stale file outside allowed root paths" (bundles _Privacy dans DerivedData)
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING']             = 'NO'
     end

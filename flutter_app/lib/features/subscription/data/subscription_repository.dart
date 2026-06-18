@@ -1,24 +1,25 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logger/logger.dart';
 
 import '../../../shared/constants/app_constants.dart';
 import '../domain/subscription_status.dart';
 
-/// Toutes les interactions avec le SDK RevenueCat
+/// Toutes les interactions avec RevenueCat + Supabase pour les abonnements.
 /// Jamais appelé directement depuis un widget : passer par subscription_provider.dart
 class SubscriptionRepository {
   SubscriptionRepository._();
   static final SubscriptionRepository instance = SubscriptionRepository._();
 
   final _log = Logger();
+  SupabaseClient get _db => Supabase.instance.client;
 
   // ── Configuration ────────────────────────────────────────────
 
-  /// Initialiser RevenueCat au démarrage de l'app (appelé dans main.dart)
   Future<void> init({String? userId}) async {
-    if (kIsWeb) return; // RevenueCat = mobile uniquement
+    if (kIsWeb) return;
 
     final apiKey = Platform.isIOS
         ? AppConstants.revenueCatApiKeyIos
@@ -28,7 +29,6 @@ class SubscriptionRepository {
     final config = PurchasesConfiguration(apiKey);
     await Purchases.configure(config);
 
-    // Associe l'utilisateur Supabase à RevenueCat dès que possible
     if (userId != null) {
       await identifyUser(userId);
     }
@@ -36,7 +36,6 @@ class SubscriptionRepository {
     _log.i('[RevenueCat] initialisé : userId: ${userId ?? "anonyme"}');
   }
 
-  /// Associe un userId Supabase à RevenueCat (à appeler après login)
   Future<void> identifyUser(String userId) async {
     if (kIsWeb) return;
     try {
@@ -47,7 +46,6 @@ class SubscriptionRepository {
     }
   }
 
-  /// Réinitialise l'identité (à appeler après logout)
   Future<void> logOut() async {
     if (kIsWeb) return;
     try {
@@ -60,19 +58,32 @@ class SubscriptionRepository {
 
   // ── Lecture de l'état ────────────────────────────────────────
 
-  /// Vérifie si l'utilisateur a l'entitlement Pro actif
   Future<SubscriptionStatus> getStatus() async {
     if (kIsWeb) return const SubscriptionStatus.free();
     try {
       final info = await Purchases.getCustomerInfo();
-      return _mapToStatus(info);
+      final baseStatus = _mapToStatus(info);
+
+      // Si pas encore Pro via RevenueCat, vérifie le trial étendu Supabase
+      if (!baseStatus.isPro) {
+        final extendedUntil = await getTrialExtendedUntil();
+        if (extendedUntil != null && extendedUntil.isAfter(DateTime.now())) {
+          return SubscriptionStatus(
+            isPro: true,
+            expiresAt: extendedUntil,
+            isTrialing: true,
+            willRenew: false,
+          );
+        }
+      }
+
+      return baseStatus;
     } catch (e) {
       _log.w('[RevenueCat] getStatus error: $e');
       return const SubscriptionStatus.free();
     }
   }
 
-  /// Récupère l'offering actif (packages disponibles à l'achat)
   Future<Offering?> getOffering() async {
     if (kIsWeb) return null;
     try {
@@ -87,15 +98,12 @@ class SubscriptionRepository {
 
   // ── Actions d'achat ──────────────────────────────────────────
 
-  /// Lance l'achat d'un package RevenueCat
-  /// Retourne le nouveau statut ou lance une exception en cas d'erreur
   Future<SubscriptionStatus> purchase(Package package) async {
     try {
       final result = await Purchases.purchase(PurchaseParams.package(package));
       _log.i('[RevenueCat] achat réussi: ${package.identifier}');
       return _mapToStatus(result.customerInfo);
     } on PurchasesErrorCode catch (e) {
-      // Annulation volontaire par l'utilisateur : pas une vraie erreur
       if (e == PurchasesErrorCode.purchaseCancelledError) {
         _log.i('[RevenueCat] achat annulé par l\'utilisateur');
         return const SubscriptionStatus.free();
@@ -105,7 +113,6 @@ class SubscriptionRepository {
     }
   }
 
-  /// Restaure les achats précédents (obligatoire App Store / Play Store)
   Future<SubscriptionStatus> restorePurchases() async {
     try {
       final info = await Purchases.restorePurchases();
@@ -117,6 +124,83 @@ class SubscriptionRepository {
     }
   }
 
+  // ── Trial étendu — Supabase ───────────────────────────────────
+  // Migration SQL à exécuter dans Supabase (si pas encore fait) :
+  //
+  // ALTER TABLE users
+  //   ADD COLUMN IF NOT EXISTS trial_extended_until TIMESTAMPTZ,
+  //   ADD COLUMN IF NOT EXISTS trial_nudge_shown_at TIMESTAMPTZ;
+
+  /// Retourne la date jusqu'à laquelle le trial est étendu, ou null
+  Future<DateTime?> getTrialExtendedUntil() async {
+    try {
+      final userId = _db.auth.currentUser?.id;
+      if (userId == null) return null;
+
+      final row = await _db
+          .from('profiles')
+          .select('trial_extended_until')
+          .eq('id', userId)
+          .maybeSingle();
+
+      final raw = row?['trial_extended_until'] as String?;
+      return raw != null ? DateTime.tryParse(raw) : null;
+    } catch (e) {
+      _log.w('[Trial] getTrialExtendedUntil error: $e');
+      return null;
+    }
+  }
+
+  /// Accorde 7 jours supplémentaires à partir de maintenant
+  Future<void> grantTrialExtension() async {
+    try {
+      final userId = _db.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final until = DateTime.now().add(const Duration(days: 7));
+      await _db.from('profiles').update({
+        'trial_extended_until': until.toIso8601String(),
+      }).eq('id', userId);
+
+      _log.i('[Trial] extension accordée jusqu\'au $until');
+    } catch (e) {
+      _log.w('[Trial] grantTrialExtension error: $e');
+    }
+  }
+
+  /// Vérifie si le nudge d'avis a déjà été affiché à cet utilisateur
+  Future<bool> isNudgeAlreadyShown() async {
+    try {
+      final userId = _db.auth.currentUser?.id;
+      if (userId == null) return true; // sécurité : ne pas afficher si inconnu
+
+      final row = await _db
+          .from('profiles')
+          .select('trial_nudge_shown_at')
+          .eq('id', userId)
+          .maybeSingle();
+
+      return row?['trial_nudge_shown_at'] != null;
+    } catch (e) {
+      _log.w('[Trial] isNudgeAlreadyShown error: $e');
+      return true;
+    }
+  }
+
+  /// Marque le nudge comme affiché (idempotent)
+  Future<void> markNudgeShown() async {
+    try {
+      final userId = _db.auth.currentUser?.id;
+      if (userId == null) return;
+
+      await _db.from('profiles').update({
+        'trial_nudge_shown_at': DateTime.now().toIso8601String(),
+      }).eq('id', userId);
+    } catch (e) {
+      _log.w('[Trial] markNudgeShown error: $e');
+    }
+  }
+
   // ── Mapping interne ──────────────────────────────────────────
 
   SubscriptionStatus _mapToStatus(CustomerInfo info) {
@@ -125,12 +209,13 @@ class SubscriptionRepository {
     if (entitlement == null) return const SubscriptionStatus.free();
 
     return SubscriptionStatus(
-      isPro:      true,
-      expiresAt:  entitlement.expirationDate != null
+      isPro:          true,
+      expiresAt:      entitlement.expirationDate != null
           ? DateTime.tryParse(entitlement.expirationDate!)
           : null,
-      isTrialing: entitlement.periodType == PeriodType.trial,
-      willRenew:  entitlement.willRenew,
+      isTrialing:     entitlement.periodType == PeriodType.trial,
+      willRenew:      entitlement.willRenew,
+      trialStartDate: DateTime.tryParse(entitlement.originalPurchaseDate),
     );
   }
 }

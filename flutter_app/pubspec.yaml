@@ -42,6 +42,9 @@ dependencies:
   # Abonnements — RevenueCat (paywall Pro)
   purchases_flutter: ^9.16.1
 
+  # Demande d'avis App Store / Play Store
+  in_app_review: ^2.0.9
+
   # Audio ambiant (Pomodoro + Flow)
   just_audio: ^0.9.42
 

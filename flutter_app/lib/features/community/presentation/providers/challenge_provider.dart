@@ -1,13 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:logger/logger.dart';
 
 import '../../data/challenge_model.dart';
 
 final _log = Logger();
-
-const _kJoinKey     = 'challenge_joined_';
-const _kProgressKey = 'challenge_progress_';
 
 // ── Notifier du défi mensuel ──────────────────────────────────
 class ChallengeNotifier extends StateNotifier<AsyncValue<KolybChallenge?>> {
@@ -15,21 +12,58 @@ class ChallengeNotifier extends StateNotifier<AsyncValue<KolybChallenge?>> {
     _load();
   }
 
+  final _supabase = Supabase.instance.client;
+
+  static String _monthKey() {
+    final now = DateTime.now();
+    return 'challenge_${now.year}_${now.month}';
+  }
+
+  String get _userId => _supabase.auth.currentUser?.id ?? '';
+
+  // 📸 MODE CAPTURES APP STORE — mettre à false avant de soumettre
+  static const bool screenshotMode = false;
+
   Future<void> _load() async {
+    if (screenshotMode) {
+      state = AsyncValue.data(buildCurrentChallenge(
+        isJoined: false,
+        progressDays: 0,
+        communityCount: 47,
+      ));
+      return;
+    }
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final key   = _monthKey();
+      final challengeId = _monthKey();
 
-      final isJoined = prefs.getBool('$_kJoinKey$key')      ?? false;
-      final progress = prefs.getInt('$_kProgressKey$key')   ?? 0;
+      // Nombre de participants pour ce defi (lecture publique)
+      final countRes = await _supabase
+          .from('challenge_participants')
+          .select('id')
+          .eq('challenge_id', challengeId);
+      final participantsCount = (countRes as List).length;
 
-      final challenge = buildCurrentChallenge(
-        isJoined:       isJoined,
-        progressDays:   progress,
-        communityCount: _estimateCommunityCount(),
-      );
+      // Etat de l'utilisateur courant
+      bool isJoined = false;
+      int progressDays = 0;
+      if (_userId.isNotEmpty) {
+        final userRes = await _supabase
+            .from('challenge_participants')
+            .select('progress_days')
+            .eq('challenge_id', challengeId)
+            .eq('user_id', _userId)
+            .maybeSingle();
+        if (userRes != null) {
+          isJoined = true;
+          progressDays = (userRes['progress_days'] as int?) ?? 0;
+        }
+      }
 
-      state = AsyncValue.data(challenge);
+      state = AsyncValue.data(buildCurrentChallenge(
+        isJoined: isJoined,
+        progressDays: progressDays,
+        communityCount: participantsCount,
+      ));
     } catch (e, st) {
       _log.e('ChallengeNotifier._load', error: e);
       state = AsyncValue.error(e, st);
@@ -38,53 +72,57 @@ class ChallengeNotifier extends StateNotifier<AsyncValue<KolybChallenge?>> {
 
   Future<void> joinChallenge() async {
     final current = state.valueOrNull;
-    if (current == null) return;
+    if (current == null || _userId.isEmpty) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('$_kJoinKey${_monthKey()}', true);
-
-    state = AsyncValue.data(current.copyWith(
-      isJoined:           true,
-      participantsCount:  current.participantsCount + 1,
-    ));
+    try {
+      await _supabase.from('challenge_participants').upsert({
+        'user_id': _userId,
+        'challenge_id': _monthKey(),
+        'progress_days': 0,
+      });
+      state = AsyncValue.data(current.copyWith(
+        isJoined: true,
+        participantsCount: current.participantsCount + 1,
+      ));
+    } catch (e) {
+      _log.e('joinChallenge', error: e);
+    }
   }
 
   Future<void> leaveChallenge() async {
     final current = state.valueOrNull;
-    if (current == null) return;
+    if (current == null || _userId.isEmpty) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('$_kJoinKey${_monthKey()}', false);
-
-    state = AsyncValue.data(current.copyWith(
-      isJoined:           false,
-      participantsCount:  (current.participantsCount - 1).clamp(0, 999999),
-    ));
+    try {
+      await _supabase
+          .from('challenge_participants')
+          .delete()
+          .eq('challenge_id', _monthKey())
+          .eq('user_id', _userId);
+      state = AsyncValue.data(current.copyWith(
+        isJoined: false,
+        participantsCount: (current.participantsCount - 1).clamp(0, 999999),
+      ));
+    } catch (e) {
+      _log.e('leaveChallenge', error: e);
+    }
   }
 
   Future<void> incrementProgress() async {
     final current = state.valueOrNull;
-    if (current == null || !current.isJoined) return;
+    if (current == null || !current.isJoined || _userId.isEmpty) return;
 
     final newProgress = (current.userProgressDays + 1).clamp(0, current.targetDays);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('$_kProgressKey${_monthKey()}', newProgress);
-
-    state = AsyncValue.data(current.copyWith(userProgressDays: newProgress));
-  }
-
-  static String _monthKey() {
-    final now = DateTime.now();
-    return '${now.year}_${now.month}';
-  }
-
-  // Simule une croissance organique réaliste — à remplacer par une query Supabase en V2
-  static int _estimateCommunityCount() {
-    final daysSinceLaunch = DateTime.now()
-        .difference(DateTime(2025, 5, 1))
-        .inDays
-        .clamp(0, 99999);
-    return 38 + (daysSinceLaunch * 2);
+    try {
+      await _supabase
+          .from('challenge_participants')
+          .update({'progress_days': newProgress})
+          .eq('challenge_id', _monthKey())
+          .eq('user_id', _userId);
+      state = AsyncValue.data(current.copyWith(userProgressDays: newProgress));
+    } catch (e) {
+      _log.e('incrementProgress', error: e);
+    }
   }
 }
 

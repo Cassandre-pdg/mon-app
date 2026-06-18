@@ -45,7 +45,7 @@ class ProfileScreen extends ConsumerWidget {
                 // ── Titre ──────────────────────────────────────
                 Text(
                   AppStrings.navProfile,
-                  style: AppTextStyles.headingLarge(
+                  style: AppTextStyles.displayLarge(
                     color: isDark ? AppColors.textDark : AppColors.textLight,
                   ),
                 ),
@@ -311,7 +311,7 @@ class _ProfileHeaderCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppConstants.spacing16),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          color: AppColors.surface(context),
           borderRadius: BorderRadius.circular(AppConstants.radiusXL),
           border: Border.all(
             color: AppColors.primary.withValues(alpha: 0.20),
@@ -417,7 +417,7 @@ class _ProfileHeaderSkeleton extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacing16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(AppConstants.radiusXL),
       ),
       child: Row(
@@ -514,7 +514,7 @@ class _IdentityBottomSheetState extends State<_IdentityBottomSheet> {
       padding: EdgeInsets.only(bottom: bottomPad),
       child: Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceElevatedDark : Colors.white,
+        color: AppColors.surfaceEl(context),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
@@ -660,7 +660,7 @@ class _IdentityField extends StatelessWidget {
             filled: true,
             fillColor: isDark
                 ? AppColors.surfaceDark
-                : AppColors.backgroundLight,
+                : AppColors.backgroundLight, // intentionnel : champ de texte plus foncé en light
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
@@ -702,7 +702,7 @@ class _SubscriptionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: Border.all(
           color: isDark
@@ -925,7 +925,7 @@ class _StatsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacing16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: Border.all(
           color: isDark
@@ -1099,7 +1099,7 @@ class _ThemePicker extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacing8),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: Border.all(
           color: isDark
@@ -1202,7 +1202,7 @@ class _AccountSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: Border.all(
           color: isDark
@@ -1430,10 +1430,8 @@ class _TrophyShowcase extends ConsumerWidget {
               .where((b) => pinnedIds.contains(b.id))
               .toList();
 
-          final cardColor = isDark ? AppColors.surfaceDark : Colors.white;
-          final borderColor = isDark
-              ? AppColors.surfaceElevatedDark.withValues(alpha: 0.5)
-              : AppColors.grey200;
+          final cardColor = AppColors.surface(context);
+          final borderColor = AppColors.cardBorder(context);
 
           return Container(
             padding: const EdgeInsets.all(AppConstants.spacing16),

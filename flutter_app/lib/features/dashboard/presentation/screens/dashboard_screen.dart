@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../shared/navigation/app_router.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../providers/dashboard_provider.dart';
@@ -15,20 +16,58 @@ import '../../data/dashboard_repository.dart';
 import '../../../planner/presentation/providers/flow_provider.dart';
 import '../../../planner/presentation/providers/kanban_provider.dart';
 import '../../../planner/data/kanban_model.dart';
+import '../../../../shared/services/trial_nudge_service.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  bool _nudgeTriggered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Vérifie le nudge trial après le premier frame (le provider a besoin du contexte)
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkTrialNudge());
+  }
+
+  Future<void> _checkTrialNudge() async {
+    if (_nudgeTriggered) return;
+    final sub = ref.read(subscriptionStatusProvider).valueOrNull;
+    if (sub == null || !sub.isTrialing) return;
+    final daysElapsed = sub.trialDaysElapsed ?? 0;
+    if (daysElapsed < 5) return;
+
+    final repo = ref.read(subscriptionRepositoryProvider);
+    final alreadyShown = await repo.isNudgeAlreadyShown();
+    if (alreadyShown) return;
+
+    _nudgeTriggered = true;
+    // Accorde l'extension + marque comme affiché
+    await repo.markNudgeShown();
+    await repo.grantTrialExtension();
+    ref.read(subscriptionStatusProvider.notifier).refresh();
+
+    if (mounted) await showTrialNudgeSheet(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final dashAsync = ref.watch(dashboardProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     final greeting = now.hour < 12 ? 'Bonjour' : now.hour < 18 ? 'Bon après-midi' : 'Bonsoir';
     final dateStr = DateFormat('EEEE d MMMM', 'fr_FR').format(now);
+    final meta = Supabase.instance.client.auth.currentUser?.userMetadata ?? {};
+    final fullName = (meta['full_name'] as String? ?? '').trim();
+    final firstName = fullName.isNotEmpty ? fullName.split(' ').first : '';
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: AppColors.bg(context),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async => ref.invalidate(dashboardProvider),
@@ -44,10 +83,19 @@ class DashboardScreen extends ConsumerWidget {
                     children: [
                       Text(
                         '$greeting 👋',
-                        style: AppTextStyles.displayLarge(
-                          color: isDark ? AppColors.textDark : AppColors.textLight,
+                        style: AppTextStyles.bodyMedium(
+                          color: AppColors.txtMuted(context),
                         ),
                       ),
+                      if (firstName.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          firstName,
+                          style: AppTextStyles.displayLarge(
+                            color: isDark ? AppColors.textDark : AppColors.textLight,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 4),
                       Text(
                         dateStr,
@@ -210,25 +258,26 @@ class _StreakCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.spacing24),
       decoration: BoxDecoration(
-        // Fond dark glass — pas de gradient agressif
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0E0E24), Color(0xFF13102E)],
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF0E0E24), const Color(0xFF13102E)]
+              : [const Color(0xFFF0EAFE), const Color(0xFFE6DEFF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.35),
+          color: AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.2),
           width: 1.5,
         ),
         boxShadow: [
-          // Glow violet subtil sous la carte
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.18),
+            color: AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.1),
             blurRadius: 32,
             offset: const Offset(0, 8),
           ),
@@ -257,14 +306,14 @@ class _StreakCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   '${data.currentStreak} jour${data.currentStreak > 1 ? 's' : ''}',
-                  style: AppTextStyles.displayLarge(color: AppColors.textDark)
+                  style: AppTextStyles.displayLarge(color: AppColors.txt(context))
                       .copyWith(fontSize: 36, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Record : ${data.longestStreak} jours',
                   style: AppTextStyles.bodySmall(
-                      color: AppColors.textDarkMuted),
+                      color: AppColors.txtMuted(context)),
                 ),
               ],
             ),
@@ -276,7 +325,7 @@ class _StreakCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E1A40),
+                  color: isDark ? const Color(0xFF1E1A40) : AppColors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.25),
@@ -322,21 +371,28 @@ class _CheckinCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final emoji      = isMorning ? '🌅' : '🌙';
     final label      = isMorning ? 'Matin' : 'Soir';
     final accentColor = isMorning ? AppColors.chartAmber : AppColors.primaryLight;
 
     final List<Color> gradient = isDone
-        ? [const Color(0xFF00241E), const Color(0xFF003D32)]
+        ? isDark
+            ? [const Color(0xFF00241E), const Color(0xFF003D32)]
+            : [const Color(0xFFDEFAF5), const Color(0xFFBBF1E8)]
         : isMorning
-            ? [const Color(0xFF1E0E00), const Color(0xFF3D2000)]
-            : [const Color(0xFF0A0620), const Color(0xFF18094A)];
+            ? isDark
+                ? [const Color(0xFF1E0E00), const Color(0xFF3D2000)]
+                : [const Color(0xFFFFF8E1), const Color(0xFFFFECB3)]
+            : isDark
+                ? [const Color(0xFF0A0620), const Color(0xFF18094A)]
+                : [const Color(0xFFEDE7FF), const Color(0xFFD4C8FF)];
 
     final borderColor = isDone
-        ? AppColors.accent.withValues(alpha: 0.55)
+        ? AppColors.accent.withValues(alpha: isDark ? 0.55 : 0.4)
         : isMorning
-            ? AppColors.chartAmber.withValues(alpha: 0.35)
-            : AppColors.primary.withValues(alpha: 0.35);
+            ? AppColors.chartAmber.withValues(alpha: isDark ? 0.35 : 0.5)
+            : AppColors.primary.withValues(alpha: isDark ? 0.35 : 0.3);
 
     final double pad         = isBig ? 20.0 : 14.0;
     final double emojiSmall  = isBig ? 28.0 : 22.0;
@@ -379,7 +435,7 @@ class _CheckinCard extends StatelessWidget {
                 SizedBox(height: isBig ? 14.0 : 10.0),
                 Text(
                   label,
-                  style: AppTextStyles.headingSmall(color: AppColors.textDark)
+                  style: AppTextStyles.headingSmall(color: AppColors.txt(context))
                       .copyWith(fontSize: isBig ? 16.0 : 14.0),
                 ),
                 const SizedBox(height: 3),
@@ -436,7 +492,7 @@ class _LevelCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacing16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
       ),
       child: Column(
@@ -533,6 +589,7 @@ class _FocusProjectCard extends StatelessWidget {
 class _EmptyProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () => context.push('/planner/kanban'),
       child: Container(
@@ -542,8 +599,10 @@ class _EmptyProjectCard extends StatelessWidget {
           vertical: AppConstants.spacing32,
         ),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0A0820), Color(0xFF140F30)],
+          gradient: LinearGradient(
+            colors: isDark
+                ? [const Color(0xFF0A0820), const Color(0xFF140F30)]
+                : [const Color(0xFFF5F2FF), const Color(0xFFEDE7FF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -559,12 +618,12 @@ class _EmptyProjectCard extends StatelessWidget {
             const SizedBox(height: AppConstants.spacing12),
             Text(
               'Aucun projet épinglé',
-              style: AppTextStyles.headingSmall(color: AppColors.textDark),
+              style: AppTextStyles.headingSmall(color: AppColors.txt(context)),
             ),
             const SizedBox(height: 6),
             Text(
               'Épingle un projet dans Mes Objectifs pour le suivre ici',
-              style: AppTextStyles.bodySmall(color: AppColors.textDarkMuted),
+              style: AppTextStyles.bodySmall(color: AppColors.txtMuted(context)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppConstants.spacing16),
@@ -593,6 +652,7 @@ class _FilledProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final pct = (project.progressPercent * 100).round();
     final daysLeft = project.daysLeft;
     final isOverdue = project.isOverdue;
@@ -603,8 +663,10 @@ class _FilledProjectCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(20.0),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0A0820), Color(0xFF140F30)],
+          gradient: LinearGradient(
+            colors: isDark
+                ? [const Color(0xFF0A0820), const Color(0xFF140F30)]
+                : [const Color(0xFFF5F2FF), const Color(0xFFEDE7FF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -646,7 +708,7 @@ class _FilledProjectCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         project.name,
-                        style: AppTextStyles.headingMedium(color: AppColors.textDark),
+                        style: AppTextStyles.headingMedium(color: AppColors.txt(context)),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -686,7 +748,7 @@ class _FilledProjectCard extends StatelessWidget {
                   vertical: AppConstants.spacing8,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1040),
+                  color: isDark ? const Color(0xFF1A1040) : AppColors.primary.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.15),
@@ -703,7 +765,7 @@ class _FilledProjectCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         project.why!,
-                        style: AppTextStyles.bodySmall(color: AppColors.textDarkMuted)
+                        style: AppTextStyles.bodySmall(color: AppColors.txtMuted(context))
                             .copyWith(fontStyle: FontStyle.italic),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -737,7 +799,7 @@ class _FilledProjectCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         project.vision!,
-                        style: AppTextStyles.bodySmall(color: AppColors.textDarkMuted),
+                        style: AppTextStyles.bodySmall(color: AppColors.txtMuted(context)),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -762,7 +824,7 @@ class _FilledProjectCard extends StatelessWidget {
                       child: Text(
                         c,
                         style: AppTextStyles.caption(
-                            color: AppColors.textDarkMuted),
+                            color: AppColors.txtMuted(context)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -779,7 +841,7 @@ class _FilledProjectCard extends StatelessWidget {
               children: [
                 Text(
                   'Avancement',
-                  style: AppTextStyles.caption(color: AppColors.textDarkMuted),
+                  style: AppTextStyles.caption(color: AppColors.txtMuted(context)),
                 ),
                 const Spacer(),
                 Text(
@@ -806,7 +868,7 @@ class _FilledProjectCard extends StatelessWidget {
               children: [
                 _TaskPill(
                   label: '${project.todoCount} à faire',
-                  color: AppColors.textDarkMuted,
+                  color: AppColors.txtMuted(context),
                 ),
                 const SizedBox(width: 8),
                 _TaskPill(
@@ -1134,7 +1196,7 @@ class _OverviewCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppConstants.spacing16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: AppColors.surface(context),
         borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
         border: Border.all(
           color: isDark

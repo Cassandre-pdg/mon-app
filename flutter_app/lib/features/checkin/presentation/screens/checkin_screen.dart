@@ -142,7 +142,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     // Fond légèrement plus sombre pour le soir
     final bg = isMorning
         ? (isDark ? AppColors.backgroundDark : AppColors.backgroundLight)
-        : const Color(0xFF08091A);
+        : (isDark ? const Color(0xFF08091A) : AppColors.backgroundLight);
 
     return Scaffold(
       backgroundColor: bg,
@@ -304,9 +304,7 @@ class _QuestionStep extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? question.color.withValues(alpha: 0.13)
-                            : (isDark
-                                ? AppColors.surfaceDark
-                                : AppColors.surfaceLight),
+                            : AppColors.surface(context),
                         border: Border.all(
                           color: isSelected
                               ? question.color
@@ -342,9 +340,7 @@ class _QuestionStep extends StatelessWidget {
                               style: AppTextStyles.bodyMedium(
                                 color: isSelected
                                     ? question.color
-                                    : (isDark
-                                        ? AppColors.textDark
-                                        : AppColors.textLight),
+                                    : AppColors.txt(context),
                               ).copyWith(
                                 fontWeight: isSelected
                                     ? FontWeight.w600
@@ -373,9 +369,7 @@ class _QuestionStep extends StatelessWidget {
                   Text(
                     'Une note ? (optionnel)',
                     style: AppTextStyles.labelMedium(
-                      color: isDark
-                          ? AppColors.textDark
-                          : AppColors.textLight,
+                      color: AppColors.txt(context),
                     ),
                   ),
                   const SizedBox(height: 8),

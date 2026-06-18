@@ -19,8 +19,7 @@ class RewardsScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -115,9 +114,7 @@ class _BadgesBody extends StatelessWidget {
               child: Text(
                 'Continue à avancer, chaque badge arrive à son rythme 🌱',
                 style: AppTextStyles.bodySmall(
-                  color: isDark
-                      ? AppColors.textDark.withValues(alpha: 0.38)
-                      : AppColors.textLight.withValues(alpha: 0.38),
+                  color: AppColors.txt(context).withValues(alpha: 0.38),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -222,9 +219,7 @@ class _TierLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isDark
-        ? AppColors.textDark.withValues(alpha: 0.55)
-        : AppColors.textLight.withValues(alpha: 0.55);
+    final textColor = AppColors.txt(context).withValues(alpha: 0.55);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -295,16 +290,14 @@ class _BadgeSection extends StatelessWidget {
         Text(
           title,
           style: AppTextStyles.headingSmall(
-            color: isDark ? AppColors.textDark : AppColors.textLight,
+            color: AppColors.txt(context),
           ),
         ),
         const SizedBox(height: 2),
         Text(
           subtitle,
           style: AppTextStyles.bodySmall(
-            color: isDark
-                ? AppColors.textDark.withValues(alpha: 0.42)
-                : AppColors.textLight.withValues(alpha: 0.45),
+            color: AppColors.txt(context).withValues(alpha: 0.42),
           ),
         ),
         const SizedBox(height: AppConstants.spacing16),
@@ -359,9 +352,7 @@ class _BadgeCard extends ConsumerWidget {
             style: AppTextStyles.caption(
               color: badge.isUnlocked
                   ? badge.categoryColor
-                  : (isDark
-                      ? AppColors.textDark.withValues(alpha: 0.28)
-                      : AppColors.textLight.withValues(alpha: 0.3)),
+                  : AppColors.txt(context).withValues(alpha: 0.28),
             ).copyWith(
               fontWeight:
                   badge.isUnlocked ? FontWeight.w600 : FontWeight.w400,
@@ -435,7 +426,7 @@ class _BadgeDetailSheet extends ConsumerWidget {
         pinnedAsync.valueOrNull?.contains(badge.id) ?? isPinned;
     final pinnedCount = pinnedAsync.valueOrNull?.length ?? 0;
 
-    final bgColor = isDark ? AppColors.surfaceDark : Colors.white;
+    final bgColor = AppColors.surface(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -474,7 +465,7 @@ class _BadgeDetailSheet extends ConsumerWidget {
           Text(
             badge.isUnlocked ? badge.name : 'Badge verrouillé',
             style: AppTextStyles.headingMedium(
-              color: isDark ? AppColors.textDark : AppColors.textLight,
+              color: AppColors.txt(context),
             ),
             textAlign: TextAlign.center,
           ),
@@ -484,9 +475,7 @@ class _BadgeDetailSheet extends ConsumerWidget {
           Text(
             badge.isUnlocked ? badge.description : badge.hint,
             style: AppTextStyles.bodyMedium(
-              color: isDark
-                  ? AppColors.textDark.withValues(alpha: 0.55)
-                  : AppColors.textLight.withValues(alpha: 0.55),
+              color: AppColors.txt(context).withValues(alpha: 0.55),
             ),
             textAlign: TextAlign.center,
           ),
@@ -540,17 +529,13 @@ class _BadgeDetailSheet extends ConsumerWidget {
                       Icon(
                         Icons.calendar_today_rounded,
                         size: 13,
-                        color: isDark
-                            ? AppColors.textDark.withValues(alpha: 0.45)
-                            : AppColors.textLight.withValues(alpha: 0.45),
+                        color: AppColors.txt(context).withValues(alpha: 0.45),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         'Débloqué le ${BadgePreferencesRepository.formatDate(date)}',
                         style: AppTextStyles.caption(
-                          color: isDark
-                              ? AppColors.textDark.withValues(alpha: 0.45)
-                              : AppColors.textLight.withValues(alpha: 0.45),
+                          color: AppColors.txt(context).withValues(alpha: 0.45),
                         ),
                       ),
                     ],
@@ -573,9 +558,7 @@ class _BadgeDetailSheet extends ConsumerWidget {
                     Text(
                       'Ta progression',
                       style: AppTextStyles.labelMedium(
-                        color: isDark
-                            ? AppColors.textDark.withValues(alpha: 0.55)
-                            : AppColors.textLight.withValues(alpha: 0.55),
+                        color: AppColors.txt(context).withValues(alpha: 0.55),
                       ),
                     ),
                     Text(

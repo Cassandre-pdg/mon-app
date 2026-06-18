@@ -41,8 +41,93 @@ class CommunityPostsNotifier
   final CommunityRepository _repo;
   StreamSubscription? _realtimeSub;
 
+  // 📸 MODE CAPTURES APP STORE — mettre à false avant de soumettre
+  static const bool screenshotMode = false;
+
   CommunityPostsNotifier(this._repo) : super(const AsyncValue.loading()) {
-    _subscribeRealtime();
+    if (screenshotMode) {
+      _loadScreenshotData();
+    } else {
+      _subscribeRealtime();
+    }
+  }
+
+  void _loadScreenshotData() {
+    final now = DateTime.now();
+    state = AsyncValue.data([
+      CommunityPost(
+        id: 'mock-1',
+        userId: 'u1',
+        authorName: 'Sophie M.',
+        content: 'Comment vous gérez la solitude du freelance ? Moi ça me pèse certains lundis matin...',
+        postType: PostType.question,
+        postTag: 'Organisation',
+        repliesCount: 7,
+        reactionsUtile: 12,
+        reactionsInspirant: 4,
+        reactionsMerci: 3,
+        reactionsBravo: 0,
+        createdAt: now.subtract(const Duration(hours: 2)),
+      ),
+      CommunityPost(
+        id: 'mock-2',
+        userId: 'u2',
+        authorName: 'Thomas R.',
+        content: 'Quel outil tu utilises pour suivre tes revenus au quotidien ?',
+        postType: PostType.sondage,
+        postTag: 'Finances',
+        repliesCount: 14,
+        reactionsUtile: 28,
+        reactionsInspirant: 6,
+        reactionsMerci: 9,
+        reactionsBravo: 5,
+        pollOptions: ['Notion', 'Excel / Sheets', 'Une app dédiée', 'Rien pour l\'instant'],
+        pollVotes: [18, 31, 12, 7],
+        createdAt: now.subtract(const Duration(hours: 5)),
+      ),
+      CommunityPost(
+        id: 'mock-3',
+        userId: 'u3',
+        authorName: 'Lea B.',
+        content: 'J\'ai décroché mon premier contrat de 5000€ ce mois-ci ! 6 mois après m\'être lancée. Merci à ce Salon pour le soutien.',
+        postType: PostType.victoire,
+        postTag: 'Freelance',
+        repliesCount: 23,
+        reactionsUtile: 5,
+        reactionsInspirant: 47,
+        reactionsMerci: 8,
+        reactionsBravo: 52,
+        createdAt: now.subtract(const Duration(hours: 9)),
+      ),
+      CommunityPost(
+        id: 'mock-4',
+        userId: 'u4',
+        authorName: 'Marc D.',
+        content: 'La méthode Flow de Kolyb a changé ma façon de travailler. Je bloque 90 min le matin et je ne touche plus au reste. Résultat : 3x plus productif.',
+        postType: PostType.reflexion,
+        postTag: 'Productivité',
+        repliesCount: 11,
+        reactionsUtile: 34,
+        reactionsInspirant: 19,
+        reactionsMerci: 6,
+        reactionsBravo: 4,
+        createdAt: now.subtract(const Duration(days: 1)),
+      ),
+      CommunityPost(
+        id: 'mock-5',
+        userId: 'u5',
+        authorName: 'Julie P.',
+        content: 'Tarif journalier moyen : vous montez ou baissez vos tarifs en 2026 ? Personnellement j\'ai augmenté de 20% et aucun client n\'est parti.',
+        postType: PostType.debat,
+        postTag: 'Business',
+        repliesCount: 19,
+        reactionsUtile: 41,
+        reactionsInspirant: 15,
+        reactionsMerci: 7,
+        reactionsBravo: 3,
+        createdAt: now.subtract(const Duration(days: 1, hours: 3)),
+      ),
+    ]);
   }
 
   @override

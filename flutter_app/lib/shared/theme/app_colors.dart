@@ -90,6 +90,40 @@ class AppColors {
   /// Violet profond → pale (accents doux)
   static const List<Color> gradientViolet = [Color(0xFF6D28D9), Color(0xFFC4B5FD)];
 
+  // ─── HELPERS CONTEXTUELS — lisent le thème automatiquement ────
+  // Usage : AppColors.surface(context) au lieu de AppColors.surfaceDark
+
+  static bool _dark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  /// Fond de page (scaffold)
+  static Color bg(BuildContext context) =>
+      _dark(context) ? backgroundDark : backgroundLight;
+
+  /// Fond des cards
+  static Color surface(BuildContext context) =>
+      _dark(context) ? surfaceDark : surfaceLight;
+
+  /// Fond des modals / bottom sheets / éléments élevés
+  static Color surfaceEl(BuildContext context) =>
+      _dark(context) ? surfaceElevatedDark : grey100;
+
+  /// Texte principal
+  static Color txt(BuildContext context) =>
+      _dark(context) ? textDark : textLight;
+
+  /// Texte atténué (labels, captions)
+  static Color txtMuted(BuildContext context) =>
+      _dark(context) ? textDarkMuted : const Color(0x9912122A);
+
+  /// Bordure subtile des cards
+  static Color cardBorder(BuildContext context) =>
+      _dark(context) ? const Color(0x1FEDEDED) : grey200;
+
+  /// Teal lisible sur fond clair (plus sombre) ou fond sombre (normal)
+  static Color accentReadable(BuildContext context) =>
+      _dark(context) ? accent : const Color(0xFF007A75);
+
   // ─── AURORA (orbes animées — Flow / Wellness) ─────────────────
   // Encodage ARGB : 0xAARRGGBB — const pour permettre les default params
   static const Color auroraViolet = Color(0x596D28D9); // violet, alpha 35%

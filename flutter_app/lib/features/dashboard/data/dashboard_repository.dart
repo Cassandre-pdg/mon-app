@@ -61,7 +61,26 @@ class DashboardRepository {
     4: 'Bâtisseur',   5: 'Visionnaire',
   };
 
+  // 📸 MODE CAPTURES APP STORE — mettre à false avant de soumettre sur l'App Store
+  static const bool screenshotMode = false;
+
   Future<DashboardData> getDashboardData() async {
+    if (screenshotMode) {
+      return const DashboardData(
+        currentStreak:    12,
+        longestStreak:    21,
+        totalPoints:      340,
+        level:            2,
+        levelLabel:       'Indépendant',
+        morningDone:      true,
+        eveningDone:      false,
+        focusMinutes:     72,
+        focusGoalMinutes: 120,
+        habitsCompleted:  2,
+        habitsTotalToday: 3,
+      );
+    }
+
     final userId = _supabase.auth.currentUser!.id;
 
     // Appels parallèles typés explicitement
