@@ -51,6 +51,9 @@ dependencies:
   # Partage natif iOS/Android
   share_plus: ^10.1.4
 
+  # Liens externes (CGU, politique de confidentialité)
+  url_launcher: ^6.3.1
+
   # Utilitaires
   logger: ^2.5.0
   intl: ^0.20.2

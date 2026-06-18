@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
@@ -289,13 +290,43 @@ class _PaywallContentState extends ConsumerState<_PaywallContent>
                       const SizedBox(height: AppConstants.spacing4),
 
                       Text(
-                        'Renouvellement automatique. Annulation à tout moment depuis les réglages de l\'App Store. Conforme RGPD , données hébergées en Europe.',
+                        'Renouvellement automatique. Annulation à tout moment depuis les réglages de l\'App Store. Conforme RGPD, données hébergées en Europe.',
                         style: AppTextStyles.caption().copyWith(
                           color: widget.isDark
                               ? AppColors.textDarkMuted
                               : AppColors.grey400,
                         ),
                         textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: AppConstants.spacing12),
+
+                      // Liens légaux obligatoires Apple (App Store Review Guidelines)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _LegalLink(
+                            label: 'CGU',
+                            url: 'https://cassandre-pdg.github.io/kolyb-support/cgu.html',
+                            isDark: widget.isDark,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              '·',
+                              style: AppTextStyles.caption().copyWith(
+                                color: widget.isDark
+                                    ? AppColors.textDarkMuted
+                                    : AppColors.grey400,
+                              ),
+                            ),
+                          ),
+                          _LegalLink(
+                            label: 'Politique de confidentialité',
+                            url: 'https://cassandre-pdg.github.io/kolyb-support/confidentialite.html',
+                            isDark: widget.isDark,
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: AppConstants.spacing32),
@@ -1177,6 +1208,37 @@ class _SuccessBody extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Lien légal cliquable (CGU / Politique de confidentialité)
+// ─────────────────────────────────────────────────────────────
+
+class _LegalLink extends StatelessWidget {
+  final String label;
+  final String url;
+  final bool isDark;
+
+  const _LegalLink({
+    required this.label,
+    required this.url,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      child: Text(
+        label,
+        style: AppTextStyles.caption().copyWith(
+          color: AppColors.primaryLight,
+          decoration: TextDecoration.underline,
+          decorationColor: AppColors.primaryLight,
         ),
       ),
     );
