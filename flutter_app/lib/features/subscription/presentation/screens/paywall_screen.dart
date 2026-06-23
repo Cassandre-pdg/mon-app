@@ -28,9 +28,11 @@ const _freeFeatures = [
   _Feature('🏠', 'Tableau de bord 7 jours', 'Suivi de ta semaine en cours'),
   _Feature('🧘', '2 méditations guidées', 'Pour commencer et souffler'),
   _Feature('👥', 'Le Salon (lecture)', 'Inspire-toi de la communauté'),
+  _Feature('📁', '1 projet actif', 'Pour poser les bases de ton activité'),
 ];
 
 const _proFeatures = [
+  _Feature('📁', 'Projets illimités', 'Autant de projets que tu as d\'ambitions'),
   _Feature('📈', 'Historique complet illimité', 'Tes données, pour toujours'),
   _Feature('🎯', 'Graphiques et analytics', 'Vois vraiment ta progression'),
   _Feature('🌟', 'Radar bien-être hebdo', 'Vue 360° productivité et équilibre'),
@@ -254,54 +256,7 @@ class _PaywallContentState extends ConsumerState<_PaywallContent>
 
                       const SizedBox(height: AppConstants.spacing12),
 
-                      // ── Continuer en gratuit ─────────────────
-                      if (widget.isDismissible)
-                        Center(
-                          child: TextButton(
-                            onPressed: isLoading ? null : () => context.pop(),
-                            child: Text(
-                              'Continuer en gratuit',
-                              style: AppTextStyles.bodySmall().copyWith(
-                                color: widget.isDark
-                                    ? AppColors.textDarkMuted
-                                    : AppColors.grey400,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                      const SizedBox(height: AppConstants.spacing24),
-
-                      // ── Restaurer + légal ────────────────────
-                      Center(
-                        child: TextButton(
-                          onPressed: isLoading ? null : _restore,
-                          child: Text(
-                            'Restaurer mes achats',
-                            style: AppTextStyles.caption().copyWith(
-                              color: AppColors.primaryLight,
-                              decoration: TextDecoration.underline,
-                              decorationColor: AppColors.primaryLight,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: AppConstants.spacing4),
-
-                      Text(
-                        'Renouvellement automatique. Annulation à tout moment depuis les réglages de l\'App Store. Conforme RGPD, données hébergées en Europe.',
-                        style: AppTextStyles.caption().copyWith(
-                          color: widget.isDark
-                              ? AppColors.textDarkMuted
-                              : AppColors.grey400,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: AppConstants.spacing12),
-
-                      // Liens légaux obligatoires Apple (App Store Review Guidelines)
+                      // ── Liens légaux Apple (3.1.2c) — visibles dans le flow d'achat ──
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -327,6 +282,53 @@ class _PaywallContentState extends ConsumerState<_PaywallContent>
                             isDark: widget.isDark,
                           ),
                         ],
+                      ),
+
+                      const SizedBox(height: AppConstants.spacing8),
+
+                      // ── Continuer en gratuit ─────────────────
+                      if (widget.isDismissible)
+                        Center(
+                          child: TextButton(
+                            onPressed: isLoading ? null : () => context.pop(),
+                            child: Text(
+                              'Continuer en gratuit',
+                              style: AppTextStyles.bodySmall().copyWith(
+                                color: widget.isDark
+                                    ? AppColors.textDarkMuted
+                                    : AppColors.grey400,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      const SizedBox(height: AppConstants.spacing16),
+
+                      // ── Restaurer ────────────────────────────
+                      Center(
+                        child: TextButton(
+                          onPressed: isLoading ? null : _restore,
+                          child: Text(
+                            'Restaurer mes achats',
+                            style: AppTextStyles.caption().copyWith(
+                              color: AppColors.primaryLight,
+                              decoration: TextDecoration.underline,
+                              decorationColor: AppColors.primaryLight,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: AppConstants.spacing4),
+
+                      Text(
+                        'Renouvellement automatique. Annulation à tout moment depuis les réglages de l\'App Store. Conforme RGPD, données hébergées en Europe.',
+                        style: AppTextStyles.caption().copyWith(
+                          color: widget.isDark
+                              ? AppColors.textDarkMuted
+                              : AppColors.grey400,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
 
                       const SizedBox(height: AppConstants.spacing32),
@@ -1231,8 +1233,13 @@ class _LegalLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+    return TextButton(
+      onPressed: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        minimumSize: const Size(44, 44),
+        tapTargetSize: MaterialTapTargetSize.padded,
+      ),
       child: Text(
         label,
         style: AppTextStyles.caption().copyWith(
