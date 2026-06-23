@@ -68,10 +68,10 @@ class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
         }
       });
 
-      await _player.setAsset('assets/${widget.meditation.audioAssetPath}');
+      await _player.setAsset(widget.meditation.audioAssetPath);
       if (mounted) setState(() => _isLoading = false);
-    } catch (_) {
-      // Fichier audio pas encore disponible — mode prévisualisation
+    } catch (e) {
+      debugPrint('🔴 AUDIO ERROR: $e | path: ${widget.meditation.audioAssetPath}');
       if (mounted) setState(() { _isLoading = false; _hasError = true; });
     }
   }
