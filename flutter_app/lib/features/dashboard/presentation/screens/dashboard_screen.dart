@@ -19,6 +19,8 @@ import '../../../planner/data/kanban_model.dart';
 import '../../../../shared/services/trial_nudge_service.dart';
 import '../../../capture/presentation/providers/capture_provider.dart';
 import '../../../capture/data/capture_model.dart';
+import '../../../planner/presentation/providers/weekly_review_provider.dart';
+import '../../../planner/data/weekly_review_repository.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -1097,70 +1099,142 @@ class _WellnessCardState extends State<_WellnessCard>
   }
 }
 
-class _WeeklyReviewCard extends StatelessWidget {
+class _WeeklyReviewCard extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_WeeklyReviewCard> createState() => _WeeklyReviewCardState();
+}
+
+class _WeeklyReviewCardState extends ConsumerState<_WeeklyReviewCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseCtrl;
+  late final Animation<double> _pulseAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _pulseAnim = CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _pulseCtrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final now = DateTime.now();
-    final isWeekend = now.weekday >= 5; // vendredi, samedi, dimanche
+    final windowOpen = WeeklyReviewRepository.isReviewWindowOpen();
+    final reviewAsync = ref.watch(currentWeekReviewProvider);
+    final alreadyDone = reviewAsync.valueOrNull != null;
 
-    return GestureDetector(
-      onTap: () => context.push('/planner/weekly-review'),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20.0,
-          vertical: AppConstants.spacing16,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.chartAmber.withValues(alpha: isDark ? 0.10 : 0.08),
-          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-          border: Border.all(
-            color: AppColors.chartAmber.withValues(alpha: 0.35),
-            width: 1.5,
+    // État : grisé / pulsant / complété
+    Color borderColor;
+    Color bgColor;
+    String emoji;
+    String title;
+    String subtitle;
+    String ctaLabel;
+    Color ctaColor;
+    bool tappable;
+
+    if (alreadyDone) {
+      borderColor = AppColors.accent.withValues(alpha: 0.4);
+      bgColor = AppColors.accent.withValues(alpha: 0.08);
+      emoji = '✅';
+      title = 'Revue complétée';
+      subtitle = 'Belle semaine derrière toi.';
+      ctaLabel = 'Voir l\'historique';
+      ctaColor = AppColors.accent;
+      tappable = true;
+    } else if (windowOpen) {
+      borderColor = AppColors.chartAmber.withValues(alpha: 0.5);
+      bgColor = AppColors.chartAmber.withValues(alpha: 0.10);
+      emoji = '📋';
+      title = 'Ta revue t\'attend';
+      subtitle = '5 min pour faire le point et préparer la suite.';
+      ctaLabel = 'Commencer';
+      ctaColor = AppColors.chartAmber;
+      tappable = true;
+    } else {
+      borderColor = AppColors.primary.withValues(alpha: 0.15);
+      bgColor = AppColors.primary.withValues(alpha: 0.05);
+      emoji = '📝';
+      title = 'Revue de semaine';
+      subtitle = 'Disponible le vendredi à 15h.';
+      ctaLabel = 'Bientôt';
+      ctaColor = AppColors.textDarkMuted;
+      tappable = false;
+    }
+
+    return AnimatedBuilder(
+      animation: _pulseAnim,
+      builder: (context, _) {
+        final glowAlpha = windowOpen && !alreadyDone
+            ? 0.25 + 0.15 * _pulseAnim.value
+            : 0.0;
+
+        return GestureDetector(
+          onTap: tappable
+              ? () => context.push(alreadyDone
+                  ? AppRoutes.reviewsHistory
+                  : AppRoutes.weeklyReview)
+              : null,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+              border: Border.all(color: borderColor, width: 1.5),
+              boxShadow: windowOpen && !alreadyDone
+                  ? [BoxShadow(
+                      color: AppColors.chartAmber.withValues(alpha: glowAlpha),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    )]
+                  : null,
+            ),
+            child: Row(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 28)),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: AppTextStyles.headingSmall(
+                              color: isDark
+                                  ? AppColors.textDark
+                                  : AppColors.textLight)),
+                      const SizedBox(height: 2),
+                      Text(subtitle,
+                          style: AppTextStyles.bodySmall(
+                              color: AppColors.grey400)),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: ctaColor.withValues(alpha: 0.18),
+                    borderRadius:
+                        BorderRadius.circular(AppConstants.radiusPill),
+                  ),
+                  child: Text(ctaLabel,
+                      style: AppTextStyles.labelMedium(color: ctaColor)),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Text(
-              isWeekend ? '📋' : '📝',
-              style: const TextStyle(fontSize: 28),
-            ),
-            const SizedBox(width: AppConstants.spacing16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Revue de semaine',
-                    style: AppTextStyles.headingSmall(
-                      color: isDark ? AppColors.textDark : AppColors.textLight,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    isWeekend
-                        ? 'C\'est le bon moment, fais le point'
-                        : 'Fais le point, ajuste, avance',
-                    style: AppTextStyles.bodySmall(color: AppColors.grey400),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.chartAmber.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(AppConstants.radiusPill),
-              ),
-              child: Text(
-                'Ouvrir',
-                style: AppTextStyles.labelMedium(color: AppColors.chartAmber),
-              ),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

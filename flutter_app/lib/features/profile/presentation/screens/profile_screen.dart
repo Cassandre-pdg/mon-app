@@ -1247,6 +1247,13 @@ class _AccountSection extends ConsumerWidget {
           ),
           _divider(isDark),
           _AccountTile(
+            icon: Icons.bar_chart_rounded,
+            label: 'Mes Revues',
+            isDark: isDark,
+            onTap: () => context.push(AppRoutes.reviewsHistory),
+          ),
+          _divider(isDark),
+          _AccountTile(
             icon: Icons.notifications_outlined,
             label: 'Notifications',
             isDark: isDark,

@@ -20,8 +20,9 @@ class MonthlyRemindersService {
   );
 
   // IDs réservés (30-39)
-  static const int _idUrssaf = 30;
-  static const int _idCompta = 31;
+  static const int _idUrssaf       = 30;
+  static const int _idCompta       = 31;
+  static const int _idWeeklyReview = 32;
 
   Future<void> init() async {
     final androidPlugin = _plugin
@@ -34,9 +35,11 @@ class MonthlyRemindersService {
   Future<void> scheduleAll({
     bool urssaf = true,
     bool compta = true,
+    bool weeklyReview = true,
   }) async {
     await _plugin.cancel(_idUrssaf);
     await _plugin.cancel(_idCompta);
+    await _plugin.cancel(_idWeeklyReview);
 
     if (urssaf) {
       await _scheduleMonthly(
@@ -60,11 +63,63 @@ class MonthlyRemindersService {
             'Mi-mois : vérifie tes recettes, devis en cours et factures impayées.',
       );
     }
+
+    if (weeklyReview) {
+      await _scheduleWeeklyFriday(
+        id: _idWeeklyReview,
+        hour: 15,
+        minute: 0,
+        title: '📋 Ta revue de semaine t\'attend',
+        body: '5 min pour faire le point et préparer la semaine prochaine.',
+      );
+    }
   }
 
   Future<void> cancelAll() async {
     await _plugin.cancel(_idUrssaf);
     await _plugin.cancel(_idCompta);
+    await _plugin.cancel(_idWeeklyReview);
+  }
+
+  // Planifie une notif hebdomadaire le vendredi à l'heure donnée
+  Future<void> _scheduleWeeklyFriday({
+    required int id,
+    required int hour,
+    required int minute,
+    required String title,
+    required String body,
+  }) async {
+    final now = tz.TZDateTime.now(tz.local);
+
+    // Prochain vendredi
+    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    // Avancer jusqu'au prochain vendredi (weekday 5)
+    while (scheduled.weekday != DateTime.friday || scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        scheduled,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channel.id,
+            _channel.name,
+            channelDescription: _channel.description,
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: const DarwinNotificationDetails(),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (_) {}
   }
 
   Future<void> _scheduleMonthly({
@@ -102,6 +157,7 @@ class MonthlyRemindersService {
       );
     }
 
+    try {
     await _plugin.zonedSchedule(
       id,
       title,
@@ -123,5 +179,8 @@ class MonthlyRemindersService {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
+    } catch (_) {
+      // Permission exact alarm non accordée sur Android 12+ — on ignore silencieusement
+    }
   }
 }

@@ -17,6 +17,7 @@ import '../../features/profile/presentation/screens/notification_settings_screen
 import '../../features/subscription/presentation/screens/paywall_screen.dart';
 import '../../features/planner/presentation/screens/kanban_screen.dart';
 import '../../features/planner/presentation/screens/weekly_review_screen.dart';
+import '../../features/planner/presentation/screens/reviews_history_screen.dart';
 import '../../features/wellness/presentation/screens/meditation_library_screen.dart';
 import '../../features/wellness/presentation/screens/meditation_player_screen.dart';
 import '../../features/wellness/presentation/screens/breathing_exercise_screen.dart';
@@ -44,6 +45,7 @@ class AppRoutes {
   static const String paywall               = '/paywall';
   static const String kanban                = '/planner/kanban';
   static const String weeklyReview          = '/planner/weekly-review';
+  static const String reviewsHistory        = '/reviews/history';
   static const String wellnessMeditation    = '/wellness/meditation';
   static const String wellnessMeditationPlayer = '/wellness/meditation/player';
   static const String wellnessBreathing     = '/wellness/breathing';
@@ -116,6 +118,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.weeklyReview,
         builder: (context, state) => const WeeklyReviewScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.reviewsHistory,
+        builder: (context, state) => const ReviewsHistoryScreen(),
       ),
       GoRoute(
         path: AppRoutes.wellnessMeditation,
