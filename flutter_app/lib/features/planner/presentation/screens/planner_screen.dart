@@ -14,6 +14,7 @@ import '../providers/kanban_provider.dart';
 import '../providers/flash_provider.dart';
 import '../providers/flow_provider.dart';
 import '../../data/planner_model.dart';
+import '../../data/kanban_model.dart';
 import 'pomodoro_screen.dart';
 import 'flash_screen.dart';
 import 'eisenhower_screen.dart';
@@ -985,11 +986,14 @@ void _showTaskSheet(
   WidgetRef ref, {
   PlannerTask? task,
 }) {
-  final isEdit      = task != null;
-  final ctrl        = TextEditingController(text: task?.title ?? '');
-  int priority      = task?.priority ?? 1;
-  String? projectId = task?.projectId;
+  final isEdit        = task != null;
+  final ctrl          = TextEditingController(text: task?.title ?? '');
+  int priority        = task?.priority ?? 1;
+  String? projectId   = task?.projectId;
+  String? kanbanTaskId = task?.kanbanTaskId;
   final activeProjects = ref.read(activeProjectsProvider);
+  // Tâches Kanban non terminées du projet sélectionné
+  final allProjects = ref.read(kanbanProvider).valueOrNull ?? [];
 
   showModalBottomSheet(
     context: context,
@@ -998,7 +1002,18 @@ void _showTaskSheet(
     barrierColor: Colors.black.withValues(alpha: 0.55),
     builder: (ctx) {
       return StatefulBuilder(
-        builder: (ctx, setState) => Container(
+        builder: (ctx, setState) {
+          // Tâches Kanban non terminées du projet sélectionné
+          final kanbanTasks = projectId == null
+              ? <KanbanTask>[]
+              : (allProjects.firstWhere(
+                      (p) => p.id == projectId,
+                      orElse: () => allProjects.first,
+                    ).tasks)
+                  .where((t) => t.status != KanbanStatus.done)
+                  .toList();
+
+          return Container(
           decoration: BoxDecoration(
             color: AppColors.surfaceEl(ctx),
             borderRadius:
@@ -1114,8 +1129,10 @@ void _showTaskSheet(
                           _PriorityProjectPill(
                             label: 'Aucun',
                             isSelected: projectId == null,
-                            onTap: () =>
-                                setState(() => projectId = null),
+                            onTap: () => setState(() {
+                              projectId = null;
+                              kanbanTaskId = null;
+                            }),
                           ),
                           const SizedBox(width: 8),
                           ...activeProjects.map((p) => Padding(
@@ -1124,13 +1141,109 @@ void _showTaskSheet(
                                 child: _PriorityProjectPill(
                                   label: p.name,
                                   isSelected: projectId == p.id,
-                                  onTap: () => setState(
-                                      () => projectId = p.id),
+                                  onTap: () => setState(() {
+                                    projectId = p.id;
+                                    kanbanTaskId = null;
+                                  }),
                                 ),
                               )),
                         ],
                       ),
                     ),
+                  ],
+
+                  // Tâches Kanban du projet (si projet sélectionné et tâches dispo)
+                  if (kanbanTasks.isNotEmpty) ...[
+                    const SizedBox(height: AppConstants.spacing16),
+                    Row(
+                      children: [
+                        Text('Choisir une tâche du projet',
+                            style: AppTextStyles.labelMedium(
+                                color: AppColors.grey400)),
+                        const SizedBox(width: 6),
+                        Text('ou écris librement ci-dessus',
+                            style: AppTextStyles.caption(
+                                color: AppColors.grey400
+                                    .withValues(alpha: 0.6))),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ...kanbanTasks.map((kt) {
+                      final isSelected = kanbanTaskId == kt.id;
+                      return GestureDetector(
+                        onTap: () => setState(() {
+                          if (isSelected) {
+                            // Désélectionner
+                            kanbanTaskId = null;
+                          } else {
+                            kanbanTaskId = kt.id;
+                            ctrl.text = kt.title;
+                          }
+                        }),
+                        child: AnimatedContainer(
+                          duration: AppConstants.animFast,
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primary
+                                    .withValues(alpha: 0.12)
+                                : Colors.transparent,
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.grey400
+                                      .withValues(alpha: 0.25),
+                              width: isSelected ? 1.5 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(
+                                AppConstants.radiusMedium),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isSelected
+                                    ? Icons.check_circle_rounded
+                                    : Icons.radio_button_unchecked_rounded,
+                                size: 18,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.grey400
+                                        .withValues(alpha: 0.5),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  kt.title,
+                                  style: AppTextStyles.bodyMedium(
+                                    color: isSelected
+                                        ? AppColors.txt(ctx)
+                                        : AppColors.grey400,
+                                  ),
+                                ),
+                              ),
+                              // Badge statut
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: (kt.status == KanbanStatus.inProgress
+                                          ? AppColors.chartAmber
+                                          : AppColors.primary)
+                                      .withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  kt.status.emoji,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
                   ],
 
                   const SizedBox(height: AppConstants.spacing24),
@@ -1143,13 +1256,16 @@ void _showTaskSheet(
                               title: ctrl.text.trim(),
                               priority: priority,
                               projectId: projectId,
+                              kanbanTaskId: kanbanTaskId,
                               clearProject: projectId == null,
+                              clearKanbanTask: kanbanTaskId == null,
                             );
                       } else {
                         ref.read(plannerProvider.notifier).addTask(
                               title: ctrl.text.trim(),
                               priority: priority,
                               projectId: projectId,
+                              kanbanTaskId: kanbanTaskId,
                             );
                       }
                       Navigator.pop(ctx);
@@ -1160,7 +1276,8 @@ void _showTaskSheet(
               ),
             ),
           ),
-        ),
+        );
+        },
       );
     },
   );

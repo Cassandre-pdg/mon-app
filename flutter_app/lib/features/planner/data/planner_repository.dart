@@ -23,17 +23,19 @@ class PlannerRepository {
     required String title,
     required int priority,
     String? projectId,
+    String? kanbanTaskId,
   }) async {
     final data = await _supabase
         .from('planner_tasks')
         .insert({
-          'user_id': _userId,
-          'title': title,
-          'priority': priority,
-          'planned_date': _today,
-          'is_completed': false,
+          'user_id':        _userId,
+          'title':          title,
+          'priority':       priority,
+          'planned_date':   _today,
+          'is_completed':   false,
           'pomodoro_count': 0,
-          'project_id': projectId,
+          'project_id':     projectId,
+          'kanban_task_id': kanbanTaskId,
         })
         .select('*, kanban_projects(name)')
         .single();
@@ -59,14 +61,17 @@ class PlannerRepository {
     required String title,
     required int priority,
     String? projectId,
+    String? kanbanTaskId,
     bool clearProject = false,
+    bool clearKanbanTask = false,
   }) async {
     final data = await _supabase
         .from('planner_tasks')
         .update({
-          'title': title,
-          'priority': priority,
-          'project_id': clearProject ? null : projectId,
+          'title':          title,
+          'priority':       priority,
+          'project_id':     clearProject ? null : projectId,
+          'kanban_task_id': clearKanbanTask ? null : kanbanTaskId,
         })
         .eq('id', id)
         .eq('user_id', _userId)

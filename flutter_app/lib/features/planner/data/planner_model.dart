@@ -9,6 +9,7 @@ class PlannerTask {
   final int pomodoroCount;
   final String? projectId;
   final String? projectName;
+  final String? kanbanTaskId;  // tâche Kanban liée (cochée automatiquement)
   final DateTime createdAt;
 
   const PlannerTask({
@@ -22,6 +23,7 @@ class PlannerTask {
     required this.pomodoroCount,
     this.projectId,
     this.projectName,
+    this.kanbanTaskId,
     required this.createdAt,
   });
 
@@ -41,6 +43,7 @@ class PlannerTask {
             ? (json['kanban_projects'] as Map<String, dynamic>)['name']
                 as String?
             : null,
+        kanbanTaskId: json['kanban_task_id'] as String?,
         createdAt: DateTime.parse(json['created_at'] as String),
       );
 
@@ -50,7 +53,9 @@ class PlannerTask {
     bool? isCompleted,
     DateTime? completedAt,
     String? projectId,
+    String? kanbanTaskId,
     bool clearProject = false,
+    bool clearKanbanTask = false,
   }) =>
       PlannerTask(
         id: id,
@@ -63,6 +68,7 @@ class PlannerTask {
         pomodoroCount: pomodoroCount,
         projectId: clearProject ? null : (projectId ?? this.projectId),
         projectName: clearProject ? null : projectName,
+        kanbanTaskId: clearKanbanTask ? null : (kanbanTaskId ?? this.kanbanTaskId),
         createdAt: createdAt,
       );
 }
