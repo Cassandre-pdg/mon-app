@@ -96,11 +96,9 @@ class Meditation {
       durationMinutes: 3,
       audioAssetPath: 'audio/meditations/energy_3min.mp3',
       imageAssetPath: 'images/meditations/energy.jpg',
-      isComingSoon: true,
     ),
 
     // ── GRATUIT — Voyage nocturne (sommeil) ───────────────
-    // Disponible gratuitement, audio en cours d'enregistrement
     Meditation(
       id: 'sleep_7min',
       title: 'Voyage nocturne',
@@ -109,7 +107,6 @@ class Meditation {
       durationMinutes: 7,
       audioAssetPath: 'audio/meditations/sleep_7min.mp3',
       imageAssetPath: 'images/meditations/sleep.jpg',
-      isComingSoon: true,
     ),
 
     // ── PRO — Focus ───────────────────────────────────────
@@ -148,9 +145,9 @@ class Meditation {
     Meditation(
       id: 'stress_10min',
       title: 'Océan de calme',
-      description: 'Plonge dans un espace de sérénité. 10 minutes pour dissoudre le stress.',
+      description: 'Plonge dans un espace de sérénité. 15 minutes pour dissoudre le stress.',
       theme: MeditationTheme.stress,
-      durationMinutes: 10,
+      durationMinutes: 15,
       audioAssetPath: 'audio/meditations/stress_10min.mp3',
       imageAssetPath: 'images/meditations/stress.jpg',
       isPro: true,
@@ -162,7 +159,7 @@ class Meditation {
       title: 'Détente profonde',
       description: 'Un scan corporel complet pour relâcher chaque tension avant de dormir.',
       theme: MeditationTheme.sleep,
-      durationMinutes: 10,
+      durationMinutes: 15,
       audioAssetPath: 'audio/meditations/sleep_10min.mp3',
       imageAssetPath: 'images/meditations/sleep.jpg',
       isPro: true,

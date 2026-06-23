@@ -1,7 +1,7 @@
 name: kolyb
 description: "Kolyb — ton élan, au quotidien. Compagnon des entrepreneurs indépendants."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.7.2
@@ -38,6 +38,7 @@ dependencies:
   # Notifications locales (Flow sessions)
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.4
+  flutter_timezone: ^4.1.0
 
   # Abonnements — RevenueCat (paywall Pro)
   purchases_flutter: ^9.16.1
