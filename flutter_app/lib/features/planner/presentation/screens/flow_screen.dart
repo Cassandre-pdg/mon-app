@@ -167,7 +167,6 @@ class _FlowTabState extends ConsumerState<FlowTab>
         _popupShown = true;
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (!mounted) return;
-          final ctx  = context;
           final repo = ref.read(timerSessionRepositoryProvider);
           await repo.save(
             type: 'flow',
@@ -176,7 +175,7 @@ class _FlowTabState extends ConsumerState<FlowTab>
           );
           if (!mounted) return;
           final action = await SessionEndPopup.show(
-            ctx,
+            context,
             timerType: 'flow',
             durationMinutes: FlowState.sessionDurationSeconds ~/ 60,
             sessionContext: _sessionContext,
@@ -188,7 +187,7 @@ class _FlowTabState extends ConsumerState<FlowTab>
           if (action == SessionEndAction.restart) {
             Future.delayed(const Duration(seconds: 1), () {
               if (mounted) {
-                ScaffoldMessenger.of(ctx).showSnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text('Pause terminée. Prêt pour la prochaine session ?'),
                     action: SnackBarAction(

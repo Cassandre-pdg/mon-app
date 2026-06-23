@@ -10,7 +10,6 @@ import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/widgets/app_background.dart';
 import '../../../capture/data/capture_model.dart';
 import '../../../capture/presentation/providers/capture_provider.dart';
-import '../../../objectives/data/habit_model.dart';
 import '../../../objectives/presentation/providers/habits_provider.dart';
 import '../../data/weekly_review_model.dart';
 import '../../data/weekly_review_repository.dart';
