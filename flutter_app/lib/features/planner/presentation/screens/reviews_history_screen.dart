@@ -2,11 +2,14 @@ import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/constants/app_constants.dart';
 import '../../../../shared/widgets/app_background.dart';
+import '../../../../shared/navigation/app_router.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
 import '../../data/weekly_review_model.dart';
 import '../providers/weekly_review_provider.dart';
 
@@ -17,6 +20,7 @@ class ReviewsHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(reviewHistoryProvider);
+    final isPro = ref.watch(isProProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -56,22 +60,39 @@ class ReviewsHistoryScreen extends ConsumerWidget {
                     if (reviews.isEmpty) {
                       return _EmptyState();
                     }
+                    // Gratuit : 2 revues max, graphiques bloqués
+                    final visibleReviews =
+                        isPro ? reviews : reviews.take(2).toList();
+                    final lockedCount =
+                        isPro ? 0 : (reviews.length - 2).clamp(0, 999);
+
                     return SingleChildScrollView(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ── Graphiques en tête ─────────────────
-                          _ChartsSection(reviews: reviews),
-                          const SizedBox(height: 24),
+                          // ── Graphiques (Pro uniquement) ────────
+                          if (isPro) ...[
+                            _ChartsSection(reviews: reviews),
+                            const SizedBox(height: 24),
+                          ] else ...[
+                            _ProChartsTeaser(
+                                reviewCount: reviews.length),
+                            const SizedBox(height: 24),
+                          ],
 
                           // ── Liste des revues ───────────────────
-                          Text('Toutes mes revues',
+                          Text('Mes revues',
                               style: AppTextStyles.headingSmall(
                                   color: AppColors.textDark)),
                           const SizedBox(height: 12),
-                          ...reviews.map((r) =>
+                          ...visibleReviews.map((r) =>
                               _ReviewCard(review: r, isDark: isDark)),
+
+                          // ── Bloc de blocage si gratuit ─────────
+                          if (!isPro && lockedCount > 0)
+                            _LockedHistoryBanner(
+                                lockedCount: lockedCount),
                         ],
                       ),
                     );
@@ -363,6 +384,179 @@ class _BadgeDonutChart extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BLOCS PRO
+// ══════════════════════════════════════════════════════════════════
+
+// Teaser graphiques floutés avec CTA paywall
+class _ProChartsTeaser extends StatelessWidget {
+  const _ProChartsTeaser({required this.reviewCount});
+  final int reviewCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Aperçu flouté — barres factices pour donner envie
+        AbsorbPointer(
+          child: Opacity(
+            opacity: 0.25,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Évolution de ton humeur',
+                    style: AppTextStyles.labelMedium(
+                        color: AppColors.textDarkMuted)),
+                const SizedBox(height: 10),
+                Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [0.4, 0.6, 0.5, 0.8, 0.7, 0.9, 0.75]
+                        .map((h) => Container(
+                              width: 20,
+                              height: 80 * h,
+                              margin: const EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Overlay cadenas + CTA
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.backgroundDark.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        colors: AppColors.gradientMain),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.lock_rounded,
+                      color: Colors.white, size: 22),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Graphiques disponibles en Pro',
+                  style: AppTextStyles.headingSmall(
+                      color: AppColors.textDark),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Vois ton évolution sur $reviewCount semaine${reviewCount > 1 ? 's' : ''}.',
+                  style: AppTextStyles.bodySmall(
+                      color: AppColors.textDarkMuted),
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () => context.push(AppRoutes.paywall),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                          colors: AppColors.gradientMain),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text('Passer à Pro',
+                        style: AppTextStyles.labelMedium(
+                                color: Colors.white)
+                            .copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Bannière qui bloque les revues au-delà de 2
+class _LockedHistoryBanner extends StatelessWidget {
+  const _LockedHistoryBanner({required this.lockedCount});
+  final int lockedCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.paywall),
+      child: Container(
+        margin: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceDark,
+          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+          border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                    colors: AppColors.gradientMain),
+                shape: BoxShape.circle,
+              ),
+              child:
+                  const Icon(Icons.lock_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '+$lockedCount revue${lockedCount > 1 ? 's' : ''} dans ton historique',
+              style: AppTextStyles.headingSmall(color: AppColors.textDark),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Débloque l\'historique complet et les\ngraphiques d\'évolution avec Kolyb Pro.',
+              style: AppTextStyles.bodySmall(color: AppColors.textDarkMuted),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                gradient:
+                    const LinearGradient(colors: AppColors.gradientMain),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Text(
+                'Voir tout mon historique',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.labelMedium(color: Colors.white)
+                    .copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
