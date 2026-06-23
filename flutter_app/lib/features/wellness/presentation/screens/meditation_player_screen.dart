@@ -70,8 +70,7 @@ class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
 
       await _player.setAsset(widget.meditation.audioAssetPath);
       if (mounted) setState(() => _isLoading = false);
-    } catch (e) {
-      debugPrint('🔴 AUDIO ERROR: $e | path: ${widget.meditation.audioAssetPath}');
+    } catch (_) {
       if (mounted) setState(() { _isLoading = false; _hasError = true; });
     }
   }
