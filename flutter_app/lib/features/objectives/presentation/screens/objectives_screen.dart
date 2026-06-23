@@ -19,6 +19,7 @@ import '../providers/objectives_provider.dart';
 import '../providers/habits_provider.dart';
 import '../../../planner/presentation/providers/kanban_provider.dart';
 import '../../../planner/data/kanban_model.dart';
+import '../../../subscription/presentation/providers/subscription_provider.dart';
 
 class ObjectivesScreen extends ConsumerWidget {
   const ObjectivesScreen({super.key});
@@ -677,6 +678,7 @@ class _ProjectHubCard extends ConsumerWidget {
     final stats = ref.watch(kanbanStatsProvider);
     final projects = ref.watch(activeProjectsProvider);
     final displayProjects = projects.take(3).toList();
+    final isPro = ref.watch(isProProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -846,7 +848,14 @@ class _ProjectHubCard extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
               child: GestureDetector(
-                onTap: () => _openConfig(context),
+                onTap: () {
+                  // Gratuit : 1 projet max — au-delà, paywall
+                  if (!isPro && projects.isNotEmpty) {
+                    context.push('/paywall');
+                    return;
+                  }
+                  _openConfig(context);
+                },
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -859,14 +868,35 @@ class _ProjectHubCard extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_rounded,
-                          color: AppColors.primaryLight, size: 18),
+                      Icon(
+                        !isPro && projects.isNotEmpty
+                            ? Icons.lock_rounded
+                            : Icons.add_rounded,
+                        color: AppColors.primaryLight,
+                        size: 18,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         'Nouveau projet',
                         style: AppTextStyles.labelMedium(
                             color: AppColors.primaryLight),
                       ),
+                      if (!isPro && projects.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                                colors: AppColors.gradientMain),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text('Pro',
+                              style: AppTextStyles.caption(
+                                      color: Colors.white)
+                                  .copyWith(fontWeight: FontWeight.w700)),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -3201,7 +3231,6 @@ class _ManageHabitsSheet extends ConsumerWidget {
   final bool isDark;
 
   void _openEditSheet(BuildContext context, WidgetRef ref, Habit habit) {
-    Navigator.pop(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,

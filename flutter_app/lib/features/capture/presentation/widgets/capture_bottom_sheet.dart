@@ -162,7 +162,7 @@ class _CaptureSheetState extends ConsumerState<_CaptureSheet> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Tes captures seront triées lors de ta revue de semaine.',
+                            'Retrouve-les en bas de Mon Espace, et trie-les lors de ta revue de semaine.',
                             style: AppTextStyles.caption(
                                 color: AppColors.primaryLight),
                           ),

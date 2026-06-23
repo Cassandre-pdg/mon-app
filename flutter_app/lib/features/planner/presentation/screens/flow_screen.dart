@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/services/focus_audio_service.dart';
 import '../../data/flow_model.dart';
 import '../../data/session_context_model.dart';
 import '../providers/flow_provider.dart';
@@ -378,15 +377,6 @@ class _FlowTabState extends ConsumerState<FlowTab>
                   const SizedBox(height: 14),
                 ],
 
-                // Audio chips
-                _AudioChips(
-                  selected: FocusAudioService.instance.current,
-                  color: AppColors.primary,
-                  onSelect: (audio) =>
-                      FocusAudioService.instance.select(audio),
-                ),
-                const SizedBox(height: 16),
-
                 // Boutons contrôle
                 Row(
                   children: [
@@ -477,68 +467,6 @@ class _FocusPill extends StatelessWidget {
       ),
       child: Text(label,
           style: AppTextStyles.caption(color: AppColors.primaryLight)),
-    );
-  }
-}
-
-// ── Chips audio compactes ─────────────────────────────────────────────────────
-class _AudioChips extends StatelessWidget {
-  const _AudioChips({
-    required this.selected,
-    required this.color,
-    required this.onSelect,
-  });
-  final FocusAudio selected;
-  final Color color;
-  final ValueChanged<FocusAudio> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: FocusAudio.values.map((audio) {
-          final on = audio == selected;
-          return GestureDetector(
-            onTap: () => onSelect(audio),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(right: 8),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: on
-                    ? color.withValues(alpha: 0.18)
-                    : Colors.white.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: on
-                      ? color.withValues(alpha: 0.5)
-                      : Colors.white.withValues(alpha: 0.07),
-                  width: on ? 1.5 : 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(audio.emoji,
-                      style: const TextStyle(fontSize: 12)),
-                  const SizedBox(width: 5),
-                  Text(
-                    audio.label,
-                    style: AppTextStyles.caption(
-                      color: on ? color : AppColors.textDarkMuted,
-                    ).copyWith(
-                      fontWeight:
-                          on ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 }

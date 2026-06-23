@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
-import '../../../../shared/services/focus_audio_service.dart';
 import '../providers/timer_session_provider.dart';
 import '../../data/session_context_model.dart';
 import '../widgets/session_context_picker.dart';
@@ -120,7 +119,6 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
   late AnimationController _pulseCtrl;
   late AnimationController _glowCtrl;
 
-  FocusAudio _selectedAudio = FocusAudio.silence;
   SessionContext? _sessionContext;
   bool _isFirstStart = true;
   DateTime? _backgroundAt;
@@ -194,8 +192,7 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
         } else {
           _timer?.cancel();
           setState(() => _isRunning = false);
-          FocusAudioService.instance.pause();
-        }
+            }
       });
     } else {
       setState(() => _secondsLeft = newLeft);
@@ -208,22 +205,13 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
     return r > 0 ? '${m}min ${r}s' : '${m}min';
   }
 
-  // ── Audio ────────────────────────────────────────────────────
-  Future<void> _selectAudio(FocusAudio audio) async {
-    setState(() => _selectedAudio = audio);
-    await FocusAudioService.instance.select(audio);
-  }
-
   // ── Timer ────────────────────────────────────────────────────
   Future<void> _startPause() async {
     if (_isRunning) {
       _timer?.cancel();
       setState(() => _isRunning = false);
-      FocusAudioService.instance.pause();
       return;
     }
-
-    final wasPaused = _secondsLeft < _workSeconds;
 
     if (_isFirstStart && _phase == PomodoroPhase.work) {
       final ctx = await SessionContextPicker.show(
@@ -243,14 +231,10 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
         _onPhaseComplete();
       }
     });
-    wasPaused
-        ? FocusAudioService.instance.resume()
-        : FocusAudioService.instance.play();
   }
 
   void _onPhaseComplete() {
     _timer?.cancel();
-    FocusAudioService.instance.stop();
 
     if (_phase == PomodoroPhase.work) {
       setState(() { _isRunning = false; _completedPomodoros++; });
@@ -284,7 +268,6 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
               _onPhaseComplete();
             }
           });
-          FocusAudioService.instance.play();
         }
       });
     } else {
@@ -299,7 +282,6 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
 
   void _reset() {
     _timer?.cancel();
-    FocusAudioService.instance.stop();
     setState(() {
       _isRunning = false;
       _secondsLeft = _phase == PomodoroPhase.work ? _workSeconds : _breakSeconds;
@@ -339,54 +321,16 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
     return 'Prêt à démarrer';
   }
 
-  void _openConfig() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _PomodoroConfigSheet(
-        selected: _selectedAudio,
-        onSelect: _selectAudio,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-          // ── Ligne ⚙ + dots (le header titre vient de planner_screen) ─
+          // ── Ligne dots ──────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                GestureDetector(
-                  onTap: _openConfig,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.08),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.tune_rounded,
-                            size: 15, color: AppColors.textDarkMuted),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Config',
-                          style: AppTextStyles.caption(
-                              color: AppColors.textDarkMuted),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const Spacer(),
                 _PomodoroDots(
                     completed: _completedPomodoros, color: _phaseColor),
               ],
@@ -544,14 +488,6 @@ class _PomodoroContentState extends ConsumerState<PomodoroContent>
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
             child: Column(
               children: [
-                // Audio chips
-                _AudioChips(
-                  selected: _selectedAudio,
-                  color: _phaseColor,
-                  onSelect: _selectAudio,
-                ),
-                const SizedBox(height: 16),
-
                 // Boutons
                 Row(
                   children: [
@@ -625,67 +561,6 @@ class _PomodoroDots extends StatelessWidget {
             style: AppTextStyles.caption(color: AppColors.textDarkMuted),
           ),
       ],
-    );
-  }
-}
-
-// ── Chips audio ───────────────────────────────────────────────────────────────
-class _AudioChips extends StatelessWidget {
-  const _AudioChips({
-    required this.selected,
-    required this.color,
-    required this.onSelect,
-  });
-  final FocusAudio selected;
-  final Color color;
-  final ValueChanged<FocusAudio> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: FocusAudio.values.map((audio) {
-          final on = audio == selected;
-          return GestureDetector(
-            onTap: () => onSelect(audio),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(right: 8),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: on
-                    ? color.withValues(alpha: 0.18)
-                    : Colors.white.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: on
-                      ? color.withValues(alpha: 0.5)
-                      : Colors.white.withValues(alpha: 0.07),
-                  width: on ? 1.5 : 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(audio.emoji,
-                      style: const TextStyle(fontSize: 12)),
-                  const SizedBox(width: 5),
-                  Text(
-                    audio.label,
-                    style: AppTextStyles.caption(
-                      color: on ? color : AppColors.textDarkMuted,
-                    ).copyWith(
-                        fontWeight:
-                            on ? FontWeight.w600 : FontWeight.w400),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 }
@@ -786,122 +661,6 @@ class _MainButton extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ── Bottom sheet config Pomodoro ──────────────────────────────────────────────
-class _PomodoroConfigSheet extends StatefulWidget {
-  const _PomodoroConfigSheet({
-    required this.selected,
-    required this.onSelect,
-  });
-  final FocusAudio selected;
-  final ValueChanged<FocusAudio> onSelect;
-
-  @override
-  State<_PomodoroConfigSheet> createState() => _PomodoroConfigSheetState();
-}
-
-class _PomodoroConfigSheetState extends State<_PomodoroConfigSheet> {
-  late FocusAudio _current;
-
-  @override
-  void initState() {
-    super.initState();
-    _current = widget.selected;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1836),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-          24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Configuration Pomodoro',
-            style: AppTextStyles.headingSmall(color: AppColors.textDark),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '25 min de travail · 5 min de pause · classique & éprouvé',
-            style: AppTextStyles.caption(color: AppColors.textDarkMuted),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Ambiance sonore',
-            style: AppTextStyles.caption(color: AppColors.textDarkMuted),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: FocusAudio.values.map((audio) {
-              final on = audio == _current;
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _current = audio);
-                  widget.onSelect(audio);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: on
-                        ? AppColors.secondary.withValues(alpha: 0.18)
-                        : Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: on
-                          ? AppColors.secondary.withValues(alpha: 0.5)
-                          : Colors.white.withValues(alpha: 0.08),
-                      width: on ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(audio.emoji,
-                          style: const TextStyle(fontSize: 14)),
-                      const SizedBox(width: 6),
-                      Text(
-                        audio.label,
-                        style: AppTextStyles.bodySmall(
-                          color: on
-                              ? AppColors.secondary
-                              : AppColors.textDarkMuted,
-                        ).copyWith(
-                          fontWeight:
-                              on ? FontWeight.w600 : FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
       ),
     );
   }
