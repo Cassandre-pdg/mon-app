@@ -145,7 +145,15 @@ class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
 
           // ── Contenu ───────────────────────────────────────────
           SafeArea(
-            child: Column(
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      MediaQuery.of(context).padding.bottom,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
               children: [
                 // Bouton retour
                 Padding(
@@ -389,6 +397,9 @@ class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
 
                 const SizedBox(height: AppConstants.spacing16),
               ],
+            ),
+                ),
+              ),
             ),
           ),
         ],
