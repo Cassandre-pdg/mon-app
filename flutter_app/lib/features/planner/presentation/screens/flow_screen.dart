@@ -175,6 +175,7 @@ class _FlowTabState extends ConsumerState<FlowTab>
           );
           if (!mounted) return;
           final action = await SessionEndPopup.show(
+            // ignore: use_build_context_synchronously
             context,
             timerType: 'flow',
             durationMinutes: FlowState.sessionDurationSeconds ~/ 60,
@@ -187,6 +188,7 @@ class _FlowTabState extends ConsumerState<FlowTab>
           if (action == SessionEndAction.restart) {
             Future.delayed(const Duration(seconds: 1), () {
               if (mounted) {
+                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text('Pause terminée. Prêt pour la prochaine session ?'),
