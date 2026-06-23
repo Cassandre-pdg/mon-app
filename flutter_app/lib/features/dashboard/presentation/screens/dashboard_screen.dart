@@ -17,6 +17,8 @@ import '../../../planner/presentation/providers/flow_provider.dart';
 import '../../../planner/presentation/providers/kanban_provider.dart';
 import '../../../planner/data/kanban_model.dart';
 import '../../../../shared/services/trial_nudge_service.dart';
+import '../../../capture/presentation/providers/capture_provider.dart';
+import '../../../capture/data/capture_model.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -244,6 +246,10 @@ class _DashboardContent extends ConsumerWidget {
 
           // ── Message bienveillant ─────────────────────────
           _MotivationBanner(data: data),
+          const SizedBox(height: AppConstants.spacing16),
+
+          // ── Captures en attente ───────────────────────────
+          _PendingCapturesSection(),
           const SizedBox(height: AppConstants.spacing16),
         ],
       ),
@@ -1597,6 +1603,127 @@ class _ErrorState extends StatelessWidget {
             ElevatedButton(onPressed: onRetry, child: const Text('Réessayer')),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Captures en attente ─────────────────────────────────────────
+/// Encart discret affichant les captures non traitées.
+/// Masqué si aucune capture en attente.
+class _PendingCapturesSection extends ConsumerWidget {
+  const _PendingCapturesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final capturesAsync = ref.watch(captureProvider);
+    final pending = capturesAsync.valueOrNull
+            ?.where((c) => !c.isProcessed)
+            .toList() ??
+        [];
+
+    if (pending.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 3, height: 14,
+              decoration: BoxDecoration(
+                color: AppColors.chartAmber,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'NOTES EN ATTENTE',
+              style: AppTextStyles.overline(
+                color: isDark ? AppColors.textDarkMuted : AppColors.grey600,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.chartAmber.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${pending.length}',
+                style: AppTextStyles.caption(color: AppColors.chartAmber)
+                    .copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...pending.take(3).map((c) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _CaptureChip(capture: c, isDark: isDark),
+        )),
+        if (pending.length > 3)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              '+ ${pending.length - 3} autres notes',
+              style: AppTextStyles.caption(color: AppColors.grey400),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _CaptureChip extends ConsumerWidget {
+  const _CaptureChip({required this.capture, required this.isDark});
+  final CaptureItem capture;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.surfaceDark.withValues(alpha: 0.70)
+            : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        border: Border.all(
+          color: AppColors.chartAmber.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Text('📝', style: TextStyle(fontSize: 14)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              capture.content,
+              style: AppTextStyles.bodySmall(
+                color: isDark ? AppColors.textDark : AppColors.textLight,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Bouton marquer comme traité
+          GestureDetector(
+            onTap: () => ref.read(captureProvider.notifier).markProcessed(capture.id),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.chartAmber.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.check_rounded,
+                  color: AppColors.chartAmber, size: 14),
+            ),
+          ),
+        ],
       ),
     );
   }

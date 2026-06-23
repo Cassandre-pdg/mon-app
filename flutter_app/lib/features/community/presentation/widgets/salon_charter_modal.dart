@@ -13,8 +13,8 @@ const _charterRules = [
   ),
   (
     emoji: '🚫',
-    title: 'Pas de publicité',
-    desc:  'Le Salon n\'est pas un espace de vente ni d\'autopromotion. Partage de l\'expérience réelle.',
+    title: 'Pas de vente forcée',
+    desc:  'Partage ton profil, ton site ou tes projets librement. En revanche, pas de démarchage, de spam ou de promotion répétée.',
   ),
   (
     emoji: '💬',

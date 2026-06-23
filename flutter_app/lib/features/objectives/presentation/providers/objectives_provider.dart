@@ -62,12 +62,12 @@ class ObjectivesNotifier extends AsyncNotifier<List<Objective>> {
 
   Future<void> delete(String id) async {
     await ref.read(objectivesRepositoryProvider).delete(id);
-    state = AsyncData(state.value!.where((o) => o.id != id).toList());
+    state = AsyncData(state.value?.where((o) => o.id != id).toList() ?? []);
   }
 
   void _replaceInState(Objective updated) {
     state = AsyncData(
-      state.value!.map((o) => o.id == updated.id ? updated : o).toList(),
+      (state.value ?? []).map((o) => o.id == updated.id ? updated : o).toList(),
     );
   }
 }

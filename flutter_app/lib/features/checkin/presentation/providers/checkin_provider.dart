@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/checkin_repository.dart';
 import '../../data/checkin_model.dart';
+import '../../../../shared/providers/refresh_signals.dart';
 
 final checkinRepositoryProvider = Provider<CheckinRepository>((ref) {
   return CheckinRepository(Supabase.instance.client);
@@ -68,6 +69,9 @@ class CheckinNotifier extends StateNotifier<AsyncValue<CheckinModel?>> {
       );
       state = AsyncValue.data(checkin);
       _ref.invalidate(todayCheckinsProvider);
+      // Force le dashboard et le profil à se rafraîchir (anneaux + streaks)
+      _ref.read(dashboardRefreshSignal.notifier).state++;
+      _ref.read(profileRefreshSignal.notifier).state++;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

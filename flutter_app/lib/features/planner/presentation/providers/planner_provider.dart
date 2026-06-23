@@ -34,9 +34,8 @@ class PlannerNotifier extends AsyncNotifier<List<PlannerTask>> {
   Future<void> completeTask(String id) async {
     final repo = ref.read(plannerRepositoryProvider);
     final updated = await repo.completeTask(id);
-    state = AsyncData(state.value!
-        .map((t) => t.id == id ? updated : t)
-        .toList());
+    state = AsyncData(
+        (state.value ?? []).map((t) => t.id == id ? updated : t).toList());
   }
 
   Future<void> editTask(
@@ -53,13 +52,13 @@ class PlannerNotifier extends AsyncNotifier<List<PlannerTask>> {
           projectId: projectId,
           clearProject: clearProject,
         );
-    final list = state.value!.map((t) => t.id == id ? updated : t).toList()
+    final list = (state.value ?? []).map((t) => t.id == id ? updated : t).toList()
       ..sort((a, b) => a.priority.compareTo(b.priority));
     state = AsyncData(list);
   }
 
   Future<void> deleteTask(String id) async {
     await ref.read(plannerRepositoryProvider).deleteTask(id);
-    state = AsyncData(state.value!.where((t) => t.id != id).toList());
+    state = AsyncData(state.value?.where((t) => t.id != id).toList() ?? []);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -135,9 +136,35 @@ class ProfileScreen extends ConsumerWidget {
                 const ShareCard(),
                 const SizedBox(height: AppConstants.spacing24),
 
+                // ── Nous contacter ──────────────────────────────
+                _ContactSection(isDark: isDark),
+                const SizedBox(height: AppConstants.spacing24),
+
                 // ── Déconnexion ─────────────────────────────────
                 _SignOutButton(isDark: isDark),
                 const SizedBox(height: AppConstants.spacing16),
+
+                // ── Liens légaux ────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () => launchUrl(
+                        Uri.parse('https://cassandre-pdg.github.io/kolyb-support/cgu.html'),
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      child: Text('CGU', style: AppTextStyles.caption(color: AppColors.primaryLight).copyWith(decoration: TextDecoration.underline, decorationColor: AppColors.primaryLight)),
+                    ),
+                    Text('·', style: AppTextStyles.caption(color: AppColors.grey400)),
+                    TextButton(
+                      onPressed: () => launchUrl(
+                        Uri.parse('https://cassandre-pdg.github.io/kolyb-support/confidentialite.html'),
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      child: Text('Politique de confidentialité', style: AppTextStyles.caption(color: AppColors.primaryLight).copyWith(decoration: TextDecoration.underline, decorationColor: AppColors.primaryLight)),
+                    ),
+                  ],
+                ),
 
                 // ── Supprimer compte ────────────────────────────
                 Center(
@@ -1343,6 +1370,86 @@ class _AccountTile extends StatelessWidget {
 }
 
 // ── Bouton déconnexion ────────────────────────────────────────
+// ── Encart contact ────────────────────────────────────────────
+class _ContactSection extends StatelessWidget {
+  const _ContactSection({required this.isDark});
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.surfaceDark.withValues(alpha: 0.80)
+            : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+        border: Border.all(
+          color: isDark
+              ? AppColors.glassBorder.withValues(alpha: 0.5)
+              : AppColors.grey200,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Center(
+              child: Text('✉️', style: TextStyle(fontSize: 18)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Une question ou un retour ?',
+                  style: AppTextStyles.bodyMedium(
+                    color: isDark ? AppColors.textDark : AppColors.textLight,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'contact@kolyb.app',
+                  style: AppTextStyles.caption(color: AppColors.primaryLight),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => launchUrl(
+              Uri.parse('mailto:contact@kolyb.app?subject=Retour%20Kolyb'),
+              mode: LaunchMode.externalApplication,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: AppColors.gradientMain,
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(AppConstants.radiusPill),
+              ),
+              child: Text(
+                'Écrire',
+                style: AppTextStyles.labelSmall(color: Colors.white)
+                    .copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SignOutButton extends ConsumerWidget {
   final bool isDark;
   const _SignOutButton({required this.isDark});

@@ -79,21 +79,21 @@ class KanbanNotifier extends AsyncNotifier<List<KanbanProject>> {
       clearCurrentBlocker: clearCurrentBlocker,
     );
     state = AsyncData(
-      state.value!.map((p) => p.id == projectId ? updated : p).toList(),
+      (state.value ?? []).map((p) => p.id == projectId ? updated : p).toList(),
     );
   }
 
   Future<void> setFocusProject(String projectId) async {
     // Mise à jour optimiste
     state = AsyncData(
-      state.value!.map((p) => p.copyWith(isFocusProject: p.id == projectId)).toList(),
+      (state.value ?? []).map((p) => p.copyWith(isFocusProject: p.id == projectId)).toList(),
     );
     await ref.read(kanbanRepositoryProvider).setFocusProject(projectId);
   }
 
   Future<void> clearFocusProject() async {
     state = AsyncData(
-      state.value!.map((p) => p.copyWith(isFocusProject: false)).toList(),
+      (state.value ?? []).map((p) => p.copyWith(isFocusProject: false)).toList(),
     );
     await ref.read(kanbanRepositoryProvider).clearFocusProject();
   }
@@ -101,7 +101,7 @@ class KanbanNotifier extends AsyncNotifier<List<KanbanProject>> {
   Future<void> deleteProject(String projectId) async {
     await ref.read(kanbanRepositoryProvider).deleteProject(projectId);
     state = AsyncData(
-      state.value!.where((p) => p.id != projectId).toList(),
+      state.value?.where((p) => p.id != projectId).toList() ?? [],
     );
   }
 
@@ -148,7 +148,7 @@ class KanbanNotifier extends AsyncNotifier<List<KanbanProject>> {
     KanbanProject Function(KanbanProject) update,
   ) {
     state = AsyncData(
-      state.value!
+      (state.value ?? [])
           .map((p) => p.id == projectId ? update(p) : p)
           .toList(),
     );

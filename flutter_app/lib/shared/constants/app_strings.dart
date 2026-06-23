@@ -26,7 +26,7 @@ class AppStrings {
   // Questions check-in matin
   static const String morningQ1 = 'Comment vas-tu ce matin ?';
   static const String morningQ2 = 'Quel est ton niveau d\'énergie ?';
-  static const String morningQ3 = 'Sur quoi tu vas te concentrer aujourd\'hui ?';
+  static const String morningQ3 = 'Comment tu te sens côté focus ce matin ?';
 
   // Questions check-in soir
   static const String eveningQ1 = 'Comment s\'est passée ta journée ?';

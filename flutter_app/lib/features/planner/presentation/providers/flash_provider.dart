@@ -42,18 +42,18 @@ class FlashNotifier extends AsyncNotifier<List<FlashTask>> {
         ? await repo.markUndone(id)
         : await repo.markDone(id);
     state = AsyncData(
-      state.value!.map((t) => t.id == id ? updated : t).toList(),
+      state.value?.map((t) => t.id == id ? updated : t).toList() ?? [],
     );
   }
 
   Future<void> deleteTask(String id) async {
     await ref.read(flashRepositoryProvider).deleteTask(id);
-    state = AsyncData(state.value!.where((t) => t.id != id).toList());
+    state = AsyncData(state.value?.where((t) => t.id != id).toList() ?? []);
   }
 
   Future<void> clearDone() async {
     await ref.read(flashRepositoryProvider).clearDone();
-    state = AsyncData(state.value!.where((t) => !t.isDone).toList());
+    state = AsyncData(state.value?.where((t) => !t.isDone).toList() ?? []);
   }
 
   // Nombre de tâches en attente (pour badge)

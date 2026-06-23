@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../shared/theme/app_colors.dart';
@@ -12,16 +13,37 @@ import '../../data/community_model.dart';
 import '../../data/challenge_model.dart';
 import '../providers/community_provider.dart';
 import '../providers/challenge_provider.dart';
+import '../widgets/salon_charter_modal.dart';
 import '../../../subscription/presentation/providers/subscription_provider.dart';
 
 // ─────────────────────────────────────────────────────────────
 // ÉCRAN PRINCIPAL
 // ─────────────────────────────────────────────────────────────
-class CommunityScreen extends ConsumerWidget {
+class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CommunityScreen> createState() => _CommunityScreenState();
+}
+
+class _CommunityScreenState extends ConsumerState<CommunityScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showCharterIfNeeded());
+  }
+
+  Future<void> _showCharterIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accepted = prefs.getBool('salon_charter_accepted') ?? false;
+    if (!accepted && mounted) {
+      await showSalonCharterModal(context);
+      await prefs.setBool('salon_charter_accepted', true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AppBackground(
       child: DefaultTabController(
         length: 2,

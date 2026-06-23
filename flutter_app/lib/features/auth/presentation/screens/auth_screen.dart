@@ -79,7 +79,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           context.go(onboardingDone ? AppRoutes.home : AppRoutes.onboarding);
         }
       } else {
-        context.go(AppRoutes.onboarding);
+        if (mounted) context.go(AppRoutes.onboarding);
       }
     }
   }

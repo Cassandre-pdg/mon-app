@@ -49,7 +49,7 @@ class CaptureNotifier extends AsyncNotifier<List<CaptureItem>> {
 
   Future<void> delete(String id) async {
     await ref.read(captureRepositoryProvider).delete(id);
-    state = AsyncData(state.value!.where((c) => c.id != id).toList());
+    state = AsyncData(state.value?.where((c) => c.id != id).toList() ?? []);
   }
 }
 

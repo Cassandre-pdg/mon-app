@@ -1,14 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/profile_repository.dart';
+import '../../../../shared/providers/refresh_signals.dart';
 
 /// Repository injecté via Riverpod
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepository(Supabase.instance.client);
 });
 
-/// Stats de profil chargées depuis Supabase
+/// Stats de profil chargées depuis Supabase.
+/// Se re-fetche automatiquement après un check-in (via profileRefreshSignal).
 final profileStatsProvider = FutureProvider<ProfileStats>((ref) async {
+  ref.watch(profileRefreshSignal);
   return ref.watch(profileRepositoryProvider).getProfileStats();
 });
 

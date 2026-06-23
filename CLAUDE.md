@@ -766,6 +766,43 @@ Il contient aussi `GCC_TREAT_WARNINGS_AS_ERRORS=NO` et `SWIFT_TREAT_WARNINGS_AS_
 
 ---
 
+## 🚀 WORKFLOW DE RELEASE IOS — CHECKLIST OBLIGATOIRE
+
+> ⚠️ Chaque mise à jour passe par Apple Review (1 à 3 jours). Rien n'est live immédiatement.
+> Suivre cette checklist à chaque release sans exception.
+
+### Avant de coder
+- [ ] Créer une branche `release/X.Y.Z` depuis main
+
+### Après les modifications
+- [ ] `flutter analyze` → zéro erreur, zéro warning
+- [ ] Tester sur simulateur iOS
+- [ ] Tester dark mode ET light mode
+- [ ] Incrémenter la version dans `flutter_app/pubspec.yaml` :
+  ```yaml
+  version: 1.0.1+2
+  #         ↑   ↑
+  #         |   build number — TOUJOURS croissant, Apple rejette si réutilisé
+  #         version visible par les utilisateurs
+  ```
+
+### Build & soumission
+- [ ] `flutter build ipa --release` dans `flutter_app/`
+- [ ] Ouvrir Xcode → Product → Archive → Distribute App → App Store Connect
+- [ ] Rédiger les notes "What's New" en français (tutoiement, ton Kolyb)
+- [ ] Soumettre sur App Store Connect
+
+### Après approbation Apple
+- [ ] Merger la branche dans main
+- [ ] Créer un tag git : `git tag v1.0.1 && git push origin v1.0.1`
+- [ ] Publier la release (manuelle ou automatique selon le réglage App Store Connect)
+
+### Ce qui est live SANS review Apple
+- Modifications Supabase (base de données, RLS, contenu) → instantané
+- Correctifs backend / API → instantané
+
+---
+
 ## 📞 CONTEXTE PROJET
 
 - **Fondatrice :** Cassandre (dev solo, première app Flutter)

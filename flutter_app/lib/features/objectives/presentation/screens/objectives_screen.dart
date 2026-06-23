@@ -203,7 +203,31 @@ class _ObjectivesContent extends ConsumerWidget {
         const SizedBox(height: 40),
 
         // ── 4. Mes Habitudes ──────────────────────────────────
-        _SectionLabel('Mes Habitudes', isDark: isDark),
+        Row(
+          children: [
+            Expanded(child: _SectionLabel('Mes Habitudes', isDark: isDark)),
+            if (habitsAsync.value?.isNotEmpty == true)
+              GestureDetector(
+                onTap: () => showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (_) => _ManageHabitsSheet(
+                    habits: habitsAsync.value!,
+                    isDark: isDark,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(
+                    Icons.more_horiz_rounded,
+                    color: isDark ? AppColors.textDarkMuted : AppColors.grey400,
+                    size: 20,
+                  ),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 16),
         habitsAsync.when(
           loading: () => const _LoadingCard(),
@@ -3165,6 +3189,413 @@ class _ChartPill extends StatelessWidget {
                 .copyWith(fontWeight: FontWeight.w600),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Sheet gestion habitudes (modifier / supprimer) ────────────
+class _ManageHabitsSheet extends ConsumerWidget {
+  const _ManageHabitsSheet({required this.habits, required this.isDark});
+  final List<Habit> habits;
+  final bool isDark;
+
+  void _openEditSheet(BuildContext context, WidgetRef ref, Habit habit) {
+    Navigator.pop(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _EditHabitSheet(habit: habit, isDark: isDark),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.backgroundLight,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36, height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.grey400.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Gérer mes habitudes',
+            style: AppTextStyles.headingSmall(
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...habits.map((habit) => Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.surfaceElevatedDark.withValues(alpha: 0.60)
+                    : AppColors.grey200.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
+                border: Border.all(
+                  color: isDark
+                      ? AppColors.glassBorder.withValues(alpha: 0.5)
+                      : AppColors.grey200,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Text(habit.emoji, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          habit.title,
+                          style: AppTextStyles.bodyMedium(
+                            color: isDark ? AppColors.textDark : AppColors.textLight,
+                          ),
+                        ),
+                        Text(
+                          habit.frequency.label,
+                          style: AppTextStyles.caption(color: AppColors.grey400),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Bouton modifier
+                  GestureDetector(
+                    onTap: () => _openEditSheet(context, ref, habit),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.edit_outlined,
+                          color: AppColors.primaryLight, size: 16),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Bouton supprimer
+                  GestureDetector(
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (dialogCtx) => AlertDialog(
+                          backgroundColor: isDark
+                              ? AppColors.surfaceDark
+                              : AppColors.backgroundLight,
+                          title: Text(
+                            'Supprimer cette habitude ?',
+                            style: AppTextStyles.headingSmall(
+                              color: isDark ? AppColors.textDark : AppColors.textLight,
+                            ),
+                          ),
+                          content: Text(
+                            '${habit.emoji} ${habit.title} sera définitivement supprimée.',
+                            style: AppTextStyles.bodyMedium(color: AppColors.grey400),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogCtx, false),
+                              child: Text('Annuler',
+                                  style: AppTextStyles.labelMedium(
+                                      color: AppColors.grey400)),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogCtx, true),
+                              child: Text('Supprimer',
+                                  style: AppTextStyles.labelMedium(
+                                      color: AppColors.error)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await ref.read(habitsProvider.notifier).delete(habit.id);
+                        if (context.mounted) Navigator.pop(context);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.delete_outline_rounded,
+                          color: AppColors.error, size: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Sheet édition d'une habitude ──────────────────────────────
+class _EditHabitSheet extends ConsumerStatefulWidget {
+  const _EditHabitSheet({required this.habit, required this.isDark});
+  final Habit habit;
+  final bool isDark;
+
+  @override
+  ConsumerState<_EditHabitSheet> createState() => _EditHabitSheetState();
+}
+
+class _EditHabitSheetState extends ConsumerState<_EditHabitSheet> {
+  late final TextEditingController _titleCtrl;
+  late String _emoji;
+  late HabitFrequency _frequency;
+  late List<int> _selectedDays;
+  bool _loading = false;
+
+  static const _emojis = [
+    '🔁', '📚', '💪', '🧘', '✍️', '🚶', '🍎', '💧',
+    '🌅', '🎯', '💊', '🎵', '🧹', '💡', '🤝', '🌱',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _titleCtrl = TextEditingController(text: widget.habit.title);
+    _emoji = widget.habit.emoji;
+    _frequency = widget.habit.frequency;
+    _selectedDays = List<int>.from(widget.habit.daysOfWeek);
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_titleCtrl.text.trim().isEmpty) return;
+    setState(() => _loading = true);
+    try {
+      await ref.read(habitsProvider.notifier).edit(
+        widget.habit.id,
+        title: _titleCtrl.text.trim(),
+        emoji: _emoji,
+        frequency: _frequency,
+        daysOfWeek: _frequency == HabitFrequency.daily ? [] : _selectedDays,
+      );
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark : AppColors.backgroundLight,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.grey400.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Modifier l\'habitude',
+              style: AppTextStyles.headingSmall(
+                color: isDark ? AppColors.textDark : AppColors.textLight,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Emoji picker
+            SizedBox(
+              height: 44,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _emojis.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (_, i) {
+                  final e = _emojis[i];
+                  final selected = e == _emoji;
+                  return GestureDetector(
+                    onTap: () => setState(() => _emoji = e),
+                    child: AnimatedContainer(
+                      duration: AppConstants.animFast,
+                      width: 44, height: 44,
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? AppColors.primary.withValues(alpha: 0.20)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: selected ? AppColors.primary : Colors.transparent,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(e, style: const TextStyle(fontSize: 22)),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Titre
+            TextField(
+              controller: _titleCtrl,
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+              style: AppTextStyles.bodyMedium(
+                color: isDark ? AppColors.textDark : AppColors.textLight,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Nom de l\'habitude',
+                hintStyle: AppTextStyles.bodyMedium(color: AppColors.grey400),
+                filled: true,
+                fillColor: isDark
+                    ? AppColors.surfaceElevatedDark
+                    : AppColors.grey200.withValues(alpha: 0.5),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Fréquence
+            Text('Fréquence',
+                style: AppTextStyles.labelMedium(
+                  color: isDark ? AppColors.textDarkMuted : AppColors.grey600,
+                )),
+            const SizedBox(height: 8),
+            Row(
+              children: HabitFrequency.values.map((f) {
+                final selected = f == _frequency;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _frequency = f),
+                    child: AnimatedContainer(
+                      duration: AppConstants.animFast,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? AppColors.accent.withValues(alpha: 0.15)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: selected
+                              ? AppColors.accent
+                              : AppColors.grey400.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Text(f.label,
+                          style: AppTextStyles.labelSmall(
+                            color: selected ? AppColors.accent : AppColors.grey400,
+                          )),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            if (_frequency != HabitFrequency.daily) ...[
+              const SizedBox(height: 16),
+              Text('Jours',
+                  style: AppTextStyles.labelMedium(
+                    color: isDark ? AppColors.textDarkMuted : AppColors.grey600,
+                  )),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(7, (i) {
+                  final day = i + 1;
+                  final selected = _selectedDays.contains(day);
+                  final labels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+                  return GestureDetector(
+                    onTap: () => setState(() {
+                      if (selected) {
+                        _selectedDays.remove(day);
+                      } else {
+                        _selectedDays.add(day);
+                      }
+                    }),
+                    child: AnimatedContainer(
+                      duration: AppConstants.animFast,
+                      width: 38, height: 38,
+                      decoration: BoxDecoration(
+                        color: selected ? AppColors.primary : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: selected
+                              ? AppColors.primary
+                              : AppColors.grey400.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(labels[i],
+                            style: AppTextStyles.labelSmall(
+                              color: selected ? Colors.white : AppColors.grey400,
+                            )),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ],
+
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _loading ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: const StadiumBorder(),
+                  elevation: 0,
+                ),
+                child: _loading
+                    ? const KolybLoader(size: 6, color: Colors.white)
+                    : Text('Enregistrer',
+                        style: AppTextStyles.labelMedium(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
