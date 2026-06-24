@@ -893,7 +893,7 @@ export default function AuditQuiz() {
                         background: "rgba(255,77,106,0.15)", color: "#FF4D6A",
                         border: "1px solid rgba(255,77,106,0.3)",
                       }}>
-                        🔴 Profil — ████████
+                        🔴 Profil : ████████
                       </span>
                       <span style={{ fontSize: 28, fontWeight: 900, color: "#fff" }}>??/100</span>
                     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Instagram, Twitter, Linkedin, Heart } from "lucide-react";
+import { Instagram, Linkedin, Heart } from "lucide-react";
 import KolybIcon from "./KolybIcon";
 
 const links = {
@@ -10,9 +10,10 @@ const links = {
     { label: "FAQ", href: "#faq" },
   ],
   Entreprise: [
-    { label: "Notre histoire", href: "#" },
-    { label: "Contact", href: "#contact" },
-    { label: "Presse", href: "#contact" },
+    { label: "Notre histoire", href: "#notre-histoire" },
+    { label: "Support", href: "https://cassandre-pdg.github.io/kolyb-support/" },
+    { label: "Contact", href: "mailto:contact@kolyb.app" },
+    { label: "Presse", href: "mailto:contact@kolyb.app" },
   ],
   Légal: [
     { label: "Mentions légales", href: "https://cassandre-pdg.github.io/kolyb-support/mentions-legales.html" },
@@ -22,9 +23,8 @@ const links = {
 };
 
 const socials = [
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Twitter, href: "#", label: "Twitter / X" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
+  { icon: Instagram, href: "https://www.instagram.com/kolybapp/", label: "Instagram" },
+  { icon: Linkedin, href: "https://www.linkedin.com/in/cassandrerollet/", label: "LinkedIn" },
 ];
 
 export default function Footer() {

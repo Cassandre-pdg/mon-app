@@ -5,6 +5,7 @@ import HorizontalShowcase from "@/components/HorizontalShowcase";
 import ManifestoSection from "@/components/ManifestoSection";
 import AnimatedStats from "@/components/AnimatedStats";
 import HowItWorks from "@/components/HowItWorks";
+import OurStory from "@/components/OurStory";
 import ImmersiveCTA from "@/components/ImmersiveCTA";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
@@ -21,6 +22,7 @@ export default function Home() {
       <ManifestoSection />
       <AnimatedStats />
       <HowItWorks />
+      <OurStory />
       <ImmersiveCTA />
       <FAQ />
       <Footer />

@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
+const APP_STORE_URL = "https://apps.apple.com/fr/app/kolyb-productivit%C3%A9-r%C3%A9seau/id6763140978";
+
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export default function ImmersiveCTA() {
@@ -141,7 +143,7 @@ export default function ImmersiveCTA() {
             variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } } }}
           >
             <span className="badge badge-violet" style={{ marginBottom: 32 }}>
-              ✦ Beta ouverte · Places limitées
+              ✦ Disponible sur iOS · Android bientôt
             </span>
           </motion.div>
 
@@ -173,65 +175,69 @@ export default function ImmersiveCTA() {
               margin: "0 auto 40px",
             }}
           >
-            Rejoins les premiers indépendants qui avancent avec kolyb. Ta progression commence maintenant.
+            Télécharge kolyb et commence ton élan aujourd&apos;hui. Gratuit, sans CB.
           </motion.p>
 
           <motion.div
             variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } } }}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}
           >
-            {status === "success" ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                style={{
-                  padding: "32px", borderRadius: 20,
-                  background: "rgba(0,212,200,0.08)",
-                  border: "1px solid rgba(0,212,200,0.25)",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: 40, marginBottom: 12 }}>🚀</div>
-                <p style={{ color: "#00D4C8", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>{message}</p>
-                <p style={{ color: "rgba(237,237,255,0.45)", fontSize: 14 }}>On te tient au courant dès l&apos;ouverture de la beta.</p>
-              </motion.div>
-            ) : (
-              <>
-                <form
-                  onSubmit={handleSubmit}
-                  style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 440, margin: "0 auto" }}
-                >
+            {/* App Store button */}
+            <motion.a
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary btn-block"
+              whileHover={{ scale: 1.03, boxShadow: "0 12px 48px rgba(109,40,217,0.5)" }}
+              whileTap={{ scale: 0.97 }}
+              style={{ fontSize: 16, padding: "16px 36px", maxWidth: 360, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10 }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              Télécharger sur l&apos;App Store
+            </motion.a>
+
+            <p style={{ color: "rgba(237,237,255,0.25)", fontSize: 12 }}>Gratuit · Sans CB · RGPD</p>
+
+            {/* Android waitlist */}
+            <div style={{ width: "100%", maxWidth: 360 }}>
+              <p style={{ color: "rgba(237,237,255,0.38)", fontSize: 13, textAlign: "center", marginBottom: 10 }}>
+                Sur Android ? Sois notifié·e dès le lancement →
+              </p>
+              {status === "success" ? (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ color: "#00D4C8", fontSize: 13, textAlign: "center", fontWeight: 600 }}>
+                  ✓ {message}
+                </motion.p>
+              ) : (
+                <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8 }}>
                   <input
                     type="email" value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="ton@email.com" required
                     className="input"
-                    style={{ textAlign: "center", fontSize: 15 }}
+                    style={{ flex: 1, fontSize: 13, padding: "10px 14px", textAlign: "left" }}
                   />
                   <motion.button
                     type="submit"
                     disabled={status === "loading"}
-                    className="btn btn-primary btn-block"
-                    whileHover={{ scale: 1.03, boxShadow: "0 12px 48px rgba(109,40,217,0.45)" }}
+                    className="btn btn-primary"
+                    whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.97 }}
-                    style={{ fontSize: 15, padding: "16px 32px" }}
+                    style={{ fontSize: 13, padding: "10px 16px" }}
                   >
                     {status === "loading" ? (
-                      <span style={{ display: "inline-block", width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+                      <span style={{ display: "inline-block", width: 12, height: 12, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
                     ) : (
-                      <>Commencer maintenant <ArrowRight size={16} /></>
+                      <ArrowRight size={14} />
                     )}
                   </motion.button>
                 </form>
-
-                {status === "error" && (
-                  <p style={{ color: "#FF4D6A", fontSize: 13, textAlign: "center", marginTop: 12 }}>{message}</p>
-                )}
-
-                <p style={{ color: "rgba(237,237,255,0.25)", fontSize: 12, marginTop: 16, textAlign: "center" }}>
-                  Gratuit · Sans CB · RGPD · Tu te désinscrits quand tu veux
-                </p>
-              </>
-            )}
+              )}
+              {status === "error" && (
+                <p style={{ color: "#FF4D6A", fontSize: 12, textAlign: "center", marginTop: 8 }}>{message}</p>
+              )}
+            </div>
           </motion.div>
 
           {/* Trust badges */}

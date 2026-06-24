@@ -22,6 +22,7 @@ const STARS = Array.from({ length: 130 }, (_, i) => ({
 }));
 
 const TAGLINE = ["Décide.", "Agis.", "Progresse."];
+const APP_STORE_URL = "https://apps.apple.com/fr/app/kolyb-productivit%C3%A9-r%C3%A9seau/id6763140978";
 
 /* ─── Atmosphere ─────────────────────────────────────────────────────────── */
 function Atmosphere({ p }: { p: MotionValue<number> }) {
@@ -476,65 +477,70 @@ export default function RocketHero() {
               ))}
             </div>
 
+            {/* App Store button */}
+            <motion.a
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary btn-block"
+              style={{ fontSize: 15, padding: "14px 28px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 8 }}
+              whileHover={{ scale: 1.03, boxShadow: "0 12px 48px rgba(109,40,217,0.5)" }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              Télécharger sur l&apos;App Store
+            </motion.a>
+
+            <p style={{ fontSize: 11, color: "rgba(237,237,255,0.25)", marginBottom: 20 }}>
+              Gratuit · Sans CB · RGPD
+            </p>
+
+            {/* Android waitlist */}
+            <p style={{ fontSize: 12, color: "rgba(237,237,255,0.38)", marginBottom: 8 }}>
+              Sur Android ? Sois notifié·e dès le lancement →
+            </p>
             {status === "success" ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                style={{
-                  padding: "20px 24px", borderRadius: 18,
-                  background: "rgba(0,212,200,0.08)",
-                  border: "1px solid rgba(0,212,200,0.25)",
-                }}
-              >
-                <p style={{ fontSize: 28, marginBottom: 6 }}>🚀</p>
-                <p style={{ color: "#00D4C8", fontWeight: 700, fontSize: 15 }}>{msg}</p>
-              </motion.div>
+              <p style={{ color: "#00D4C8", fontSize: 13, fontWeight: 600 }}>✓ {msg}</p>
             ) : (
-              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8 }}>
                 <input
                   type="email" value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ton@email.com" required
-                  className="input" style={{ textAlign: "center" }}
+                  className="input" style={{ flex: 1, fontSize: 13, padding: "10px 14px", textAlign: "left" }}
                 />
                 <motion.button
                   type="submit" disabled={status === "loading"}
-                  className="btn btn-primary btn-block"
-                  style={{ fontSize: 15 }}
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                  className="btn btn-primary"
+                  style={{ padding: "10px 14px" }}
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
                 >
                   {status === "loading" ? (
-                    <span style={{
-                      width: 16, height: 16, display: "inline-block",
-                      border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff",
-                      borderRadius: "50%", animation: "spin 0.7s linear infinite",
-                    }} />
+                    <span style={{ width: 12, height: 12, display: "inline-block", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
                   ) : (
-                    <> Rejoindre la beta <ArrowRight size={16} /> </>
+                    <ArrowRight size={14} />
                   )}
                 </motion.button>
               </form>
             )}
-
             {status === "error" && (
-              <p style={{ color: "#FF4D6A", fontSize: 13, marginTop: 8 }}>{msg}</p>
+              <p style={{ color: "#FF4D6A", fontSize: 12, marginTop: 6 }}>{msg}</p>
             )}
 
-            <div style={{ display: "flex", justifyContent: "center", gap: 28, marginTop: 42 }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 28, marginTop: 32 }}>
               {[
                 { val: "500+", lbl: "entrepreneurs" },
-                { val: "100%", lbl: "gratuit" },
-                { val: "0",    lbl: "spam" },
+                { val: "Gratuit", lbl: "pour commencer" },
+                { val: "0", lbl: "spam" },
               ].map((s) => (
                 <div key={s.lbl} style={{ textAlign: "center" }}>
-                  <p style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{s.val}</p>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{s.val}</p>
                   <p style={{ fontSize: 10, color: "rgba(237,237,255,0.32)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{s.lbl}</p>
                 </div>
               ))}
             </div>
-            <p style={{ fontSize: 11, color: "rgba(237,237,255,0.22)", marginTop: 12 }}>
-              Gratuit · Sans CB · RGPD · Tu te désinscrits quand tu veux
-            </p>
           </motion.div>
           </div>
         </div>

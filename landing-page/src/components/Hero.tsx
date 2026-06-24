@@ -5,6 +5,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 import KolybIcon from "./KolybIcon";
 
+const APP_STORE_URL = "https://apps.apple.com/fr/app/kolyb-productivit%C3%A9-r%C3%A9seau/id6763140978";
+
 const features = [
   "Check-in matin & soir",
   "Planificateur 3 priorités",
@@ -134,7 +136,7 @@ export default function Hero() {
           <motion.div variants={itemVariants} className="flex justify-center mb-8">
             <span className="badge badge-violet">
               <Sparkles size={13} />
-              Beta ouverte, places limitées
+              Disponible sur iOS · Android bientôt
             </span>
           </motion.div>
 
@@ -190,50 +192,63 @@ export default function Hero() {
             ))}
           </motion.div>
 
-          {/* Email form */}
-          <motion.div variants={itemVariants}>
-            {status === "success" ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-8 rounded-2xl bg-[#00D4C8]/10 border border-[#00D4C8]/30 text-center"
-              >
-                <div className="text-4xl mb-4">✨</div>
-                <p className="text-[#00D4C8] font-semibold text-lg mb-2">{message}</p>
-                <p className="text-[#EDEDFF]/55 text-sm">
-                  On te tient au courant dès l&apos;ouverture de la beta.
-                </p>
-              </motion.div>
-            ) : (
-              <form onSubmit={handleSubmit} className="newsletter-form flex flex-col sm:flex-row gap-3">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ton@email.com"
-                  required
-                  className="input flex-1"
-                />
-                <button type="submit" disabled={status === "loading"} className="btn btn-primary">
-                  {status === "loading" ? (
-                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      Rejoindre la beta
-                      <ArrowRight size={16} />
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
+          {/* CTA */}
+          <motion.div variants={itemVariants} className="flex flex-col items-center gap-6">
+            {/* App Store button */}
+            <motion.a
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.04, boxShadow: "0 16px 56px rgba(109,40,217,0.5)" }}
+              whileTap={{ scale: 0.97 }}
+              className="btn btn-primary"
+              style={{ fontSize: 16, padding: "16px 36px", display: "inline-flex", alignItems: "center", gap: 10 }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              Télécharger sur l&apos;App Store
+            </motion.a>
 
-            {status === "error" && (
-              <p className="text-[#FF4D6A] text-sm text-center mt-3">{message}</p>
-            )}
+            <p className="text-[#EDEDFF]/28 text-xs">Gratuit · Sans CB · RGPD</p>
 
-            <p className="text-[#EDEDFF]/28 text-xs text-center mt-4">
-              Gratuit, sans CB. Tu te désinscrits quand tu veux. RGPD respecté.
-            </p>
+            {/* Android waitlist */}
+            <div className="w-full max-w-sm">
+              <p className="text-[#EDEDFF]/40 text-sm text-center mb-3">
+                Sur Android ? Sois notifié·e dès le lancement →
+              </p>
+              {status === "success" ? (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-[#00D4C8] text-sm text-center font-medium"
+                >
+                  ✓ {message}
+                </motion.p>
+              ) : (
+                <form onSubmit={handleSubmit} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ton@email.com"
+                    required
+                    className="input flex-1"
+                    style={{ fontSize: 13, padding: "10px 14px" }}
+                  />
+                  <button type="submit" disabled={status === "loading"} className="btn btn-primary" style={{ padding: "10px 16px", fontSize: 13 }}>
+                    {status === "loading" ? (
+                      <span className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <ArrowRight size={14} />
+                    )}
+                  </button>
+                </form>
+              )}
+              {status === "error" && (
+                <p className="text-[#FF4D6A] text-xs text-center mt-2">{message}</p>
+              )}
+            </div>
           </motion.div>
 
           {/* Stats */}
@@ -243,7 +258,7 @@ export default function Hero() {
           >
             {[
               { value: "500+", label: "entrepreneurs inscrits" },
-              { value: "100%", label: "gratuit en V1" },
+              { value: "Gratuit", label: "pour commencer" },
               { value: "0", label: "spam promis" },
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col items-center gap-1.5">
