@@ -1,9 +1,18 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Lecture de key.properties (local, non commité)
+val keyPropertiesFile = rootProject.file("key.properties")
+val keyProperties = Properties()
+if (keyPropertiesFile.exists()) {
+    keyProperties.load(keyPropertiesFile.inputStream())
 }
 
 android {
@@ -14,6 +23,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -22,11 +32,10 @@ android {
 
     signingConfigs {
         create("release") {
-            // Variables définies dans ~/.gradle/gradle.properties ou via CI/CD secrets
-            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "keystore/kolyb-release.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
-            keyAlias = System.getenv("KEY_ALIAS") ?: "kolyb"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            storeFile = rootProject.file(keyProperties.getProperty("storeFile") ?: "app/keystore/kolyb-release.jks")
+            storePassword = keyProperties.getProperty("storePassword") ?: System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = keyProperties.getProperty("keyAlias") ?: System.getenv("KEY_ALIAS") ?: "kolyb"
+            keyPassword = keyProperties.getProperty("keyPassword") ?: System.getenv("KEY_PASSWORD") ?: ""
         }
     }
 
@@ -53,4 +62,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    implementation("com.google.android.play:feature-delivery:2.1.0")
 }

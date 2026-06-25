@@ -1,7 +1,7 @@
 name: kolyb
 description: "Kolyb — ton élan, au quotidien. Compagnon des entrepreneurs indépendants."
 publish_to: 'none'
-version: 1.1.0+3
+version: 1.1.0+6
 
 environment:
   sdk: ^3.7.2

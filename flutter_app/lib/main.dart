@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:logger/logger.dart';
 
 import 'shared/theme/app_theme.dart';
 import 'shared/theme/theme_provider.dart';
@@ -14,6 +15,8 @@ import 'shared/services/flow_notification_service.dart';
 import 'shared/services/monthly_reminders_service.dart';
 import 'features/subscription/data/subscription_repository.dart';
 
+final _log = Logger();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -22,25 +25,43 @@ Future<void> main() async {
 
   // Firebase + notifications : non supportés sur web (FCM = mobile uniquement)
   if (!kIsWeb) {
-    await Firebase.initializeApp();
-    await NotificationService.instance.init();
-    await FlowNotificationService.instance.init();
-    await MonthlyRemindersService.instance.init();
-    await MonthlyRemindersService.instance.scheduleAll();
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      _log.e('[main] Firebase init error: $e');
+    }
+
+    try {
+      await NotificationService.instance.init();
+      await FlowNotificationService.instance.init();
+      await MonthlyRemindersService.instance.init();
+      // scheduleAll peut lancer une PlatformException si SCHEDULE_EXACT_ALARM
+      // n'est pas accordée (Android 12+) — on laisse l'app démarrer quand même.
+      await MonthlyRemindersService.instance.scheduleAll();
+    } catch (e) {
+      _log.w('[main] Notifications init error (non bloquant): $e');
+    }
   }
 
   // Initialisation Supabase (EU Frankfurt — RGPD)
-  await Supabase.initialize(
-    url: AppConstants.supabaseUrl,
-    anonKey: AppConstants.supabaseAnonKey,
-  );
+  try {
+    await Supabase.initialize(
+      url: AppConstants.supabaseUrl,
+      anonKey: AppConstants.supabaseAnonKey,
+    );
+  } catch (e) {
+    _log.e('[main] Supabase init error: $e');
+  }
 
   // Initialisation RevenueCat (mobile uniquement)
-  // L'userId Supabase est associé après login via SubscriptionRepository.identifyUser()
   if (!kIsWeb) {
-    final supabaseUserId =
-        Supabase.instance.client.auth.currentUser?.id;
-    await SubscriptionRepository.instance.init(userId: supabaseUserId);
+    try {
+      final supabaseUserId =
+          Supabase.instance.client.auth.currentUser?.id;
+      await SubscriptionRepository.instance.init(userId: supabaseUserId);
+    } catch (e) {
+      _log.w('[main] RevenueCat init error (non bloquant): $e');
+    }
   }
 
   runApp(
