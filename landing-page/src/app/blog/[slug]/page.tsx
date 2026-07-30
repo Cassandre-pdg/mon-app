@@ -146,8 +146,12 @@ export default async function BlogArticlePage({
             <p style={{ fontSize: 14, color: "rgba(237,237,255,0.55)", marginBottom: 20 }}>
               Check-in, planificateur et communauté, gratuit pour commencer.
             </p>
-            <Link href="/#hero" className="btn btn-primary" style={{ margin: "0 auto" }}>
-              Découvrir kolyb
+            <Link
+              href={article.relatedFeatureHref ?? "/#hero"}
+              className="btn btn-primary"
+              style={{ margin: "0 auto" }}
+            >
+              {article.relatedFeatureLabel ?? "Découvrir kolyb"}
             </Link>
           </div>
         </div>

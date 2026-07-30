@@ -13,6 +13,8 @@ export interface BlogArticle {
   readingTime: string;
   publishedAt: string;
   content: BlogBlock[];
+  relatedFeatureHref?: string;
+  relatedFeatureLabel?: string;
 }
 
 export const blogArticles: BlogArticle[] = [
@@ -24,6 +26,8 @@ export const blogArticles: BlogArticle[] = [
     category: "Bien-être",
     readingTime: "6 min",
     publishedAt: "2026-07-30",
+    relatedFeatureHref: "/fonctionnalites/le-salon",
+    relatedFeatureLabel: "Découvrir Le Salon",
     content: [
       {
         type: "p",
@@ -113,6 +117,8 @@ export const blogArticles: BlogArticle[] = [
     category: "Comparatif",
     readingTime: "5 min",
     publishedAt: "2026-07-30",
+    relatedFeatureHref: "/fonctionnalites/planificateur",
+    relatedFeatureLabel: "Découvrir le planificateur",
     content: [
       {
         type: "p",
@@ -196,6 +202,8 @@ export const blogArticles: BlogArticle[] = [
     category: "Bien-être",
     readingTime: "6 min",
     publishedAt: "2026-07-30",
+    relatedFeatureHref: "/fonctionnalites/check-in",
+    relatedFeatureLabel: "Découvrir le check-in",
     content: [
       {
         type: "p",

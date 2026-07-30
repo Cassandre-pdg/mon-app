@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { CheckSquare, Timer, Bed, Users, Trophy } from "lucide-react";
 
@@ -19,6 +20,7 @@ const features = [
       "Inspirations du jour adaptées à ton état",
     ],
     emoji: "🌅",
+    href: "/fonctionnalites/check-in",
   },
   {
     id: "planner",
@@ -34,6 +36,7 @@ const features = [
       "Belle avancée ! célébré à chaque tâche cochée",
     ],
     emoji: "✅",
+    href: "/fonctionnalites/planificateur",
   },
   {
     id: "sleep",
@@ -49,6 +52,7 @@ const features = [
       "Lien avec ton humeur du check-in",
     ],
     emoji: "😴",
+    href: null,
   },
   {
     id: "community",
@@ -64,6 +68,7 @@ const features = [
       "Pas de followers publics, pas de compétition",
     ],
     emoji: "👥",
+    href: "/fonctionnalites/le-salon",
   },
   {
     id: "rewards",
@@ -79,6 +84,7 @@ const features = [
       "+15 pts bonus si tu te relèves après un raté",
     ],
     emoji: "🏆",
+    href: null,
   },
 ];
 
@@ -215,6 +221,21 @@ export default function Features() {
                   </motion.li>
                 ))}
               </ul>
+              {f.href && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.45 }}
+                >
+                  <Link
+                    href={f.href}
+                    className="text-sm font-semibold"
+                    style={{ color: f.color }}
+                  >
+                    En savoir plus →
+                  </Link>
+                </motion.div>
+              )}
             </div>
 
             {/* Visual card side */}
