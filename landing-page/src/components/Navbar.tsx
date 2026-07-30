@@ -8,6 +8,7 @@ import KolybIcon from "./KolybIcon";
 const navLinks = [
   { label: "Fonctionnalités", href: "#features" },
   { label: "Comment ça marche", href: "#how-it-works" },
+  { label: "Blog", href: "/blog" },
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#waitlist" },
 ];

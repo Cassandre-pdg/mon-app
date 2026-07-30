@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Kolyb" }],
   creator: "Kolyb",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: [
       { url: "/kolyb_icon.png", type: "image/png", sizes: "512x512" },
@@ -31,6 +34,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
+    url: "/",
     locale: "fr_FR",
     title: "kolyb : Ton élan, au quotidien.",
     description:
@@ -58,6 +62,40 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://kolyb.app/#organization",
+      name: "kolyb",
+      url: "https://kolyb.app",
+      logo: "https://kolyb.app/kolyb_icon.png",
+      sameAs: [
+        "https://www.instagram.com/kolybapp/",
+        "https://www.linkedin.com/in/cassandrerollet/",
+      ],
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "kolyb",
+      applicationCategory: "LifestyleApplication",
+      operatingSystem: "iOS",
+      url: "https://apps.apple.com/fr/app/kolyb-productivit%C3%A9-r%C3%A9seau/id6763140978",
+      description:
+        "kolyb réunit check-in émotionnel, planificateur et communauté dans une seule app pour entrepreneurs indépendants.",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "EUR",
+      },
+      publisher: {
+        "@id": "https://kolyb.app/#organization",
+      },
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -65,7 +103,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+      <body className={`${inter.variable} antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

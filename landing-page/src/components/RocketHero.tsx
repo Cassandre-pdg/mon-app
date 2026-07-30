@@ -341,7 +341,7 @@ export default function RocketHero() {
         {/* ── "kolyb" name — phase initiale ── */}
         <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", top: "calc(38% + 130px)", zIndex: 5, textAlign: "center" }}>
           <div ref={nameOpRef} style={{ opacity: 1 }}>
-            <motion.div style={{ scale: nameSc, transformOrigin: "50% 0" }}>
+            <motion.h1 style={{ scale: nameSc, transformOrigin: "50% 0", margin: 0 }}>
               <span
                 style={{
                   fontSize: "clamp(56px, 13vw, 110px)",
@@ -367,7 +367,10 @@ export default function RocketHero() {
               >
                 Ton niveau devient visible
               </span>
-            </motion.div>
+              <span className="sr-only">
+                : l&apos;application productivité et bien-être pour entrepreneurs indépendants, avec check-in émotionnel, planificateur et communauté.
+              </span>
+            </motion.h1>
           </div>
         </div>
 

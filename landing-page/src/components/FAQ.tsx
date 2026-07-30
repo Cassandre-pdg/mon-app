@@ -9,11 +9,11 @@ const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const faqs = [
   {
     q: "kolyb est-il vraiment gratuit ?",
-    a: "Oui, entièrement. En V1, toutes les fonctionnalités essentielles sont gratuites : check-in, planificateur, Pomodoro, communauté (lecture + 3 posts/semaine), badges et streaks. Le plan Pro (fonctionnalités avancées) arrivera en V2, sans toucher aux fonctions de base.",
+    a: "Oui, tu peux commencer gratuitement : check-in, planificateur, Pomodoro, communauté (lecture + 3 posts/semaine), badges et streaks. Un plan Pro optionnel (9,99€/mois ou 79,99€/an) débloque des fonctionnalités avancées, sans jamais toucher aux fonctions de base.",
   },
   {
     q: "Sur quels appareils puis-je utiliser kolyb ?",
-    a: "kolyb est disponible sur iOS (iPhone) et Android. Une version web est prévue pour la V2. Les fonctionnalités essentielles (check-in, planificateur) fonctionnent même hors connexion.",
+    a: "kolyb est disponible dès maintenant sur iOS (iPhone). La version Android arrive bientôt : inscris-toi à la liste d'attente pour être notifié·e dès le lancement. Une version web est prévue pour la V2.",
   },
   {
     q: "Mes données sont-elles en sécurité ?",
@@ -29,7 +29,7 @@ const faqs = [
   },
   {
     q: "Quand kolyb sera-t-il disponible ?",
-    a: "La beta est prévue pour mi-2025. Les premiers inscrits sur la liste d'attente auront un accès prioritaire. En t'inscrivant maintenant, tu rejoins les pionniers qui vont façonner l'app avec nous.",
+    a: "kolyb est déjà disponible sur l'App Store, dès aujourd'hui. La version Android arrive bientôt : inscris-toi à la liste d'attente pour être notifié·e dès le lancement.",
   },
   {
     q: "Que se passe-t-il si je rate un jour de check-in ?",
@@ -105,6 +105,19 @@ function FAQItem({ q, a, index, isOpen, onToggle }: { q: string; a: string; inde
   );
 }
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.a,
+    },
+  })),
+};
+
 export default function FAQ() {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
@@ -121,6 +134,11 @@ export default function FAQ() {
         paddingBottom: "clamp(100px, 12vw, 140px)",
       }}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+
       {/* Séparateur — direction inversée encore une fois */}
       <div
         aria-hidden="true"

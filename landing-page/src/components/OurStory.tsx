@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -39,11 +40,12 @@ export default function OurStory() {
             >
               {/* Photo */}
               <div style={{ width: "100%", height: 380, overflow: "hidden", position: "relative" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src="/cassandre-1.png"
                   alt="Cassandre Rollet, fondatrice de kolyb"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+                  fill
+                  sizes="(max-width: 420px) 100vw, 420px"
+                  style={{ objectFit: "cover", objectPosition: "center top" }}
                 />
                 {/* Gradient overlay bas */}
                 <div style={{

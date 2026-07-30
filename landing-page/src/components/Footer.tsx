@@ -7,6 +7,7 @@ const links = {
   Produit: [
     { label: "Fonctionnalités", href: "#features" },
     { label: "Comment ça marche", href: "#how-it-works" },
+    { label: "Blog", href: "/blog" },
     { label: "FAQ", href: "#faq" },
   ],
   Entreprise: [
