@@ -17,9 +17,9 @@ const links = {
     { label: "Presse", href: "mailto:contact@kolyb.app" },
   ],
   Légal: [
-    { label: "Mentions légales", href: "https://cassandre-pdg.github.io/kolyb-support/mentions-legales.html" },
-    { label: "Confidentialité", href: "https://cassandre-pdg.github.io/kolyb-support/confidentialite.html" },
-    { label: "CGU", href: "https://cassandre-pdg.github.io/kolyb-support/cgu.html" },
+    { label: "Mentions légales", href: "/legal/mentions-legales" },
+    { label: "Confidentialité", href: "/legal/confidentialite" },
+    { label: "CGU", href: "/legal/cgu" },
   ],
 };
 
@@ -102,27 +102,21 @@ export default function Footer() {
             </p>
             <span className="text-[#22204A]">·</span>
             <a
-              href="https://cassandre-pdg.github.io/kolyb-support/mentions-legales.html"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/legal/mentions-legales"
               className="text-xs text-[#EDEDFF]/20 hover:text-[#EDEDFF]/50 transition-colors duration-200"
             >
               Mentions légales
             </a>
             <span className="text-[#22204A]">·</span>
             <a
-              href="https://cassandre-pdg.github.io/kolyb-support/confidentialite.html"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/legal/confidentialite"
               className="text-xs text-[#EDEDFF]/20 hover:text-[#EDEDFF]/50 transition-colors duration-200"
             >
               Confidentialité
             </a>
             <span className="text-[#22204A]">·</span>
             <a
-              href="https://cassandre-pdg.github.io/kolyb-support/cgu.html"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/legal/cgu"
               className="text-xs text-[#EDEDFF]/20 hover:text-[#EDEDFF]/50 transition-colors duration-200"
             >
               CGU

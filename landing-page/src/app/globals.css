@@ -1304,3 +1304,130 @@ body > [style*="position: fixed"][style*="top: 0"] {
     display: none;
   }
 }
+
+/* ─── LEGAL PAGES ────────────────────────────────────────── */
+
+.legal-content {
+  background: #1A1836;
+  border: 0.5px solid #22204A;
+  border-radius: 18px;
+  padding: 48px;
+}
+
+.legal-content h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #C4B5FD;
+  margin: 40px 0 14px;
+  padding-top: 40px;
+  border-top: 0.5px solid #22204A;
+}
+
+.legal-content h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.legal-content h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #8B7FE8;
+  margin: 24px 0 10px;
+}
+
+.legal-content p {
+  font-size: 14px;
+  color: rgba(237, 237, 255, 0.7);
+  margin-bottom: 14px;
+  line-height: 1.7;
+}
+
+.legal-content ul {
+  margin: 12px 0 16px 20px;
+  list-style: disc;
+}
+
+.legal-content ul li {
+  font-size: 14px;
+  color: rgba(237, 237, 255, 0.7);
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+
+.legal-content a {
+  color: #8B7FE8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.legal-content strong {
+  color: #C4B5FD;
+}
+
+.legal-highlight {
+  background: rgba(109, 40, 217, 0.12);
+  border: 0.5px solid rgba(139, 127, 232, 0.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: #C4B5FD;
+}
+
+.legal-info-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.legal-info-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #C4B5FD;
+  min-width: 180px;
+}
+
+.legal-info-value {
+  font-size: 13px;
+  color: rgba(237, 237, 255, 0.7);
+}
+
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+}
+
+.legal-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8B7FE8;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid #2E2B5A;
+}
+
+.legal-table td {
+  font-size: 13px;
+  color: rgba(237, 237, 255, 0.65);
+  padding: 10px 14px;
+  border-bottom: 0.5px solid #22204A;
+}
+
+.legal-table tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 600px) {
+  .legal-content {
+    padding: 28px 20px;
+  }
+  .legal-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
